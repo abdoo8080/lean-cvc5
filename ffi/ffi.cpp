@@ -304,17 +304,23 @@ extern "C" lean_obj_res solver_new(lean_obj_arg unit)
   return solver_box(new Solver());
 }
 
-extern "C" lean_object* solver_val(lean_object* m,
+extern "C" lean_obj_res solver_val(lean_obj_arg m,
                                    lean_obj_arg inst,
-                                   lean_object*,
-                                   lean_object* alpha,
-                                   lean_object* solver);
+                                   lean_obj_arg alpha,
+                                   lean_obj_arg a,
+                                   lean_obj_arg solver);
 
-extern "C" lean_object* solver_err(lean_object* m,
+extern "C" lean_obj_res solver_err(lean_obj_arg m,
                                    lean_obj_arg inst,
-                                   lean_object*,
-                                   lean_object* alpha,
-                                   lean_object* solver);
+                                   lean_obj_arg alpha,
+                                   lean_obj_arg e,
+                                   lean_obj_arg solver);
+
+extern "C" lean_obj_res solver_runp(lean_obj_arg m,
+                                    lean_obj_arg inst,
+                                    lean_obj_arg alpha,
+                                    lean_obj_arg query,
+                                    lean_obj_arg solver);
 
 extern "C" lean_obj_res solver_getVersion(lean_obj_arg inst,
                                           lean_obj_arg solver)
@@ -446,4 +452,12 @@ extern "C" lean_obj_res solver_parse(lean_obj_arg inst,
     cmd.invoke(slv, &sm, out);
   }
   return solver_val(lean_box(0), inst, lean_box(0), mk_unit_unit(), solver);
+}
+
+extern "C" lean_obj_res solver_run(lean_obj_arg inst, lean_obj_arg query)
+{
+  // This code is equivalent to the Lean implentation. We export this function
+  // to avoid caching the solver object in Lean.
+  return solver_runp(
+      lean_box(0), inst, lean_box(0), query, solver_new(mk_unit_unit()));
 }

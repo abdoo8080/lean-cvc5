@@ -234,10 +234,15 @@ opaque proofToString : Proof → SolverT m String
 @[extern "solver_parse"]
 opaque parse : String → SolverT m Unit
 
-def run (query : SolverT m α) : m (Except SolverError α) := do
-  return match ← ExceptT.run query (new ()) with
+@[export solver_runp]
+private def run' (query : SolverT m α) (s : Solver) : m (Except SolverError α) := do
+  return match ← ExceptT.run query s with
   | (.ok x, _) => .ok x
   | (.error e, _) => .error e
+
+@[extern "solver_run"]
+opaque run (query : SolverT m α) : m (Except SolverError α) :=
+  run' query (new ())
 
 end Solver
 

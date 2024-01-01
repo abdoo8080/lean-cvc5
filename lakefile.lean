@@ -2,10 +2,8 @@ import Lake
 open Lake DSL
 
 require std from git "https://github.com/leanprover/std4" @ "v4.4.0"
-require Qq from git "https://github.com/leanprover-community/quote4" @ "master"
 
 package cvc5 {
-  -- srcDir := ""
   precompileModules := true
   moreGlobalServerArgs := #[s!"--load-dynlib={nameToSharedLib "c++"}.1"]
   extraDepTargets := #[`cvc5.cpp]
