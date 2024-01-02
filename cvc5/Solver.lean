@@ -1,5 +1,10 @@
+import Std.Data.Rat.Basic
+
 import cvc5.Kind
 import cvc5.ProofRule
+
+@[export rat_mk]
+private def Rat.mk : Int → Nat → Rat := mkRat
 
 namespace cvc5
 
@@ -96,6 +101,9 @@ opaque getBitVectorValue : Term → UInt32 → String
 
 @[extern "term_getIntegerValue"]
 opaque getIntegerValue : Term → Int
+
+@[extern "term_getRationalValue"]
+opaque getRationalValue : Term → Rat
 
 @[extern "term_getNumChildren"]
 opaque getNumChildren : Term → Nat

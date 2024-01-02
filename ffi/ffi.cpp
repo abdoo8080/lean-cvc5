@@ -12,6 +12,8 @@ inline uint8_t mk_bool_true() { return 1; }
 
 inline uint8_t bool_box(bool b) { return b ? mk_bool_true() : mk_bool_false(); }
 
+extern "C" lean_obj_res rat_mk(lean_obj_arg num, lean_obj_arg den);
+
 inline bool bool_unbox(uint8_t b) { return static_cast<bool>(b); }
 
 static void result_finalize(void* obj) { delete static_cast<Result*>(obj); }
@@ -187,6 +189,14 @@ extern "C" uint8_t term_getBooleanValue(lean_obj_arg t)
 extern "C" lean_obj_res term_getIntegerValue(lean_obj_arg t)
 {
   return lean_cstr_to_int(term_unbox(t)->getIntegerValue().c_str());
+}
+
+extern "C" lean_obj_res term_getRationalValue(lean_obj_arg t)
+{
+  std::string r = term_unbox(t)->getRealValue();
+  size_t i = r.find('/');
+  return rat_mk(lean_cstr_to_int(r.substr(0, i).c_str()),
+                lean_cstr_to_nat(r.substr(i).c_str()));
 }
 
 extern "C" lean_obj_res term_getBitVectorValue(uint32_t base, lean_obj_arg t)
