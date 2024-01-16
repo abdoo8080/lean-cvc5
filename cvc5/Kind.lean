@@ -24,7 +24,7 @@ inductive Kind where
    \rst
    .. note:: Should never be created via the API.
    \endrst
-   -/
+  -/
   | INTERNAL_KIND
   /--
    Undefined kind.
@@ -32,7 +32,7 @@ inductive Kind where
    \rst
    .. note:: Should never be exposed or created via the API.
    \endrst
-   -/
+  -/
   | UNDEFINED_KIND
   /--
    Null kind.
@@ -43,7 +43,7 @@ inductive Kind where
    .. note:: May not be explicitly created via API functions other than
              :cpp:func:`Term::Term()`.
    \endrst
-   -/
+  -/
   | NULL_TERM
 
   /- Builtin --------------------------------------------------------------- -/
@@ -56,7 +56,7 @@ inductive Kind where
              kind may not be created explicitly via the API and may not
              appear in assertions.
    \endrst
-   -/
+  -/
   | UNINTERPRETED_SORT_VALUE
   /--
    Equality, chainable.
@@ -73,7 +73,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | EQUAL
   /--
    Disequality.
@@ -90,7 +90,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | DISTINCT
   /--
    Free constant symbol.
@@ -104,7 +104,7 @@ inductive Kind where
    .. note:: Not permitted in bindings (e.g., :cpp:enumerator:`FORALL`,
              :cpp:enumerator:`EXISTS`).
    \endrst
-   -/
+  -/
   | CONSTANT
   /--
    (Bound) variable.
@@ -116,7 +116,7 @@ inductive Kind where
    \rst
    .. note:: Only permitted in bindings and in lambda and quantifier bodies.
    \endrst
-   -/
+  -/
   | VARIABLE
   /--
    Symbolic expression.
@@ -138,7 +138,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | SEXPR
   /--
    Lambda expression.
@@ -156,7 +156,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | LAMBDA
   /--
    Witness.
@@ -223,7 +223,7 @@ inductive Kind where
        false) 0))``, whereas notice that ``(or (= z 0) (not (= z 0)))`` is
        true for any :math:`z`.
    \endrst
-   -/
+  -/
   | WITNESS
 
   /- Boolean --------------------------------------------------------------- -/
@@ -236,7 +236,7 @@ inductive Kind where
      - Solver::mkTrue() const
      - Solver::mkFalse() const
      - Solver::mkBoolean(bool) const
-   -/
+  -/
   | CONST_BOOLEAN
   /--
    Logical negation.
@@ -253,7 +253,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | NOT
   /--
    Logical conjunction.
@@ -270,7 +270,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | AND
   /--
    Logical implication.
@@ -287,7 +287,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | IMPLIES
   /--
    Logical disjunction.
@@ -304,7 +304,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | OR
   /--
    Logical exclusive disjunction, left associative.
@@ -321,7 +321,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | XOR
   /--
    If-then-else.
@@ -340,7 +340,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | ITE
 
   /- UF -------------------------------------------------------------------- -/
@@ -361,7 +361,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | APPLY_UF
   /--
    Cardinality constraint on uninterpreted sort.
@@ -379,7 +379,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | CARDINALITY_CONSTRAINT
   /--
    Higher-order applicative encoding of function application, left
@@ -398,7 +398,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | HO_APPLY
 
   /- Arithmetic ------------------------------------------------------------ -/
@@ -418,7 +418,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | ADD
   /--
    Arithmetic multiplication.
@@ -435,7 +435,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | MULT
   /--
    Integer and.
@@ -473,7 +473,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | IAND
   /--
    Power of two.
@@ -492,7 +492,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | POW2
   /--
    Arithmetic subtraction, left associative.
@@ -509,7 +509,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | SUB
   /--
    Arithmetic negation.
@@ -526,7 +526,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | NEG
   /--
    Real division, division by 0 undefined, left associative.
@@ -543,7 +543,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | DIVISION
   /--
    Integer division, division by 0 undefined, left associative.
@@ -560,7 +560,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | INTS_DIVISION
   /--
    Integer modulus, modulus by 0 undefined.
@@ -578,7 +578,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | INTS_MODULUS
   /--
    Absolute value.
@@ -595,7 +595,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | ABS
   /--
    Arithmetic power.
@@ -612,7 +612,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | POW
   /--
    Exponential function.
@@ -629,7 +629,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | EXPONENTIAL
   /--
    Sine function.
@@ -646,7 +646,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | SINE
   /--
    Cosine function.
@@ -663,7 +663,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | COSINE
   /--
    Tangent function.
@@ -680,7 +680,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | TANGENT
   /--
    Cosecant function.
@@ -697,7 +697,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | COSECANT
   /--
    Secant function.
@@ -714,7 +714,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | SECANT
   /--
    Cotangent function.
@@ -731,7 +731,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | COTANGENT
   /--
    Arc sine function.
@@ -748,7 +748,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | ARCSINE
   /--
    Arc cosine function.
@@ -765,7 +765,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | ARCCOSINE
   /--
    Arc tangent function.
@@ -782,7 +782,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | ARCTANGENT
   /--
    Arc cosecant function.
@@ -799,7 +799,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | ARCCOSECANT
   /--
    Arc secant function.
@@ -816,7 +816,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | ARCSECANT
   /--
    Arc cotangent function.
@@ -833,7 +833,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | ARCCOTANGENT
   /--
    Square root.
@@ -850,7 +850,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | SQRT
   /--
    \rst
@@ -872,7 +872,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | DIVISIBLE
   /--
    Arbitrary-precision rational constant.
@@ -882,7 +882,7 @@ inductive Kind where
      - Solver::mkReal(const std::string&) const
      - Solver::mkReal(int64_t) const
      - Solver::mkReal(int64_t, int64_t) const
-   -/
+  -/
   | CONST_RATIONAL
   /--
    Arbitrary-precision integer constant.
@@ -891,7 +891,7 @@ inductive Kind where
 
      - Solver::mkInteger(const std::string&) const
      - Solver::mkInteger(int64_t) const
-   -/
+  -/
   | CONST_INTEGER
   /--
    Less than, chainable.
@@ -908,7 +908,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | LT
   /--
    Less than or equal, chainable.
@@ -925,7 +925,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | LEQ
   /--
    Greater than, chainable.
@@ -942,7 +942,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | GT
   /--
    Greater than or equal, chainable.
@@ -959,7 +959,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | GEQ
   /--
    Is-integer predicate.
@@ -976,7 +976,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | IS_INTEGER
   /--
    Convert Term of sort Int or Real to Int via the floor function.
@@ -993,7 +993,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | TO_INTEGER
   /--
    Convert Term of Sort Int or Real to Real.
@@ -1010,7 +1010,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | TO_REAL
   /--
    Pi constant.
@@ -1024,7 +1024,7 @@ inductive Kind where
               Real, but is not a Real value, i.e.,
               :cpp:func:`Term::isRealValue()` will return ``false``.
    \endrst
-   -/
+  -/
   | PI
 
   /- BV -------------------------------------------------------------------- -/
@@ -1036,7 +1036,7 @@ inductive Kind where
 
      - Solver::mkBitVector(uint32_t, uint64_t) const
      - Solver::mkBitVector(uint32_t, const std::string&, uint32_t) const
-   -/
+  -/
   | CONST_BITVECTOR
   /--
    Create bit-vector from a list of Booleans.
@@ -1053,7 +1053,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_BB_TERM
   /--
    Concatenation of two or more bit-vectors.
@@ -1070,7 +1070,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_CONCAT
   /--
    Bit-wise and.
@@ -1087,7 +1087,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_AND
   /--
    Bit-wise or.
@@ -1104,7 +1104,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_OR
   /--
    Bit-wise xor.
@@ -1121,7 +1121,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_XOR
   /--
    Bit-wise negation.
@@ -1138,7 +1138,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_NOT
   /--
    Bit-wise nand.
@@ -1155,7 +1155,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_NAND
   /--
    Bit-wise nor.
@@ -1172,7 +1172,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_NOR
   /--
    Bit-wise xnor, left associative.
@@ -1189,7 +1189,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_XNOR
   /--
    Equality comparison (returns bit-vector of size ``1``).
@@ -1206,7 +1206,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_COMP
   /--
    Multiplication of two or more bit-vectors.
@@ -1223,7 +1223,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_MULT
   /--
    Addition of two or more bit-vectors.
@@ -1240,7 +1240,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_ADD
   /--
    Subtraction of two bit-vectors.
@@ -1257,7 +1257,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_SUB
   /--
    Negation of a bit-vector (two's complement).
@@ -1274,7 +1274,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_NEG
   /--
    Unsigned bit-vector division.
@@ -1293,7 +1293,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_UDIV
   /--
    Unsigned bit-vector remainder.
@@ -1313,7 +1313,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_UREM
   /--
    Signed bit-vector division.
@@ -1334,7 +1334,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_SDIV
   /--
    Signed bit-vector remainder (sign follows dividend).
@@ -1354,7 +1354,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_SREM
   /--
    Signed bit-vector remainder (sign follows divisor).
@@ -1374,7 +1374,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_SMOD
   /--
    Bit-vector shift left.
@@ -1391,7 +1391,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_SHL
   /--
    Bit-vector logical shift right.
@@ -1408,7 +1408,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_LSHR
   /--
    Bit-vector arithmetic shift right.
@@ -1425,7 +1425,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_ASHR
   /--
    Bit-vector unsigned less than.
@@ -1442,7 +1442,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_ULT
   /--
    Bit-vector unsigned less than or equal.
@@ -1459,7 +1459,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_ULE
   /--
    Bit-vector unsigned greater than.
@@ -1476,7 +1476,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_UGT
   /--
    Bit-vector unsigned greater than or equal.
@@ -1493,7 +1493,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_UGE
   /--
    Bit-vector signed less than.
@@ -1510,7 +1510,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_SLT
   /--
    Bit-vector signed less than or equal.
@@ -1527,7 +1527,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_SLE
   /--
    Bit-vector signed greater than.
@@ -1544,7 +1544,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_SGT
   /--
    Bit-vector signed greater than or equal.
@@ -1561,7 +1561,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_SGE
   /--
    Bit-vector unsigned less than returning a bit-vector of size 1.
@@ -1578,7 +1578,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_ULTBV
   /--
    Bit-vector signed less than returning a bit-vector of size ``1``.
@@ -1595,7 +1595,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_SLTBV
   /--
    Bit-vector if-then-else.
@@ -1615,7 +1615,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_ITE
   /--
    Bit-vector redor.
@@ -1632,7 +1632,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_REDOR
   /--
    Bit-vector redand.
@@ -1649,10 +1649,27 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_REDAND
   /--
-   Unsigned addition overflow detection.
+   Bit-vector negation overflow detection.
+
+   - Arity: ``1``
+
+     - ``1:`` Term of bit-vector Sort
+
+   - Create Term of this Kind with:
+
+     - Solver::mkTerm(Kind, const std::vector<Term>&) const
+     - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+
+   - Create Op of this kind with:
+
+     - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+  -/
+  | BITVECTOR_NEGO
+  /--
+   Bit-vector unsigned addition overflow detection.
 
    - Arity: ``2``
 
@@ -1666,10 +1683,10 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_UADDO
   /--
-   Signed addition overflow detection.
+   Bit-vector signed addition overflow detection.
 
    - Arity: ``2``
 
@@ -1683,10 +1700,10 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_SADDO
   /--
-   Unsigned multiplication overflow detection.
+   Bit-vector unsigned multiplication overflow detection.
 
    - Arity: ``2``
 
@@ -1700,10 +1717,10 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_UMULO
   /--
-   Signed multiplication overflow detection.
+   Bit-vector signed multiplication overflow detection.
 
    - Arity: ``2``
 
@@ -1717,10 +1734,10 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_SMULO
   /--
-   Unsigned subtraction overflow detection.
+   Bit-vector unsigned subtraction overflow detection.
 
    - Arity: ``2``
 
@@ -1734,10 +1751,10 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_USUBO
   /--
-   Signed subtraction overflow detection.
+   Bit-vector signed subtraction overflow detection.
 
    - Arity: ``2``
 
@@ -1751,10 +1768,10 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_SSUBO
   /--
-   Signed division overflow detection.
+   Bit-vector signed division overflow detection.
 
    - Arity: ``2``
 
@@ -1768,7 +1785,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_SDIVO
   /--
    Bit-vector extract.
@@ -1789,7 +1806,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_EXTRACT
   /--
    Bit-vector bit-of.
@@ -1809,7 +1826,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_BITOF
   /--
    Bit-vector repeat.
@@ -1829,7 +1846,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_REPEAT
   /--
    Bit-vector zero extension.
@@ -1849,7 +1866,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_ZERO_EXTEND
   /--
    Bit-vector sign extension.
@@ -1869,7 +1886,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_SIGN_EXTEND
   /--
    Bit-vector rotate left.
@@ -1889,7 +1906,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_ROTATE_LEFT
   /--
    Bit-vector rotate right.
@@ -1909,7 +1926,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_ROTATE_RIGHT
   /--
    Conversion from Int to bit-vector.
@@ -1929,7 +1946,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | INT_TO_BITVECTOR
   /--
    Bit-vector conversion to (non-negative) integer.
@@ -1946,7 +1963,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BITVECTOR_TO_NAT
 
   /- Finite Fields --------------------------------------------------------- -/
@@ -1956,8 +1973,8 @@ inductive Kind where
 
    - Create Term of this Kind with:
 
-     - Solver::mkFiniteFieldElem(const std::string&, const Sort&) const
-   -/
+     - Solver::mkFiniteFieldElem(const std::string&, const Sort&, uint32_t base) const
+  -/
   | CONST_FINITE_FIELD
   /--
    Negation of a finite field element (additive inverse).
@@ -1974,7 +1991,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FINITE_FIELD_NEG
   /--
    Addition of two or more finite field elements.
@@ -1991,8 +2008,21 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FINITE_FIELD_ADD
+  /--
+   Bitsum of two or more finite field elements: x + 2y + 4z + ...
+
+   - Arity: ``n > 1``
+
+     - ``1..n:`` Terms of finite field Sort (sorts must match)
+
+   - Create Term of this Kind with:
+
+     - Solver::mkTerm(Kind, const std::vector<Term>&) const
+     - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+  -/
+  | FINITE_FIELD_BITSUM
   /--
    Multiplication of two or more finite field elements.
 
@@ -2008,7 +2038,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FINITE_FIELD_MULT
 
   /- FP -------------------------------------------------------------------- -/
@@ -2020,7 +2050,7 @@ inductive Kind where
    - Create Term of this Kind with:
 
      - Solver::mkFloatingPoint(uint32_t, uint32_t, Term) const
-   -/
+  -/
   | CONST_FLOATINGPOINT
   /--
    RoundingMode constant.
@@ -2028,7 +2058,7 @@ inductive Kind where
    - Create Term of this Kind with:
 
      - Solver::mkRoundingMode(RoundingMode) const
-   -/
+  -/
   | CONST_ROUNDINGMODE
   /--
    Create floating-point literal from bit-vector triple.
@@ -2048,7 +2078,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_FP
   /--
    Floating-point equality.
@@ -2065,7 +2095,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_EQ
   /--
    Floating-point absolute value.
@@ -2082,7 +2112,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_ABS
   /--
    Floating-point negation.
@@ -2099,7 +2129,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_NEG
   /--
    Floating-point addition.
@@ -2117,7 +2147,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_ADD
   /--
    Floating-point sutraction.
@@ -2135,7 +2165,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_SUB
   /--
    Floating-point multiply.
@@ -2153,7 +2183,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_MULT
   /--
    Floating-point division.
@@ -2171,7 +2201,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_DIV
   /--
    Floating-point fused multiply and add.
@@ -2189,7 +2219,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_FMA
   /--
    Floating-point square root.
@@ -2207,7 +2237,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_SQRT
   /--
    Floating-point remainder.
@@ -2224,7 +2254,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_REM
   /--
    Floating-point round to integral.
@@ -2241,7 +2271,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_RTI
   /--
    Floating-point minimum.
@@ -2259,7 +2289,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_MIN
   /--
    Floating-point maximum.
@@ -2276,7 +2306,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_MAX
   /--
    Floating-point less than or equal.
@@ -2293,7 +2323,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_LEQ
   /--
    Floating-point less than.
@@ -2310,7 +2340,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_LT
   /--
    Floating-point greater than or equal.
@@ -2327,7 +2357,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_GEQ
   /--
    Floating-point greater than.
@@ -2344,7 +2374,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_GT
   /--
    Floating-point is normal tester.
@@ -2361,7 +2391,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_IS_NORMAL
   /--
    Floating-point is sub-normal tester.
@@ -2378,7 +2408,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_IS_SUBNORMAL
   /--
    Floating-point is zero tester.
@@ -2395,7 +2425,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_IS_ZERO
   /--
    Floating-point is infinite tester.
@@ -2412,7 +2442,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_IS_INF
   /--
    Floating-point is NaN tester.
@@ -2429,7 +2459,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_IS_NAN
   /--
    Floating-point is negative tester.
@@ -2446,7 +2476,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_IS_NEG
   /--
    Floating-point is positive tester.
@@ -2463,7 +2493,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_IS_POS
   /--
    Conversion to floating-point from IEEE-754 bit-vector.
@@ -2484,7 +2514,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_TO_FP_FROM_IEEE_BV
   /--
    Conversion to floating-point from floating-point.
@@ -2506,7 +2536,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_TO_FP_FROM_FP
   /--
    Conversion to floating-point from Real.
@@ -2528,7 +2558,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_TO_FP_FROM_REAL
   /--
    Conversion to floating-point from signed bit-vector.
@@ -2550,7 +2580,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_TO_FP_FROM_SBV
   /--
    Conversion to floating-point from unsigned bit-vector.
@@ -2572,7 +2602,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_TO_FP_FROM_UBV
   /--
    Conversion to unsigned bit-vector from floating-point.
@@ -2593,7 +2623,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_TO_UBV
   /--
    Conversion to signed bit-vector from floating-point.
@@ -2614,7 +2644,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_TO_SBV
   /--
    Conversion to Real from floating-point.
@@ -2631,7 +2661,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FLOATINGPOINT_TO_REAL
 
   /- Arrays ---------------------------------------------------------------- -/
@@ -2652,7 +2682,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | SELECT
   /--
    Array store.
@@ -2671,7 +2701,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | STORE
   /--
    Constant array.
@@ -2689,7 +2719,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | CONST_ARRAY
   /--
    \rst
@@ -2727,7 +2757,7 @@ inductive Kind where
              Requires to enable option
              :ref:`arrays-exp<lbl-option-arrays-exp>`.
    \endrst
-   -/
+  -/
   | EQ_RANGE
 
   /- Datatypes ------------------------------------------------------------- -/
@@ -2748,7 +2778,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | APPLY_CONSTRUCTOR
   /--
    Datatype selector application.
@@ -2770,7 +2800,7 @@ inductive Kind where
    \rst
    .. note:: Undefined if misapplied.
    \endrst
-   -/
+  -/
   | APPLY_SELECTOR
   /--
    Datatype tester application.
@@ -2788,7 +2818,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | APPLY_TESTER
   /--
    Datatype update application.
@@ -2811,7 +2841,7 @@ inductive Kind where
    \rst
    .. note:: Does not change the datatype argument if misapplied.
    \endrst
-   -/
+  -/
   | APPLY_UPDATER
   /--
    Match expression.
@@ -2852,7 +2882,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | MATCH
   /--
    Match case for nullary constructors.
@@ -2875,7 +2905,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | MATCH_CASE
   /--
    Match case with binders, for constructors with selectors and variable
@@ -2907,7 +2937,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | MATCH_BIND_CASE
   /--
    Tuple projection.
@@ -2943,7 +2973,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | TUPLE_PROJECT
 
   /- Separation Logic ------------------------------------------------------ -/
@@ -2959,7 +2989,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | SEP_NIL
   /--
    Separation logic empty heap.
@@ -2972,7 +3002,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | SEP_EMP
   /--
    Separation logic points-to relation.
@@ -2995,7 +3025,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | SEP_PTO
   /--
    Separation logic star.
@@ -3018,7 +3048,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | SEP_STAR
   /--
    Separation logic magic wand.
@@ -3043,7 +3073,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | SEP_WAND
 
   /- Sets ------------------------------------------------------------------ -/
@@ -3054,7 +3084,7 @@ inductive Kind where
    - Create Term of this Kind with:
 
      - Solver::mkEmptySet(const Sort&) const
-   -/
+  -/
   | SET_EMPTY
   /--
    Set union.
@@ -3071,7 +3101,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | SET_UNION
   /--
    Set intersection.
@@ -3088,7 +3118,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | SET_INTER
   /--
    Set subtraction.
@@ -3105,7 +3135,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | SET_MINUS
   /--
    Subset predicate.
@@ -3124,7 +3154,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | SET_SUBSET
   /--
    Set membership predicate.
@@ -3144,7 +3174,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | SET_MEMBER
   /--
    Singleton set.
@@ -3164,7 +3194,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | SET_SINGLETON
   /--
    The set obtained by inserting elements;
@@ -3182,7 +3212,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | SET_INSERT
   /--
    Set cardinality.
@@ -3199,7 +3229,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | SET_CARD
   /--
    Set complement with respect to finite universe.
@@ -3216,7 +3246,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | SET_COMPLEMENT
   /--
    Finite universe set.
@@ -3232,7 +3262,7 @@ inductive Kind where
              the theory of sets and is not considered as a set value, i.e.,
              Term::isSetValue() will return ``false``.
    \endrst
-   -/
+  -/
   | SET_UNIVERSE
   /--
    Set comprehension
@@ -3272,7 +3302,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | SET_COMPREHENSION
   /--
    Set choose.
@@ -3301,7 +3331,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | SET_CHOOSE
   /--
    Set is singleton tester.
@@ -3323,7 +3353,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | SET_IS_SINGLETON
   /--
    Set map.
@@ -3353,7 +3383,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
    | SET_MAP
   /--
    Set filter.
@@ -3381,7 +3411,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
    | SET_FILTER
    /--
    Set fold.
@@ -3407,7 +3437,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | SET_FOLD
 
   /- Relations ------------------------------------------------------------- -/
@@ -3427,7 +3457,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | RELATION_JOIN
   /--
    Relation cartesian product.
@@ -3444,7 +3474,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | RELATION_PRODUCT
   /--
    Relation transpose.
@@ -3461,7 +3491,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | RELATION_TRANSPOSE
   /--
    Relation transitive closure.
@@ -3478,7 +3508,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | RELATION_TCLOSURE
   /--
    Relation join image.
@@ -3500,7 +3530,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | RELATION_JOIN_IMAGE
   /--
    Relation identity.
@@ -3522,7 +3552,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | RELATION_IDEN
   /--
    Relation group
@@ -3553,7 +3583,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | RELATION_GROUP
   /--
    \rst
@@ -3590,7 +3620,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | RELATION_AGGREGATE
   /--
    Relation projection operator extends tuple projection operator to sets.
@@ -3610,7 +3640,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | RELATION_PROJECT
 
   /- Bags ------------------------------------------------------------------ -/
@@ -3621,7 +3651,7 @@ inductive Kind where
    - Create Term of this Kind with:
 
      - Solver::mkEmptyBag(const Sort&) const
-   -/
+  -/
   | BAG_EMPTY
   /--
    Bag max union.
@@ -3638,7 +3668,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BAG_UNION_MAX
   /--
    Bag disjoint union (sum).
@@ -3655,7 +3685,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BAG_UNION_DISJOINT
   /--
    Bag intersection (min).
@@ -3672,7 +3702,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BAG_INTER_MIN
   /--
    Bag difference subtract.
@@ -3691,7 +3721,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BAG_DIFFERENCE_SUBTRACT
   /--
    Bag difference remove.
@@ -3710,7 +3740,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BAG_DIFFERENCE_REMOVE
   /--
    Bag inclusion predicate.
@@ -3730,7 +3760,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BAG_SUBBAG
   /--
    Bag element multiplicity.
@@ -3739,7 +3769,7 @@ inductive Kind where
 
      - Solver::mkTerm(Kind, const Term&, const Term&) const
      - Solver::mkTerm(Kind, const std::vector<Term>&) const
-   -/
+  -/
   | BAG_COUNT
   /--
    Bag membership predicate.
@@ -3757,7 +3787,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BAG_MEMBER
   /--
    Bag duplicate removal.
@@ -3782,7 +3812,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | BAG_DUPLICATE_REMOVAL
   /--
    Bag make.
@@ -3802,7 +3832,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | BAG_MAKE
   /--
    Bag cardinality.
@@ -3824,7 +3854,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | BAG_CARD
   /--
    Bag choose.
@@ -3855,7 +3885,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | BAG_CHOOSE
   /--
    Bag is singleton tester.
@@ -3877,7 +3907,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | BAG_IS_SINGLETON
   /--
    Conversion from set to bag.
@@ -3899,7 +3929,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | BAG_FROM_SET
   /--
    Conversion from bag to set.
@@ -3921,7 +3951,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | BAG_TO_SET
   /--
    Bag map.
@@ -3951,7 +3981,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | BAG_MAP
   /--
    Bag filter.
@@ -3979,7 +4009,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
    | BAG_FILTER
   /--
    Bag fold.
@@ -4005,7 +4035,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | BAG_FOLD
   /--
    Bag partition.
@@ -4032,7 +4062,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | BAG_PARTITION
   /--
    Table cross product.
@@ -4054,7 +4084,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | TABLE_PRODUCT
   /--
    Table projection operator extends tuple projection operator to tables.
@@ -4074,7 +4104,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | TABLE_PROJECT
   /--
    \rst
@@ -4111,7 +4141,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | TABLE_AGGREGATE
   /--
    \rst
@@ -4143,7 +4173,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | TABLE_JOIN
   /--
    Table group
@@ -4174,7 +4204,7 @@ inductive Kind where
    .. warning:: This kind is experimental and may be changed or removed in
                 future versions.
    \endrst
-   -/
+  -/
   | TABLE_GROUP
 
   /- Strings --------------------------------------------------------------- -/
@@ -4194,7 +4224,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | STRING_CONCAT
   /--
    String membership.
@@ -4212,7 +4242,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | STRING_IN_REGEXP
   /--
    String length.
@@ -4229,7 +4259,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | STRING_LENGTH
   /--
    String substring.
@@ -4255,7 +4285,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | STRING_SUBSTR
   /--
    String update.
@@ -4281,7 +4311,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | STRING_UPDATE
   /--
    String character at.
@@ -4306,7 +4336,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | STRING_CHARAT
   /--
    String contains.
@@ -4329,7 +4359,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | STRING_CONTAINS
   /--
    String index-of.
@@ -4355,7 +4385,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | STRING_INDEXOF
   /--
    String index-of regular expression match.
@@ -4381,7 +4411,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | STRING_INDEXOF_RE
   /--
    String replace.
@@ -4406,7 +4436,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | STRING_REPLACE
   /--
    String replace all.
@@ -4431,7 +4461,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | STRING_REPLACE_ALL
   /--
    String replace regular expression match.
@@ -4456,7 +4486,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | STRING_REPLACE_RE
   /--
    String replace all regular expression matches.
@@ -4481,7 +4511,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | STRING_REPLACE_RE_ALL
   /--
    String to lower case.
@@ -4498,7 +4528,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | STRING_TO_LOWER
   /--
    String to upper case.
@@ -4515,7 +4545,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | STRING_TO_UPPER
   /--
    String reverse.
@@ -4532,7 +4562,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | STRING_REV
   /--
    String to code.
@@ -4552,7 +4582,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | STRING_TO_CODE
   /--
    String from code.
@@ -4573,7 +4603,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | STRING_FROM_CODE
   /--
    String less than.
@@ -4596,7 +4626,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | STRING_LT
   /--
    String less than or equal.
@@ -4619,7 +4649,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | STRING_LEQ
   /--
    String prefix-of.
@@ -4642,7 +4672,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | STRING_PREFIX
   /--
    String suffix-of.
@@ -4665,7 +4695,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | STRING_SUFFIX
   /--
    String is-digit.
@@ -4685,7 +4715,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | STRING_IS_DIGIT
   /--
    Conversion from Int to String.
@@ -4704,7 +4734,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | STRING_FROM_INT
   /--
    String to integer (total function).
@@ -4724,7 +4754,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | STRING_TO_INT
   /--
    Constant string.
@@ -4733,7 +4763,7 @@ inductive Kind where
 
      - Solver::mkString(const std::string&, bool) const
      - Solver::mkString(const std::wstring&) const
-   -/
+  -/
   | CONST_STRING
   /--
    Conversion from string to regexp.
@@ -4750,7 +4780,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | STRING_TO_REGEXP
   /--
    Regular expression concatenation.
@@ -4767,7 +4797,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | REGEXP_CONCAT
   /--
    Regular expression union.
@@ -4784,7 +4814,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | REGEXP_UNION
   /--
    Regular expression intersection.
@@ -4801,7 +4831,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | REGEXP_INTER
   /--
    Regular expression difference.
@@ -4818,7 +4848,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | REGEXP_DIFF
   /--
    Regular expression \*.
@@ -4835,7 +4865,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | REGEXP_STAR
   /--
    Regular expression +.
@@ -4852,7 +4882,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | REGEXP_PLUS
   /--
    Regular expression ?.
@@ -4869,7 +4899,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | REGEXP_OPT
   /--
    Regular expression range.
@@ -4887,7 +4917,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | REGEXP_RANGE
   /--
    Operator for regular expression repeat.
@@ -4907,7 +4937,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | REGEXP_REPEAT
   /--
    Regular expression loop.
@@ -4932,7 +4962,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | REGEXP_LOOP
   /--
    Regular expression none.
@@ -4940,7 +4970,7 @@ inductive Kind where
    - Create Term of this Kind with:
 
      - Solver::mkRegexpNone() const
-   -/
+  -/
   | REGEXP_NONE
   /--
    Regular expression all.
@@ -4948,7 +4978,7 @@ inductive Kind where
    - Create Term of this Kind with:
 
      - Solver::mkRegexpAll() const
-   -/
+  -/
   | REGEXP_ALL
   /--
    Regular expression all characters.
@@ -4956,7 +4986,7 @@ inductive Kind where
    - Create Term of this Kind with:
 
      - Solver::mkRegexpAllchar() const
-   -/
+  -/
   | REGEXP_ALLCHAR
   /--
    Regular expression complement.
@@ -4973,7 +5003,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | REGEXP_COMPLEMENT
 
   /--
@@ -4991,7 +5021,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | SEQ_CONCAT
   /--
    Sequence length.
@@ -5008,7 +5038,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | SEQ_LENGTH
   /--
    Sequence extract.
@@ -5034,7 +5064,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | SEQ_EXTRACT
   /--
    Sequence update.
@@ -5060,7 +5090,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | SEQ_UPDATE
   /--
    Sequence element at.
@@ -5085,7 +5115,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | SEQ_AT
   /--
    Sequence contains.
@@ -5108,7 +5138,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | SEQ_CONTAINS
   /--
    Sequence index-of.
@@ -5134,7 +5164,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | SEQ_INDEXOF
   /--
    Sequence replace.
@@ -5159,7 +5189,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | SEQ_REPLACE
   /--
    Sequence replace all.
@@ -5184,7 +5214,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | SEQ_REPLACE_ALL
   /--
    Sequence reverse.
@@ -5201,7 +5231,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | SEQ_REV
   /--
    Sequence prefix-of.
@@ -5224,7 +5254,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | SEQ_PREFIX
   /--
    Sequence suffix-of.
@@ -5247,7 +5277,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | SEQ_SUFFIX
   /--
    Constant sequence.
@@ -5265,7 +5295,7 @@ inductive Kind where
    - Create Term of this Kind with:
 
      - Solver::mkEmptySequence(const Sort&) const
-   -/
+  -/
   | CONST_SEQUENCE
   /--
    Sequence unit.
@@ -5284,7 +5314,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | SEQ_UNIT
   /--
    Sequence nth.
@@ -5306,7 +5336,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | SEQ_NTH
 
   /- Quantifiers ----------------------------------------------------------- -/
@@ -5330,7 +5360,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | FORALL
   /--
    Existentially quantified formula.
@@ -5351,7 +5381,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | EXISTS
   /--
    Variable list.
@@ -5372,7 +5402,7 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | VARIABLE_LIST
   /--
    Instantiation pattern.
@@ -5397,7 +5427,7 @@ inductive Kind where
    .. note:: Should only be used as a child of
              :cpp:enumerator:`INST_PATTERN_LIST`.
    \endrst
-   -/
+  -/
   | INST_PATTERN
   /--
    Instantiation no-pattern.
@@ -5422,7 +5452,7 @@ inductive Kind where
    .. note:: Should only be used as a child of
              :cpp:enumerator:`INST_PATTERN_LIST`.
    \endrst
-   -/
+  -/
   | INST_NO_PATTERN
   /--
    Instantiation pool annotation.
@@ -5483,7 +5513,7 @@ inductive Kind where
    .. note:: Should only be used as a child of
              :cpp:enumerator:`INST_PATTERN_LIST`.
    \endrst
-   -/
+  -/
   | INST_POOL
   /--
    A instantantiation-add-to-pool annotation.
@@ -5526,7 +5556,7 @@ inductive Kind where
    .. note:: Should only be used as a child of
              :cpp:enumerator:`INST_PATTERN_LIST`.
    \endrst
-   -/
+  -/
   | INST_ADD_TO_POOL
   /--
    A skolemization-add-to-pool annotation.
@@ -5569,7 +5599,7 @@ inductive Kind where
    .. note:: Should only be used as a child of
              :cpp:enumerator:`INST_PATTERN_LIST`.
    \endrst
-   -/
+  -/
   | SKOLEM_ADD_TO_POOL
   /--
    Instantiation attribute.
@@ -5595,7 +5625,7 @@ inductive Kind where
    .. note:: Should only be used as a child of
              :cpp:enumerator:`INST_PATTERN_LIST`.
    \endrst
-   -/
+  -/
   | INST_ATTRIBUTE
   /--
    A list of instantiation patterns, attributes or annotations.
@@ -5614,13 +5644,13 @@ inductive Kind where
    - Create Op of this kind with:
 
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-   -/
+  -/
   | INST_PATTERN_LIST
 
   /- ----------------------------------------------------------------------- -/
   /-- Marks the upper-bound of this enumeration. -/
   | LAST_KIND
-deriving BEq, Inhabited, Repr
+deriving BEq, Hashable, Inhabited, Repr
 
 /- -------------------------------------------------------------------------- -/
 /- SortKind -/
@@ -5650,7 +5680,7 @@ inductive SortKind
    \rst
    .. note:: Should never be created via the API.
    \endrst
-   -/
+  -/
   | INTERNAL_SORT_KIND
   /--
    Undefined kind.
@@ -5658,7 +5688,7 @@ inductive SortKind
    \rst
    .. note:: Should never be exposed or created via the API.
    \endrst
-   -/
+  -/
   | UNDEFINED_SORT_KIND
   /--
    Null kind.
@@ -5669,7 +5699,7 @@ inductive SortKind
    .. note:: May not be explicitly created via API functions other than
              :cpp:func:`Sort::Sort()`.
    \endrst
-   -/
+  -/
   | NULL_SORT
 
   /- Sort Kinds ------------------------------------------------------------ -/
@@ -5684,7 +5714,7 @@ inductive SortKind
    - Create Sort of this Kind with:
 
      - Solver::mkAbstractSort(SortKind) const
-   -/
+  -/
   | ABSTRACT_SORT
   /--
    An array sort, whose argument sorts are the index and element sorts of the
@@ -5693,7 +5723,7 @@ inductive SortKind
    - Create Sort of this Kind with:
 
      - Solver::mkArraySort(Sort, Sort) const
-   -/
+  -/
   | ARRAY_SORT
   /--
    A bag sort, whose argument sort is the element sort of the bag.
@@ -5701,7 +5731,7 @@ inductive SortKind
    - Create Sort of this Kind with:
 
      - Solver::mkBagSort(Sort) const
-   -/
+  -/
   | BAG_SORT
   /--
    The Boolean sort.
@@ -5709,7 +5739,7 @@ inductive SortKind
    - Create Sort of this Kind with:
 
      - Solver::getBooleanSort() const
-   -/
+  -/
   | BOOLEAN_SORT
   /--
    A bit-vector sort, parameterized by an integer denoting its bit-width.
@@ -5717,7 +5747,7 @@ inductive SortKind
    - Create Sort of this Kind with:
 
      - Solver::mkBitVectorSort(uint32_t) const
-   -/
+  -/
   | BITVECTOR_SORT
   /--
    A datatype sort.
@@ -5726,7 +5756,7 @@ inductive SortKind
 
      - Solver::mkDatatypeSort(DatatypeDecl)
      - Solver::mkDatatypeSorts(const std::vector<DatatypeDecl>&)
-   -/
+  -/
   | DATATYPE_SORT
   /--
    A finite field sort, parameterized by a size.
@@ -5734,7 +5764,7 @@ inductive SortKind
    - Create Sort of this Kind with:
 
      - Solver::mkFiniteFieldSort(const std::string&) const
-   -/
+  -/
   | FINITE_FIELD_SORT
   /--
    A floating-point sort, parameterized by two integers denoting its
@@ -5743,7 +5773,7 @@ inductive SortKind
    - Create Sort of this Kind with:
 
      - Solver::mkFloatingPointSort(uint32_t, uint32_t) const
-   -/
+  -/
   | FLOATINGPOINT_SORT
   /--
    A function sort with given domain sorts and codomain sort.
@@ -5751,7 +5781,7 @@ inductive SortKind
    - Create Sort of this Kind with:
 
      - Solver::mkFunctionSort(const std::vector<Sort>&, Sort) const
-   -/
+  -/
   | FUNCTION_SORT
   /--
    The integer sort.
@@ -5759,7 +5789,7 @@ inductive SortKind
    - Create Sort of this Kind with:
 
      - Solver::getIntegerSort() const
-   -/
+  -/
   | INTEGER_SORT
   /--
    The real sort.
@@ -5767,7 +5797,7 @@ inductive SortKind
    - Create Sort of this Kind with:
 
      - Solver::getRealSort() const
-   -/
+  -/
   | REAL_SORT
   /--
    The regular language sort.
@@ -5775,7 +5805,7 @@ inductive SortKind
    - Create Sort of this Kind with:
 
      - Solver::getRegExpSort() const
-   -/
+  -/
   | REGLAN_SORT
   /--
    The rounding mode sort.
@@ -5783,7 +5813,7 @@ inductive SortKind
    - Create Sort of this Kind with:
 
      - Solver::getRoundingModeSort() const
-   -/
+  -/
   | ROUNDINGMODE_SORT
   /--
    A sequence sort, whose argument sort is the element sort of the sequence.
@@ -5791,7 +5821,7 @@ inductive SortKind
    - Create Sort of this Kind with:
 
      - Solver::mkSequenceSort(Sort) const
-   -/
+  -/
   | SEQUENCE_SORT
   /--
    A set sort, whose argument sort is the element sort of the set.
@@ -5799,7 +5829,7 @@ inductive SortKind
    - Create Sort of this Kind with:
 
      - Solver::mkSetSort(Sort) const
-   -/
+  -/
   | SET_SORT
   /--
    The string sort.
@@ -5807,7 +5837,7 @@ inductive SortKind
    - Create Sort of this Kind with:
 
      - Solver::getStringSort() const
-   -/
+  -/
   | STRING_SORT
   /--
    A tuple sort, whose argument sorts denote the sorts of the direct children
@@ -5816,7 +5846,7 @@ inductive SortKind
    - Create Sort of this Kind with:
 
      - Solver::mkTupleSort(const std::vector<Sort>&) const
-   -/
+  -/
   | TUPLE_SORT
   /--
    An uninterpreted sort.
@@ -5824,9 +5854,9 @@ inductive SortKind
    - Create Sort of this Kind with:
 
      - Solver::mkUninterpretedSort(const std::optional<std::string>&) const
-   -/
+  -/
   | UNINTERPRETED_SORT
   /- ----------------------------------------------------------------------- -/
   /-- Marks the upper-bound of this enumeration. -/
   | LAST_SORT_KIND
-deriving BEq, Inhabited, Repr
+deriving BEq, Hashable, Inhabited, Repr

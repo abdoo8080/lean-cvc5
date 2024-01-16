@@ -63,7 +63,7 @@ inductive ProofRule
    assumption in proof P" if it contains an application of F that is not
    bound by :cpp:enumerator:`SCOPE <cvc5::ProofRule::SCOPE>` (see below).
    \endverbatim
-   -/
+  -/
   | ASSUME
   /--
    \verbatim embed:rst:leading-asterisk
@@ -80,11 +80,10 @@ inductive ProofRule
    assumptions in a proof. We require that :math:`F_1 \dots F_n` are free
    assumptions in P and say that :math:`F_1 \dots F_n` are not free in
    ``(SCOPE P)``. In other words, they are bound by this application. For
-   example, the proof node: ``(SCOPE (ASSUME F) :args F)``
-   has the conclusion :math:`F \Rightarrow F` and has no free assumptions.
-   More generally, a proof with no free assumptions always concludes a valid
-   formula. \endverbatim
-   -/
+   example, the proof node: ``(SCOPE (ASSUME F) :args F)`` has the conclusion
+   :math:`F \Rightarrow F` and has no free assumptions. More generally, a proof
+   with no free assumptions always concludes a valid formula. \endverbatim
+  -/
   | SCOPE
   /--
    \verbatim embed:rst:leading-asterisk
@@ -101,7 +100,7 @@ inductive ProofRule
    substitutions. It is an optional argument, where by default the premises
    are equalities of the form `(= x y)` and converted into substitutions
    :math:`x\mapsto y`. \endverbatim
-   -/
+  -/
   | SUBS
   /--
    \verbatim embed:rst:leading-asterisk
@@ -112,7 +111,7 @@ inductive ProofRule
 
    where :math:`idr` is a MethodId identifier, which determines the kind of
    rewriter to apply, e.g. Rewriter::rewrite. \endverbatim
-   -/
+  -/
   | MACRO_REWRITE
   /--
    \verbatim embed:rst:leading-asterisk
@@ -123,7 +122,7 @@ inductive ProofRule
 
    Note this is equivalent to: ``(REWRITE t MethodId::RW_EVALUATE)``.
    \endverbatim
-   -/
+  -/
   | EVALUATE
   /--
    \verbatim embed:rst:leading-asterisk
@@ -144,7 +143,7 @@ inductive ProofRule
    specify the identifier of the substitution, the substitution application
    and rewriter respectively to be used. For details, see
    :cvc5src:`theory/builtin/proof_checker.h`. \endverbatim
-   -/
+  -/
   | MACRO_SR_EQ_INTRO
   /--
    \verbatim embed:rst:leading-asterisk
@@ -174,7 +173,7 @@ inductive ProofRule
    within the side condition, meaning the rewritten form of the original form
    of :math:`F` does not escape this rule.
    \endverbatim
-   -/
+  -/
   | MACRO_SR_PRED_INTRO
   /--
    \verbatim embed:rst:leading-asterisk
@@ -190,7 +189,7 @@ inductive ProofRule
    We rewrite only on the Skolem form of :math:`F`, similar to
    :cpp:enumerator:`MACRO_SR_EQ_INTRO <cvc5::ProofRule::MACRO_SR_EQ_INTRO>`.
    \endverbatim
-   -/
+  -/
   | MACRO_SR_PRED_ELIM
   /--
    \verbatim embed:rst:leading-asterisk
@@ -210,7 +209,7 @@ inductive ProofRule
    original forms are used in a similar manner to
    :cpp:enumerator:`MACRO_SR_PRED_INTRO <cvc5::ProofRule::MACRO_SR_PRED_INTRO>`
    above. \endverbatim
-   -/
+  -/
   | MACRO_SR_PRED_TRANSFORM
   /--
    \verbatim embed:rst:leading-asterisk
@@ -225,7 +224,7 @@ inductive ProofRule
    This rule can be treated as a no-op when appropriate in external proof
    formats.
    \endverbatim
-   -/
+  -/
   | ENCODE_PRED_TRANSFORM
   /--
    \verbatim embed:rst:leading-asterisk
@@ -245,7 +244,7 @@ inductive ProofRule
    list of terms. The substitution implemented by expr::narySubstitute
    replaces each :math:`x_i` with the list :math:`t_i` in its place.
    \endverbatim
-   -/
+  -/
   | DSL_REWRITE
   /--
    \verbatim embed:rst:leading-asterisk
@@ -257,7 +256,7 @@ inductive ProofRule
    The terms :math:`a_1 \dots a_n` can be anything used to annotate the proof
    node, one example is where :math:`a_1` is a theory::InferenceId.
    \endverbatim
-   -/
+  -/
   | ANNOTATION
   /--
    \verbatim embed:rst:leading-asterisk
@@ -267,7 +266,7 @@ inductive ProofRule
      \inferrule{- \mid t}{\texttt{RemoveTermFormulas::getAxiomFor}(t)}
 
    \endverbatim
-   -/
+  -/
   | REMOVE_TERM_FORMULA_AXIOM
 
   /--
@@ -282,7 +281,7 @@ inductive ProofRule
    The formulas :math:`F_1 \dots F_n` refer to a set of formulas that
    entail :math:`F`, which may or may not be provided.
    \endverbatim
-   -/
+  -/
   | TRUST
   /--
    \verbatim embed:rst:leading-asterisk
@@ -300,8 +299,20 @@ inductive ProofRule
    not static. For example, the quantifiers rewriter involves constructing new
    bound variables that are not guaranteed to be consistent on each call.
    \endverbatim
-   -/
+  -/
   | TRUST_THEORY_REWRITE
+  /--
+   \verbatim embed:rst:leading-asterisk
+   **Other theory rewrite rules**
+
+   .. math::
+     \inferrule{- \mid t, trid}{t = t'}
+
+   where `trid` is a theory rewrite rule which transforms :math:`t` to :math
+   `t'` The result is checked by a theory proof checker.
+   \endverbatim
+  -/
+  | THEORY_REWRITE
   /--
    \verbatim embed:rst:leading-asterisk
    **SAT Refutation for assumption-based unsat cores**
@@ -311,7 +322,7 @@ inductive ProofRule
 
    where :math:`F_1 \dots F_n` correspond to the unsat core determined by the
    SAT solver. \endverbatim
-   -/
+  -/
   | SAT_REFUTATION
 
   /--
@@ -344,7 +355,7 @@ inductive ProofRule
    to resolution but rather to a weakening of the clause that did not have a
    literal eliminated.
    \endverbatim
-   -/
+  -/
   | RESOLUTION
   /--
    \verbatim embed:rst:leading-asterisk
@@ -365,7 +376,7 @@ inductive ProofRule
 
    The result of the chain resolution is :math:`C = C_n'`
    \endverbatim
-   -/
+  -/
   | CHAIN_RESOLUTION
   /--
    \verbatim embed:rst:leading-asterisk
@@ -377,7 +388,7 @@ inductive ProofRule
    where :math:`C_2` is the clause :math:`C_1`, but every occurence of a literal
    after its first occurence is omitted.
    \endverbatim
-   -/
+  -/
   | FACTORING
   /--
    \verbatim embed:rst:leading-asterisk
@@ -390,7 +401,7 @@ inductive ProofRule
    the set representations of :math:`C_1` and :math:`C_2` are the same and the
    number of literals in :math:`C_2` is the same of that of :math:`C_1`.
    \endverbatim
-   -/
+  -/
   | REORDERING
   /--
    \verbatim embed:rst:leading-asterisk
@@ -415,7 +426,7 @@ inductive ProofRule
    The result of the chain resolution is :math:`C`, which is equal, in its set
    representation, to :math:`C_n'`
    \endverbatim
-   -/
+  -/
   | MACRO_RESOLUTION
   /--
    \verbatim embed:rst:leading-asterisk
@@ -424,7 +435,7 @@ inductive ProofRule
    Same as :cpp:enumerator:`MACRO_RESOLUTION
    <cvc5::ProofRule::MACRO_RESOLUTION>`, but not checked by the internal proof
    checker. \endverbatim
-   -/
+  -/
   | MACRO_RESOLUTION_TRUST
 
   /--
@@ -435,7 +446,7 @@ inductive ProofRule
      \inferrule{- \mid F}{F \lor \neg F}
 
    \endverbatim
-   -/
+  -/
   | SPLIT
   /--
    \verbatim embed:rst:leading-asterisk
@@ -448,7 +459,7 @@ inductive ProofRule
    :cpp:enumerator:`EQUIV_ELIM1 <cvc5::ProofRule::EQUIV_ELIM1>` +
    :cpp:enumerator:`RESOLUTION <cvc5::ProofRule::RESOLUTION>`.
    \endverbatim
-   -/
+  -/
   | EQ_RESOLVE
   /--
    \verbatim embed:rst:leading-asterisk
@@ -461,7 +472,7 @@ inductive ProofRule
    :cpp:enumerator:`IMPLIES_ELIM <cvc5::ProofRule::IMPLIES_ELIM>` +
    :cpp:enumerator:`RESOLUTION <cvc5::ProofRule::RESOLUTION>`.
    \endverbatim
-   -/
+  -/
   | MODUS_PONENS
   /--
    \verbatim embed:rst:leading-asterisk
@@ -471,7 +482,7 @@ inductive ProofRule
      \inferrule{\neg (\neg F) \mid -}{F}
 
    \endverbatim
-   -/
+  -/
   | NOT_NOT_ELIM
   /--
    \verbatim embed:rst:leading-asterisk
@@ -481,7 +492,7 @@ inductive ProofRule
      \inferrule{F, \neg F \mid -}{\bot}
 
    \endverbatim
-   -/
+  -/
   | CONTRA
   /--
    \verbatim embed:rst:leading-asterisk
@@ -491,7 +502,7 @@ inductive ProofRule
      \inferrule{(F_1 \land \dots \land F_n) \mid i}{F_i}
 
    \endverbatim
-   -/
+  -/
   | AND_ELIM
   /--
    \verbatim embed:rst:leading-asterisk
@@ -501,7 +512,7 @@ inductive ProofRule
      \inferrule{F_1 \dots F_n \mid -}{(F_1 \land \dots \land F_n)}
 
    \endverbatim
-   -/
+  -/
   | AND_INTRO
   /--
    \verbatim embed:rst:leading-asterisk
@@ -511,7 +522,7 @@ inductive ProofRule
      \inferrule{\neg(F_1 \lor \dots \lor F_n) \mid i}{\neg F_i}
 
    \endverbatim
-   -/
+  -/
   | NOT_OR_ELIM
   /--
    \verbatim embed:rst:leading-asterisk
@@ -521,7 +532,7 @@ inductive ProofRule
      \inferrule{F_1 \rightarrow F_2 \mid -}{\neg F_1 \lor F_2}
 
    \endverbatim
-   -/
+  -/
   | IMPLIES_ELIM
   /--
    \verbatim embed:rst:leading-asterisk
@@ -531,7 +542,7 @@ inductive ProofRule
      \inferrule{\neg(F_1 \rightarrow F_2) \mid -}{F_1}
 
    \endverbatim
-   -/
+  -/
   | NOT_IMPLIES_ELIM1
   /--
    \verbatim embed:rst:leading-asterisk
@@ -541,7 +552,7 @@ inductive ProofRule
      \inferrule{\neg(F_1 \rightarrow F_2) \mid -}{\neg F_2}
 
    \endverbatim
-   -/
+  -/
   | NOT_IMPLIES_ELIM2
   /--
    \verbatim embed:rst:leading-asterisk
@@ -551,7 +562,7 @@ inductive ProofRule
      \inferrule{F_1 = F_2 \mid -}{\neg F_1 \lor F_2}
 
    \endverbatim
-   -/
+  -/
   | EQUIV_ELIM1
   /--
    \verbatim embed:rst:leading-asterisk
@@ -561,7 +572,7 @@ inductive ProofRule
      \inferrule{F_1 = F_2 \mid -}{F_1 \lor \neg F_2}
 
    \endverbatim
-   -/
+  -/
   | EQUIV_ELIM2
   /--
    \verbatim embed:rst:leading-asterisk
@@ -571,7 +582,7 @@ inductive ProofRule
      \inferrule{F_1 \neq F_2 \mid -}{F_1 \lor F_2}
 
    \endverbatim
-   -/
+  -/
   | NOT_EQUIV_ELIM1
   /--
    \verbatim embed:rst:leading-asterisk
@@ -581,7 +592,7 @@ inductive ProofRule
      \inferrule{F_1 \neq F_2 \mid -}{\neg F_1 \lor \neg F_2}
 
    \endverbatim
-   -/
+  -/
   | NOT_EQUIV_ELIM2
   /--
    \verbatim embed:rst:leading-asterisk
@@ -591,7 +602,7 @@ inductive ProofRule
      \inferrule{F_1 \xor F_2 \mid -}{F_1 \lor F_2}
 
    \endverbatim
-   -/
+  -/
   | XOR_ELIM1
   /--
    \verbatim embed:rst:leading-asterisk
@@ -601,7 +612,7 @@ inductive ProofRule
      \inferrule{F_1 \xor F_2 \mid -}{\neg F_1 \lor \neg F_2}
 
    \endverbatim
-   -/
+  -/
   | XOR_ELIM2
   /--
    \verbatim embed:rst:leading-asterisk
@@ -611,7 +622,7 @@ inductive ProofRule
      \inferrule{\neg(F_1 \xor F_2) \mid -}{F_1 \lor \neg F_2}
 
    \endverbatim
-   -/
+  -/
   | NOT_XOR_ELIM1
   /--
    \verbatim embed:rst:leading-asterisk
@@ -621,7 +632,7 @@ inductive ProofRule
      \inferrule{\neg(F_1 \xor F_2) \mid -}{\neg F_1 \lor F_2}
 
    \endverbatim
-   -/
+  -/
   | NOT_XOR_ELIM2
   /--
    \verbatim embed:rst:leading-asterisk
@@ -631,7 +642,7 @@ inductive ProofRule
      \inferrule{(\ite{C}{F_1}{F_2}) \mid -}{\neg C \lor F_1}
 
    \endverbatim
-   -/
+  -/
   | ITE_ELIM1
   /--
    \verbatim embed:rst:leading-asterisk
@@ -641,7 +652,7 @@ inductive ProofRule
      \inferrule{(\ite{C}{F_1}{F_2}) \mid -}{C \lor F_2}
 
    \endverbatim
-   -/
+  -/
   | ITE_ELIM2
   /--
    \verbatim embed:rst:leading-asterisk
@@ -651,7 +662,7 @@ inductive ProofRule
      \inferrule{\neg(\ite{C}{F_1}{F_2}) \mid -}{\neg C \lor \neg F_1}
 
    \endverbatim
-   -/
+  -/
   | NOT_ITE_ELIM1
   /--
    \verbatim embed:rst:leading-asterisk
@@ -661,7 +672,7 @@ inductive ProofRule
      \inferrule{\neg(\ite{C}{F_1}{F_2}) \mid -}{C \lor \neg F_2}
 
    \endverbatim
-   -/
+  -/
   | NOT_ITE_ELIM2
 
   /--
@@ -673,7 +684,7 @@ inductive ProofRule
      \lor \neg F_n}
 
    \endverbatim
-   -/
+  -/
   | NOT_AND
   /--
    \verbatim embed:rst:leading-asterisk
@@ -684,7 +695,7 @@ inductive ProofRule
      \land F_n) \lor F_i}
 
    \endverbatim
-   -/
+  -/
   | CNF_AND_POS
   /--
    \verbatim embed:rst:leading-asterisk
@@ -695,7 +706,7 @@ inductive ProofRule
      F_n) \lor \neg F_1 \lor \dots \lor \neg F_n}
 
    \endverbatim
-   -/
+  -/
   | CNF_AND_NEG
   /--
    \verbatim embed:rst:leading-asterisk
@@ -706,7 +717,7 @@ inductive ProofRule
      F_n) \lor F_1 \lor \dots \lor F_n}
 
    \endverbatim
-   -/
+  -/
   | CNF_OR_POS
   /--
    \verbatim embed:rst:leading-asterisk
@@ -717,7 +728,7 @@ inductive ProofRule
      \lor \neg F_i}
 
    \endverbatim
-   -/
+  -/
   | CNF_OR_NEG
   /--
    \verbatim embed:rst:leading-asterisk
@@ -728,7 +739,7 @@ inductive ProofRule
      \lor F_2}
 
    \endverbatim
-   -/
+  -/
   | CNF_IMPLIES_POS
   /--
    \verbatim embed:rst:leading-asterisk
@@ -738,7 +749,7 @@ inductive ProofRule
      \inferrule{- \mid F_1 \rightarrow F_2}{(F_1 \rightarrow F_2) \lor F_1}
 
    \endverbatim
-   -/
+  -/
   | CNF_IMPLIES_NEG1
   /--
    \verbatim embed:rst:leading-asterisk
@@ -748,7 +759,7 @@ inductive ProofRule
      \inferrule{- \mid F_1 \rightarrow F_2}{(F_1 \rightarrow F_2) \lor \neg F_2}
 
    \endverbatim
-   -/
+  -/
   | CNF_IMPLIES_NEG2
   /--
    \verbatim embed:rst:leading-asterisk
@@ -758,7 +769,7 @@ inductive ProofRule
      \inferrule{- \mid F_1 = F_2}{F_1 \neq F_2 \lor \neg F_1 \lor F_2}
 
    \endverbatim
-   -/
+  -/
   | CNF_EQUIV_POS1
   /--
    \verbatim embed:rst:leading-asterisk
@@ -768,7 +779,7 @@ inductive ProofRule
      \inferrule{- \mid F_1 = F_2}{F_1 \neq F_2 \lor F_1 \lor \neg F_2}
 
    \endverbatim
-   -/
+  -/
   | CNF_EQUIV_POS2
   /--
    \verbatim embed:rst:leading-asterisk
@@ -778,7 +789,7 @@ inductive ProofRule
      \inferrule{- \mid F_1 = F_2}{(F_1 = F_2) \lor F_1 \lor F_2}
 
    \endverbatim
-   -/
+  -/
   | CNF_EQUIV_NEG1
   /--
    \verbatim embed:rst:leading-asterisk
@@ -788,7 +799,7 @@ inductive ProofRule
      \inferrule{- \mid F_1 = F_2}{(F_1 = F_2) \lor \neg F_1 \lor \neg F_2}
 
    \endverbatim
-   -/
+  -/
   | CNF_EQUIV_NEG2
   /--
    \verbatim embed:rst:leading-asterisk
@@ -798,7 +809,7 @@ inductive ProofRule
      \inferrule{- \mid F_1 \xor F_2}{\neg(F_1 \xor F_2) \lor F_1 \lor F_2}
 
    \endverbatim
-   -/
+  -/
   | CNF_XOR_POS1
   /--
    \verbatim embed:rst:leading-asterisk
@@ -809,7 +820,7 @@ inductive ProofRule
      \neg F_2}
 
    \endverbatim
-   -/
+  -/
   | CNF_XOR_POS2
   /--
    \verbatim embed:rst:leading-asterisk
@@ -819,7 +830,7 @@ inductive ProofRule
      \inferrule{- \mid F_1 \xor F_2}{(F_1 \xor F_2) \lor \neg F_1 \lor F_2}
 
    \endverbatim
-   -/
+  -/
   | CNF_XOR_NEG1
   /--
    \verbatim embed:rst:leading-asterisk
@@ -829,7 +840,7 @@ inductive ProofRule
      \inferrule{- \mid F_1 \xor F_2}{(F_1 \xor F_2) \lor F_1 \lor \neg F_2}
 
    \endverbatim
-   -/
+  -/
   | CNF_XOR_NEG2
   /--
    \verbatim embed:rst:leading-asterisk
@@ -840,7 +851,7 @@ inductive ProofRule
      C \lor F_1}
 
    \endverbatim
-   -/
+  -/
   | CNF_ITE_POS1
   /--
    \verbatim embed:rst:leading-asterisk
@@ -851,7 +862,7 @@ inductive ProofRule
      \lor F_2}
 
    \endverbatim
-   -/
+  -/
   | CNF_ITE_POS2
   /--
    \verbatim embed:rst:leading-asterisk
@@ -862,7 +873,7 @@ inductive ProofRule
      \lor F_2}
 
    \endverbatim
-   -/
+  -/
   | CNF_ITE_POS3
   /--
    \verbatim embed:rst:leading-asterisk
@@ -873,7 +884,7 @@ inductive ProofRule
      \lor \neg F_1}
 
    \endverbatim
-   -/
+  -/
   | CNF_ITE_NEG1
   /--
    \verbatim embed:rst:leading-asterisk
@@ -884,7 +895,7 @@ inductive ProofRule
      \neg F_2}
 
    \endverbatim
-   -/
+  -/
   | CNF_ITE_NEG2
   /--
    \verbatim embed:rst:leading-asterisk
@@ -895,7 +906,7 @@ inductive ProofRule
      \lor \neg F_2}
 
    \endverbatim
-   -/
+  -/
   | CNF_ITE_NEG3
 
   /--
@@ -906,7 +917,7 @@ inductive ProofRule
 
      \inferrule{-\mid t}{t = t}
    \endverbatim
-   -/
+  -/
   | REFL
   /--
    \verbatim embed:rst:leading-asterisk
@@ -923,7 +934,7 @@ inductive ProofRule
      \inferrule{t_1 \neq t_2\mid -}{t_2 \neq t_1}
 
    \endverbatim
-   -/
+  -/
   | SYMM
   /--
    \verbatim embed:rst:leading-asterisk
@@ -933,7 +944,7 @@ inductive ProofRule
 
      \inferrule{t_1=t_2,\dots,t_{n-1}=t_n\mid -}{t_1 = t_n}
    \endverbatim
-   -/
+  -/
   | TRANS
   /--
    \verbatim embed:rst:leading-asterisk
@@ -949,7 +960,7 @@ inductive ProofRule
    actual node for :math:`k` is constructible via
    ``ProofRuleChecker::mkKindNode``.
    \endverbatim
-   -/
+  -/
   | CONG
   /--
    \verbatim embed:rst:leading-asterisk
@@ -959,7 +970,7 @@ inductive ProofRule
 
      \inferrule{F\mid -}{F = \top}
    \endverbatim
-   -/
+  -/
   | TRUE_INTRO
   /--
    \verbatim embed:rst:leading-asterisk
@@ -969,7 +980,7 @@ inductive ProofRule
 
      \inferrule{F=\top\mid -}{F}
    \endverbatim
-   -/
+  -/
   | TRUE_ELIM
   /--
    \verbatim embed:rst:leading-asterisk
@@ -979,7 +990,7 @@ inductive ProofRule
 
      \inferrule{\neg F\mid -}{F = \bot}
    \endverbatim
-   -/
+  -/
   | FALSE_INTRO
   /--
    \verbatim embed:rst:leading-asterisk
@@ -989,7 +1000,7 @@ inductive ProofRule
 
      \inferrule{F=\bot\mid -}{\neg F}
    \endverbatim
-   -/
+  -/
   | FALSE_ELIM
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1002,7 +1013,7 @@ inductive ProofRule
    For example, this rule concludes :math:`f(x,y) = @(@(f,xy)`, where
    :math:`@` isthe ``HO_APPLY`` kind.
     \endverbatim
-   -/
+  -/
   | HO_APP_ENCODE
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1015,7 +1026,7 @@ inductive ProofRule
 
    Notice that this rule is only used when the application kinds are ``APPLY_UF``.
    \endverbatim
-   -/
+  -/
   | HO_CONG
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1029,7 +1040,7 @@ inductive ProofRule
    The right hand side of the equality in the conclusion is computed using
    standard substitution via Node::substitute.
    \endverbatim
-   -/
+  -/
   | BETA_REDUCE
 
   /--
@@ -1041,7 +1052,7 @@ inductive ProofRule
      \inferrule{i_1 \neq i_2\mid \mathit{select}(\mathit{store}(a,i_1,ei_2)}
      {\mathit{select}(\mathit{store}(a,i_1,ei_2) = \mathit{select}(a,i_2)}
    \endverbatim
-   -/
+  -/
   | ARRAYS_READ_OVER_WRITE
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1052,7 +1063,7 @@ inductive ProofRule
      \inferrule{\mathit{select}(\mathit{store}(a,i_2,ei_1) \neq
      \mathit{select}(a,i_1)\mid -}{i_1=i_2}
    \endverbatim
-   -/
+  -/
   | ARRAYS_READ_OVER_WRITE_CONTRA
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1063,7 +1074,7 @@ inductive ProofRule
      \inferrule{-\mid \mathit{select}(\mathit{store}(a,i,ei)}
      {\mathit{select}(\mathit{store}(a,i,ei)=e}
    \endverbatim
-   -/
+  -/
   | ARRAYS_READ_OVER_WRITE_1
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1077,7 +1088,7 @@ inductive ProofRule
    where :math:`k` is
    :math:`\texttt{arrays::SkolemCache::getExtIndexSkolem}(a\neq b)`.
    \endverbatim
-   -/
+  -/
   | ARRAYS_EXT
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1090,7 +1101,7 @@ inductive ProofRule
      \forall x.\> i \leq x \leq j \rightarrow
      \mathit{select}(a,x)=\mathit{select}(b,x)}
    \endverbatim
-   -/
+  -/
   | ARRAYS_EQ_RANGE_EXPAND
 
   /--
@@ -1106,7 +1117,7 @@ inductive ProofRule
    representation of the term. Terms are bit-blasted according to the
    strategies defined in ``theory/bv/bitblast/bitblast_strategies_template.h``.
    \endverbatim
-   -/
+  -/
   | MACRO_BV_BITBLAST
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1128,7 +1139,7 @@ inductive ProofRule
 
    where :math:`t` is :math:`k(t_1,\dots,t_n)`.
    \endverbatim
-   -/
+  -/
   | BV_BITBLAST_STEP
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1140,18 +1151,8 @@ inductive ProofRule
 
    where :math:`F` is of kind ``BITVECTOR_EAGER_ATOM``.
    \endverbatim
-   -/
+  -/
   | BV_EAGER_ATOM
-
-  | BV_UMULO_ELIMINATE
-  | BV_SMULO_ELIMINATE
-  | BV_FLATTEN_ASSOC_COMMUTE
-  | BV_FLATTEN_ASSOC_COMMUTE_NO_DUPLICATES
-  | BV_ADD_COMBINE_LIKE_TERMS
-  | BV_MULT_SIMPLIFY
-  | BV_SOLVE_EQ
-  | BV_BITWISE_EQ
-  | BV_BITWISE_SLICING
 
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1163,7 +1164,7 @@ inductive ProofRule
 
    where :math:`C` is a constructor.
    \endverbatim
-   -/
+  -/
   | DT_UNIF
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1177,7 +1178,7 @@ inductive ProofRule
    where :math:`C` is the :math:`n^{\mathit{th}}` constructor of the type of
    t, and :math:`\mathit{is}_C` is the discriminator (tester) for :math:`C`.
    \endverbatim
-   -/
+  -/
   | DT_INST
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1194,7 +1195,7 @@ inductive ProofRule
    use of ``mkGroundTerm`` differs from the rewriter which uses
    ``mkGroundValue`` in this case.
    \endverbatim
-   -/
+  -/
   | DT_COLLAPSE
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1206,7 +1207,7 @@ inductive ProofRule
 
    where :math:`C_1,\dots,C_n` are all the constructors of the type of :math:`t`.
    \endverbatim
-   -/
+  -/
   | DT_SPLIT
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1218,7 +1219,7 @@ inductive ProofRule
      {if $i\neq j$}
 
    \endverbatim
-   -/
+  -/
   | DT_CLASH
 
   /--
@@ -1231,7 +1232,7 @@ inductive ProofRule
 
    where :math:`t` is the unpurified form of skolem :math:`k`.
    \endverbatim
-   -/
+  -/
   | SKOLEM_INTRO
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1252,7 +1253,7 @@ inductive ProofRule
    argument of that method. The witness terms for the returned skolems can be
    obtained by ``SkolemManager::getWitnessForm``.
    \endverbatim
-   -/
+  -/
   | SKOLEMIZE
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1269,7 +1270,7 @@ inductive ProofRule
    has prefix ``QUANTIFIERS_INST_E_MATCHING``, then :math:`t` is the trigger that
    generated the instantiation.
    \endverbatim
-   -/
+  -/
   | INSTANTIATE
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1286,7 +1287,7 @@ inductive ProofRule
    :math:`FV(\varphi)` are the free variables of :math:`\varphi`. The internal
    quantifiers proof checker does not currently check that this is the case.
    \endverbatim
-   -/
+  -/
   | ALPHA_EQUIV
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1298,7 +1299,7 @@ inductive ProofRule
      {\exists x_1\dots x_n.\> F = \neg \forall x_1\dots x_n.\> \neg F}
 
    \endverbatim
-   -/
+  -/
   | EXISTS_ELIM
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1322,7 +1323,7 @@ inductive ProofRule
    concludes :math:`(\mathsf{'bc'} \cdot x) = y`.  This splitting is done only
    for constants such that ``Word::splitConstant`` returns non-null.
    \endverbatim
-   -/
+  -/
   | CONCAT_EQ
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1335,7 +1336,7 @@ inductive ProofRule
 
    where :math:`b` indicates if the direction is reversed.
    \endverbatim
-   -/
+  -/
   | CONCAT_UNIFY
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1363,7 +1364,7 @@ inductive ProofRule
    that side is the empty sequence.
 
    \endverbatim
-   -/
+  -/
   | CONCAT_CONFLICT
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1395,7 +1396,7 @@ inductive ProofRule
    :math:`\mathit{substr}(x,n, \mathit{len}(x) - n)` and
    :math:`\mathit{pre}(x,n)` is shorthand for :math:`\mathit{substr}(x,0,n)`.
    \endverbatim
-   -/
+  -/
   | CONCAT_SPLIT
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1418,7 +1419,7 @@ inductive ProofRule
    where :math:`r` is
    :math:`\mathit{skolem}(\mathit{pre}(t_2,\mathit{len}(t_2) - 1))`.
    \endverbatim
-   -/
+  -/
   | CONCAT_CSPLIT
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1443,7 +1444,7 @@ inductive ProofRule
    :math:`\mathit{skolem}(\mathit{pre}(t_2,\mathit{len}(t_2) -
    \mathit{len}(s_2)))`.
    \endverbatim
-   -/
+  -/
   | CONCAT_LPROP
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1480,7 +1481,7 @@ inductive ProofRule
    of :math:`w_1`; since :math:`t_2` is non-empty, :math:`w_3` must therefore
    be contained in :math:`t_2`.
    \endverbatim
-   -/
+  -/
   | CONCAT_CPROP
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1501,7 +1502,7 @@ inductive ProofRule
    where :math:`w_1` is :math:`\mathit{skolem}(\mathit{pre}(t,n)` and
    :math:`w_2` is :math:`\mathit{skolem}(\mathit{suf}(t,n)`.
    \endverbatim
-   -/
+  -/
   | STRING_DECOMPOSE
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1512,7 +1513,7 @@ inductive ProofRule
      \inferrule{-\mid t}{(\mathit{len}(t) = 0\wedge t= '')\vee \mathit{len}(t)
      > 0}
    \endverbatim
-   -/
+  -/
   | STRING_LENGTH_POS
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1522,7 +1523,7 @@ inductive ProofRule
 
      \inferrule{t\neq ''\mid -}{\mathit{len}(t) \neq 0}
    \endverbatim
-   -/
+  -/
   | STRING_LENGTH_NON_EMPTY
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1539,7 +1540,7 @@ inductive ProofRule
    Notice that the free variables of :math:`R` are :math:`w` and the free
    variables of :math:`t`.
    \endverbatim
-   -/
+  -/
   | STRING_REDUCTION
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1551,7 +1552,7 @@ inductive ProofRule
 
    where :math:`R` is :math:`\texttt{strings::TermRegistry::eagerReduce}(t)`.
    \endverbatim
-   -/
+  -/
   | STRING_EAGER_REDUCTION
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1561,7 +1562,7 @@ inductive ProofRule
 
      \inferrule{t\in R_1,\,t\in R_2\mid -}{t\in \mathit{inter}(R_1,R_2)}
    \endverbatim
-   -/
+  -/
   | RE_INTER
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1573,7 +1574,7 @@ inductive ProofRule
 
    corresponding to the one-step unfolding of the premise.
    \endverbatim
-   -/
+  -/
   | RE_UNFOLD_POS
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1585,7 +1586,7 @@ inductive ProofRule
 
    corresponding to the one-step unfolding of the premise.
    \endverbatim
-   -/
+  -/
   | RE_UNFOLD_NEG
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1601,7 +1602,7 @@ inductive ProofRule
    length of component :math:`i` of the regular expression concatenation
    :math:`R`.
    \endverbatim
-   -/
+  -/
   | RE_UNFOLD_NEG_CONCAT_FIXED
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1616,7 +1617,7 @@ inductive ProofRule
    eliminations. Notice this rule concludes :math:`F = F` if no eliminations
    are performed for :math:`F`.
    \endverbatim
-   -/
+  -/
   | RE_ELIM
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1627,7 +1628,7 @@ inductive ProofRule
      \inferrule{-\mid t,s}{\mathit{to\_code}(t) = -1 \vee \mathit{to\_code}(t) \neq
      \mathit{to\_code}(s) \vee t\neq s}
    \endverbatim
-   -/
+  -/
   | STRING_CODE_INJ
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1640,7 +1641,7 @@ inductive ProofRule
    Also applies to the case where :math:`\mathit{unit}(y)` is a constant
    sequence of length one.
    \endverbatim
-   -/
+  -/
   | STRING_SEQ_UNIT_INJ
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1653,7 +1654,7 @@ inductive ProofRule
    used to bookkeep an inference that has not yet been converted via
    :math:`\texttt{strings::InferProofCons::convert}`.
    \endverbatim
-   -/
+  -/
   | MACRO_STRING_INFERENCE
 
   /--
@@ -1680,7 +1681,7 @@ inductive ProofRule
      t_2 \colon= k_1 \cdot c_1 + \cdots + k_n \cdot c_n
 
    \endverbatim
-   -/
+  -/
   | MACRO_ARITH_SCALE_SUM_UB
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1694,7 +1695,7 @@ inductive ProofRule
    :math:`\diamond_i = <` for any :math:`i` and :math:`\diamond = \leq`
    otherwise, :math:`L = L_1 + \cdots + L_n` and :math:`R = R_1 + \cdots + R_n`.
    \endverbatim
-   -/
+  -/
   | ARITH_SUM_UB
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1705,7 +1706,7 @@ inductive ProofRule
 
    where :math:`i` has integer type.
    \endverbatim
-   -/
+  -/
   | INT_TIGHT_UB
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1716,7 +1717,7 @@ inductive ProofRule
 
    where :math:`i` has integer type.
    \endverbatim
-   -/
+  -/
   | INT_TIGHT_LB
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1728,7 +1729,7 @@ inductive ProofRule
    where :math:`\neg A, \neg B, C` are :math:`x < c, x = c, x > c` in some order.
    Note that :math:`\neg` here denotes arithmetic negation, i.e., flipping :math:`\geq` to :math:`<` etc.
    \endverbatim
-   -/
+  -/
   | ARITH_TRICHOTOMY
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1737,7 +1738,7 @@ inductive ProofRule
    .. math::
      \inferrule{- \mid t}{\texttt{arith::OperatorElim::getAxiomFor(t)}}
    \endverbatim
-   -/
+  -/
   | ARITH_OP_ELIM_AXIOM
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1748,7 +1749,7 @@ inductive ProofRule
 
    where :math:`\texttt{arith::PolyNorm::isArithPolyNorm(t, s)} = \top`.
    \endverbatim
-   -/
+  -/
   | ARITH_POLY_NORM
 
   /--
@@ -1765,7 +1766,7 @@ inductive ProofRule
    should be given as not equal to zero while all variables with odd exponent
    in :math:`m` should be given as less or greater than zero.
    \endverbatim
-   -/
+  -/
   | ARITH_MULT_SIGN
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1776,7 +1777,7 @@ inductive ProofRule
 
    where :math:`\diamond` is a relation symbol.
    \endverbatim
-   -/
+  -/
   | ARITH_MULT_POS
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1788,7 +1789,7 @@ inductive ProofRule
    where :math:`\diamond` is a relation symbol and :math:`\diamond_{inv}` the
    inverted relation symbol.
    \endverbatim
-   -/
+  -/
   | ARITH_MULT_NEG
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1803,7 +1804,7 @@ inductive ProofRule
    :math:`t = x \cdot y` (possibly under rewriting :math:`a,b` are real
    constants, :math:`\sigma \in \{ 1, -1\}` and :math:`tplane := b \cdot x + a \cdot y - a \cdot b` is the tangent plane of :math:`x \cdot y` at :math:`(a,b)`.
    \endverbatim
-   -/
+  -/
   | ARITH_MULT_TANGENT
 
   /--
@@ -1816,7 +1817,7 @@ inductive ProofRule
 
    where :math:`l,u` are valid lower and upper bounds on :math:`\pi`.
    \endverbatim
-   -/
+  -/
   | ARITH_TRANS_PI
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1825,7 +1826,7 @@ inductive ProofRule
    .. math::
      \inferrule{- \mid t}{(t < 0) \leftrightarrow (\exp(t) < 1)}
    \endverbatim
-   -/
+  -/
   | ARITH_TRANS_EXP_NEG
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1834,7 +1835,7 @@ inductive ProofRule
    .. math::
      \inferrule{- \mid t}{\exp(t) > 0}
    \endverbatim
-   -/
+  -/
   | ARITH_TRANS_EXP_POSITIVITY
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1844,7 +1845,7 @@ inductive ProofRule
    .. math::
      \inferrule{- \mid t}{t \leq 0 \lor \exp(t) > t+1}
    \endverbatim
-   -/
+  -/
   | ARITH_TRANS_EXP_SUPER_LIN
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1853,7 +1854,7 @@ inductive ProofRule
    .. math::
      \inferrule{- \mid t}{(t=0) \leftrightarrow (\exp(t) = 1)}
    \endverbatim
-   -/
+  -/
   | ARITH_TRANS_EXP_ZERO
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1877,7 +1878,7 @@ inductive ProofRule
    The lemma states that if :math:`t` is between :math:`l` and :math:`u`, then
    :math:`\exp(t` is below the secant of :math:`p` from :math:`l` to
    :math:`u`. \endverbatim
-   -/
+  -/
   | ARITH_TRANS_EXP_APPROX_ABOVE_NEG
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1895,7 +1896,7 @@ inductive ProofRule
    :math:`p(d-1)` is the regular Maclaurin series of degree :math:`d-1`:
 
    .. math::
-     p^:= p(d-1) \cdot \frac{1 + t^n}{n!}
+     p^* := p(d-1) \cdot \frac{1 + t^n}{n!}
 
    :math:`\texttt{secant-pos}(\exp, l, u, t)` denotes the secant of :math:`p`
    from :math:`(l, \exp(l))` to :math:`(u, \exp(u))` evaluated at :math:`t`,
@@ -1907,7 +1908,7 @@ inductive ProofRule
    The lemma states that if :math:`t` is between :math:`l` and :math:`u`, then
    :math:`\exp(t` is below the secant of :math:`p` from :math:`l` to
    :math:`u`. \endverbatim
-   -/
+  -/
   | ARITH_TRANS_EXP_APPROX_ABOVE_POS
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1925,7 +1926,7 @@ inductive ProofRule
    .. math::
      \exp(x) = \sum_{n=0}^{\infty} \frac{x^n}{n!}
    \endverbatim
-   -/
+  -/
   | ARITH_TRANS_EXP_APPROX_BELOW
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1934,7 +1935,7 @@ inductive ProofRule
    .. math::
      \inferrule{- \mid t}{\sin(t) \leq 1 \land \sin(t) \geq -1}
    \endverbatim
-   -/
+  -/
   | ARITH_TRANS_SINE_BOUNDS
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1948,7 +1949,7 @@ inductive ProofRule
    that is :math:`x` shifted into :math:`-\pi \dots \pi` and :math:`s` is a
    new integer slolem that is the number of phases :math:`y` is shifted.
    \endverbatim
-   -/
+  -/
   | ARITH_TRANS_SINE_SHIFT
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1958,7 +1959,7 @@ inductive ProofRule
    .. math::
      \inferrule{- \mid t}{\sin(t) - \sin(-t) = 0}
    \endverbatim
-   -/
+  -/
   | ARITH_TRANS_SINE_SYMMETRY
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1967,7 +1968,7 @@ inductive ProofRule
    .. math::
      \inferrule{- \mid t}{(t > 0 \rightarrow \sin(t) < t) \land (t < 0
      \rightarrow \sin(t) > t)} \endverbatim
-   -/
+  -/
   | ARITH_TRANS_SINE_TANGENT_ZERO
   /--
    \verbatim embed:rst:leading-asterisk
@@ -1977,7 +1978,7 @@ inductive ProofRule
    .. math::
      \inferrule{- \mid t}{(t > -\pi \rightarrow \sin(t) > -\pi - t) \land (t <
      \pi \rightarrow \sin(t) < \pi - t)} \endverbatim
-   -/
+  -/
   | ARITH_TRANS_SINE_TANGENT_PI
   /--
    \verbatim embed:rst:leading-asterisk
@@ -2003,7 +2004,7 @@ inductive ProofRule
    The lemma states that if :math:`t` is between :math:`l` and :math:`u`, then
    :math:`\sin(t)` is below the secant of :math:`p` from :math:`l` to
    :math:`u`. \endverbatim
-   -/
+  -/
   | ARITH_TRANS_SINE_APPROX_ABOVE_NEG
   /--
    \verbatim embed:rst:leading-asterisk
@@ -2022,7 +2023,7 @@ inductive ProofRule
    upper bound on :math:`\sin(c)` given by :math:`p` and :math:`lb,up` such
    that :math:`\sin(t)` is the maximum of the sine function on
    :math:`(lb,ub)`. \endverbatim
-   -/
+  -/
   | ARITH_TRANS_SINE_APPROX_ABOVE_POS
   /--
    \verbatim embed:rst:leading-asterisk
@@ -2041,7 +2042,7 @@ inductive ProofRule
    lower bound on :math:`\sin(c)` given by :math:`p` and :math:`lb,up` such
    that :math:`\sin(t)` is the minimum of the sine function on
    :math:`(lb,ub)`. \endverbatim
-   -/
+  -/
   | ARITH_TRANS_SINE_APPROX_BELOW_NEG
   /--
    \verbatim embed:rst:leading-asterisk
@@ -2067,7 +2068,7 @@ inductive ProofRule
    The lemma states that if :math:`t` is between :math:`l` and :math:`u`, then
    :math:`\sin(t)` is above the secant of :math:`p` from :math:`l` to
    :math:`u`. \endverbatim
-   -/
+  -/
   | ARITH_TRANS_SINE_APPROX_BELOW_POS
 
   /--
@@ -2109,7 +2110,7 @@ inductive ProofRule
    derives that :math:`A` evaluates to false over the cell. In the actual
    algorithm, it means that :math:`x_i` can not be in the topmost interval of
    the cell. \endverbatim
-   -/
+  -/
   | ARITH_NL_COVERING_DIRECT
   /--
    \verbatim embed:rst:leading-asterisk
@@ -2126,7 +2127,7 @@ inductive ProofRule
    :math:`\texttt{Cell}(x_1 \dots x_{i-1})`. It generates the conclusion that
    no :math:`x_i` exists that extends the cell and satisfies all assumptions.
    \endverbatim
-   -/
+  -/
   | ARITH_NL_COVERING_RECURSIVE
 
   /--
@@ -2141,7 +2142,7 @@ inductive ProofRule
    Note that the premises and arguments are arbitrary. It's expected that
    :math:`\texttt{id}` refer to a proof rule in the external LFSC calculus.
    \endverbatim
-   -/
+  -/
   | LFSC_RULE
   /--
    \verbatim embed:rst:leading-asterisk
@@ -2157,7 +2158,7 @@ inductive ProofRule
    and that :math:`Q'` be the representation of Q to be printed by the Alethe
    printer.
    \endverbatim
-   -/
+  -/
   | ALETHE_RULE
   /--
    \verbatim embed:rst:leading-asterisk
@@ -2173,7 +2174,7 @@ inductive ProofRule
    and that :math:`Q'` be the representation of Q to be printed by the Lean
    printer.
    \endverbatim
-   -/
+  -/
   | LEAN_RULE
   /--
    **External -- AletheLF**
@@ -2186,9 +2187,9 @@ inductive ProofRule
    Note that the premises and arguments are arbitrary. It's expected that
    :math:`\texttt{id}` refer to a proof rule in the external AletheLF
    calculus. \endverbatim
-   -/
+  -/
   | ALF_RULE
 
   --================================================= Unknown rule
   | UNKNOWN
-deriving Inhabited, Repr
+deriving BEq, Hashable, Inhabited, Repr

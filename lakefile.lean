@@ -23,7 +23,7 @@ def unzip (name : String) (file : FilePath) (dir : FilePath) : LogIO Unit := do
 
 target cvc5.cpp pkg : Unit := do
   if !(← (pkg.lakeDir / "cvc5").pathExists) then
-    download "cvc5" "https://github.com/abdoo8080/lean-smt/releases/download/cvc5/cvc5.zip" (pkg.lakeDir / "cvc5.zip")
+    download "cvc5" "https://github.com/abdoo8080/cvc5/releases/download/v0.0.1/cvc5.zip" (pkg.lakeDir / "cvc5.zip")
     unzip "cvc5" (pkg.lakeDir / "cvc5.zip") pkg.lakeDir
     IO.FS.removeFile (pkg.lakeDir / "cvc5.zip")
   return pure ()

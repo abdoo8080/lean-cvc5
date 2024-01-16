@@ -285,6 +285,11 @@ extern "C" uint64_t proof_hash(lean_obj_arg p)
   return std::hash<Proof>()(*proof_unbox(p));
 }
 
+extern "C" lean_obj_res rewriterule_fromNat(lean_obj_arg n)
+{
+  return lean_box(lean_usize_of_nat(n));
+}
+
 static void solver_finalize(void* obj) { delete static_cast<Solver*>(obj); }
 
 static void solver_foreach(void*, b_lean_obj_arg)
