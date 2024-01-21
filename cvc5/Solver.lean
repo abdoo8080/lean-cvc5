@@ -51,7 +51,7 @@ instance : Inhabited cvc5.Sort := ⟨Sort.null ()⟩
 opaque Sort.getKind : cvc5.Sort → SortKind
 
 @[extern "sort_getSymbol"]
-opaque getSymbol : cvc5.Sort → String
+opaque Sort.getSymbol : cvc5.Sort → String
 
 @[extern "sort_isInteger"]
 opaque Sort.isInteger : cvc5.Sort → Bool
