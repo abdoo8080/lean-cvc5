@@ -50,6 +50,9 @@ instance : Inhabited cvc5.Sort := ⟨Sort.null ()⟩
 @[extern "sort_getKind"]
 opaque Sort.getKind : cvc5.Sort → SortKind
 
+@[extern "sort_getSymbol"]
+opaque getSymbol : cvc5.Sort → String
+
 @[extern "sort_isInteger"]
 opaque Sort.isInteger : cvc5.Sort → Bool
 
@@ -104,6 +107,9 @@ opaque getIntegerValue : Term → Int
 
 @[extern "term_getRationalValue"]
 opaque getRationalValue : Term → Rat
+
+@[extern "term_getSymbol"]
+opaque getSymbol : Term → String
 
 @[extern "term_getNumChildren"]
 opaque getNumChildren : Term → Nat

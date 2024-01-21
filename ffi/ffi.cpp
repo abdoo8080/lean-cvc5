@@ -88,14 +88,14 @@ extern "C" lean_obj_res sort_null(lean_obj_arg unit)
   return sort_box(new Sort());
 }
 
-extern "C" lean_obj_res sort_toString(lean_obj_arg s)
-{
-  return lean_mk_string(sort_unbox(s)->toString().c_str());
-}
-
 extern "C" uint8_t sort_getKind(lean_obj_arg s)
 {
   return static_cast<int32_t>(sort_unbox(s)->getKind()) + 2;
+}
+
+extern "C" lean_obj_res sort_getSymbol(lean_obj_arg s)
+{
+  return lean_mk_string(sort_unbox(s)->getSymbol().c_str());
 }
 
 extern "C" uint8_t sort_isInteger(lean_obj_arg s)
@@ -106,6 +106,11 @@ extern "C" uint8_t sort_isInteger(lean_obj_arg s)
 extern "C" uint32_t sort_getBitVectorSize(lean_obj_arg s)
 {
   return static_cast<int32_t>(sort_unbox(s)->getBitVectorSize());
+}
+
+extern "C" lean_obj_res sort_toString(lean_obj_arg s)
+{
+  return lean_mk_string(sort_unbox(s)->toString().c_str());
 }
 
 static void term_finalize(void* obj) { delete static_cast<Term*>(obj); }
@@ -197,6 +202,11 @@ extern "C" lean_obj_res term_getRationalValue(lean_obj_arg t)
   size_t i = r.find('/');
   return rat_mk(lean_cstr_to_int(r.substr(0, i).c_str()),
                 lean_cstr_to_nat(r.substr(i).c_str()));
+}
+
+extern "C" lean_obj_res term_getSymbol(lean_obj_arg t)
+{
+  return lean_mk_string(term_unbox(t)->getSymbol().c_str());
 }
 
 extern "C" lean_obj_res term_getBitVectorValue(uint32_t base, lean_obj_arg t)
