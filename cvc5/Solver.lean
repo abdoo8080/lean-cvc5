@@ -12,9 +12,37 @@ private opaque ResultImpl : NonemptyType.{0}
 
 def Result : Type := ResultImpl.type
 
-namespace Result
+instance Result.instNonemptyResult : Nonempty Result := ResultImpl.property
 
-instance : Nonempty Result := ResultImpl.property
+private opaque SortImpl : NonemptyType.{0}
+
+end cvc5
+
+def cvc5.Sort : Type := cvc5.SortImpl.type
+
+namespace cvc5
+
+instance Sort.instNonemptySort : Nonempty cvc5.Sort := SortImpl.property
+
+private opaque OpImpl : NonemptyType.{0}
+
+def Op : Type := OpImpl.type
+
+instance Op.instNonemptyOp : Nonempty Op := OpImpl.property
+
+private opaque TermImpl : NonemptyType.{0}
+
+def Term : Type := TermImpl.type
+
+instance Term.instNonemptyTerm : Nonempty Term := TermImpl.property
+
+private opaque ProofImpl : NonemptyType.{0}
+
+def Proof : Type := ProofImpl.type
+
+instance Proof.instNonemptyProof : Nonempty Proof := ProofImpl.property
+
+namespace Result
 
 @[extern "result_isSat"]
 opaque isSat : Result → Bool
@@ -32,20 +60,10 @@ instance : ToString Result := ⟨Result.toString⟩
 
 end Result
 
-private opaque SortImpl : NonemptyType.{0}
-
-end cvc5
-
-def cvc5.Sort : Type := cvc5.SortImpl.type
-
-namespace cvc5
-
-instance : Nonempty cvc5.Sort := SortImpl.property
-
 @[extern "sort_null"]
 opaque Sort.null : Unit → cvc5.Sort
 
-instance : Inhabited cvc5.Sort := ⟨Sort.null ()⟩
+instance Sort.instInhabitedSort : Inhabited cvc5.Sort := ⟨Sort.null ()⟩
 
 @[extern "sort_getKind"]
 opaque Sort.getKind : cvc5.Sort → SortKind
@@ -62,15 +80,41 @@ opaque Sort.getBitVectorSize : cvc5.Sort → UInt32
 @[extern "sort_toString"]
 protected opaque Sort.toString : cvc5.Sort → String
 
-instance : ToString cvc5.Sort := ⟨Sort.toString⟩
+instance Sort.instToStringSort : ToString cvc5.Sort := ⟨Sort.toString⟩
 
-private opaque TermImpl : NonemptyType.{0}
+namespace Op
 
-def Term : Type := TermImpl.type
+@[extern "op_null"]
+opaque null : Unit → Op
+
+instance : Inhabited Op := ⟨null ()⟩
+
+@[extern "op_getKind"]
+opaque getKind : Op → Kind
+
+@[extern "op_isNull"]
+opaque isNull : Op → Bool
+
+@[extern "op_isIndexed"]
+opaque isIndexed : Op → Bool
+
+@[extern "op_getNumIndices"]
+opaque getNumIndices : Op → Nat
+
+@[extern "op_get"]
+protected opaque get : (op : Op) → Fin op.getNumIndices → Term
+
+instance : GetElem Op Nat Term fun op i => i < op.getNumIndices where
+  getElem op i h := op.get ⟨i, h⟩
+
+@[extern "op_toString"]
+protected opaque toString : Op → String
+
+instance : ToString Op := ⟨Op.toString⟩
+
+end Op
 
 namespace Term
-
-instance : Nonempty Term := TermImpl.property
 
 @[extern "term_null"]
 opaque null : Unit → Term
@@ -82,6 +126,9 @@ opaque isNull : Term → Bool
 
 @[extern "term_getKind"]
 opaque getKind : Term → Kind
+
+@[extern "term_getOp"]
+opaque getOp : Term → Kind
 
 @[extern "term_getSort"]
 opaque getSort : Term → cvc5.Sort
@@ -152,13 +199,7 @@ instance : ToString Term := ⟨Term.toString⟩
 
 end Term
 
-private opaque ProofImpl : NonemptyType.{0}
-
-def Proof : Type := ProofImpl.type
-
 namespace Proof
-
-instance : Nonempty Proof := ProofImpl.property
 
 @[extern "proof_null"]
 opaque null : Unit → Proof

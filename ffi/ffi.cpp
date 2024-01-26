@@ -113,6 +113,66 @@ extern "C" lean_obj_res sort_toString(lean_obj_arg s)
   return lean_mk_string(sort_unbox(s)->toString().c_str());
 }
 
+static void op_finalize(void* obj) { delete static_cast<Op*>(obj); }
+
+static void op_foreach(void*, b_lean_obj_arg)
+{
+  // do nothing since `Op` does not contain nested Lean objects
+}
+
+static lean_external_class* g_op_class = nullptr;
+
+static inline lean_obj_res op_box(Op* op)
+{
+  if (g_op_class == nullptr)
+  {
+    g_op_class = lean_register_external_class(op_finalize, op_foreach);
+  }
+  return lean_alloc_external(g_op_class, op);
+}
+
+static inline const Op* op_unbox(b_lean_obj_arg op)
+{
+  return static_cast<Op*>(lean_get_external_data(op));
+}
+
+extern "C" lean_obj_res op_null(lean_obj_arg unit)
+{
+  return op_box(new Op());
+}
+
+extern "C" uint16_t op_getKind(lean_obj_arg op)
+{
+  return static_cast<int32_t>(op_unbox(op)->getKind()) + 2;
+}
+
+extern "C" uint8_t op_isNull(lean_obj_arg op)
+{
+  return bool_box(op_unbox(op)->isNull());
+}
+
+extern "C" uint8_t op_isIndexed(lean_obj_arg op)
+{
+  return bool_box(op_unbox(op)->isIndexed());
+}
+
+extern "C" lean_obj_res op_getNumIndices(lean_obj_arg op)
+{
+  return lean_usize_to_nat(op_unbox(op)->getNumIndices());
+}
+
+static inline lean_obj_res term_box(Term* t);
+
+extern "C" lean_obj_res op_get(lean_obj_arg op, lean_obj_arg i)
+{
+  return term_box(new Term((*op_unbox(op))[lean_usize_of_nat(i)]));
+}
+
+extern "C" lean_obj_res op_toString(lean_obj_arg op)
+{
+  return lean_mk_string(op_unbox(op)->toString().c_str());
+}
+
 static void term_finalize(void* obj) { delete static_cast<Term*>(obj); }
 
 static void term_foreach(void*, b_lean_obj_arg)
@@ -169,6 +229,11 @@ extern "C" lean_obj_res term_toString(lean_obj_arg t)
 extern "C" uint16_t term_getKind(lean_obj_arg t)
 {
   return static_cast<int32_t>(term_unbox(t)->getKind()) + 2;
+}
+
+extern "C" lean_obj_arg term_getOp(lean_obj_arg t)
+{
+  return op_box(new Op(term_unbox(t)->getOp()));
 }
 
 extern "C" lean_obj_arg term_getSort(lean_obj_arg t)
