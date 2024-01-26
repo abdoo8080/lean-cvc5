@@ -128,7 +128,7 @@ opaque isNull : Term → Bool
 opaque getKind : Term → Kind
 
 @[extern "term_getOp"]
-opaque getOp : Term → Kind
+opaque getOp : Term → Op
 
 @[extern "term_getSort"]
 opaque getSort : Term → cvc5.Sort
