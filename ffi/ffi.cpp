@@ -256,7 +256,7 @@ extern "C" uint8_t term_getBooleanValue(lean_obj_arg t)
   return bool_box(term_unbox(t)->getBooleanValue());
 }
 
-extern "C" lean_obj_res term_getBitVectorValue(uint32_t base, lean_obj_arg t)
+extern "C" lean_obj_res term_getBitVectorValue(lean_obj_arg t, uint32_t base)
 {
   return lean_mk_string(term_unbox(t)->getBitVectorValue(base).c_str());
 }
