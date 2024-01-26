@@ -161,6 +161,9 @@ opaque hasSymbol : Term → Bool
 @[extern "term_getSymbol"]
 opaque getSymbol : Term → String
 
+@[extern "term_getId"]
+opaque getId : Term → Nat
+
 @[extern "term_getNumChildren"]
 opaque getNumChildren : Term → Nat
 

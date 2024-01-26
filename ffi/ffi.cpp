@@ -256,6 +256,11 @@ extern "C" uint8_t term_getBooleanValue(lean_obj_arg t)
   return bool_box(term_unbox(t)->getBooleanValue());
 }
 
+extern "C" lean_obj_res term_getBitVectorValue(uint32_t base, lean_obj_arg t)
+{
+  return lean_mk_string(term_unbox(t)->getBitVectorValue(base).c_str());
+}
+
 extern "C" lean_obj_res term_getIntegerValue(lean_obj_arg t)
 {
   return lean_cstr_to_int(term_unbox(t)->getIntegerValue().c_str());
@@ -279,9 +284,9 @@ extern "C" lean_obj_res term_getSymbol(lean_obj_arg t)
   return lean_mk_string(term_unbox(t)->getSymbol().c_str());
 }
 
-extern "C" lean_obj_res term_getBitVectorValue(uint32_t base, lean_obj_arg t)
+extern "C" lean_obj_res term_getId(lean_obj_arg t)
 {
-  return lean_mk_string(term_unbox(t)->getBitVectorValue(base).c_str());
+  return lean_uint64_to_nat(term_unbox(t)->getId());
 }
 
 extern "C" lean_obj_res term_getNumChildren(lean_obj_arg t)
