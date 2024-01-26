@@ -155,6 +155,9 @@ opaque getIntegerValue : Term → Int
 @[extern "term_getRationalValue"]
 opaque getRationalValue : Term → Rat
 
+@[extern "term_hasSymbol"]
+opaque hasSymbol : Term → Bool
+
 @[extern "term_getSymbol"]
 opaque getSymbol : Term → String
 

@@ -269,6 +269,11 @@ extern "C" lean_obj_res term_getRationalValue(lean_obj_arg t)
                 lean_cstr_to_nat(r.substr(i).c_str()));
 }
 
+extern "C" uint8_t term_hasSymbol(lean_obj_arg t)
+{
+  return bool_box(term_unbox(t)->hasSymbol());
+}
+
 extern "C" lean_obj_res term_getSymbol(lean_obj_arg t)
 {
   return lean_mk_string(term_unbox(t)->getSymbol().c_str());
