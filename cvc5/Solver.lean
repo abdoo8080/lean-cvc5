@@ -2,6 +2,7 @@ import Std.Data.Rat.Basic
 
 import cvc5.Kind
 import cvc5.ProofRule
+import cvc5.SkolemId
 
 @[export rat_mk]
 private def Rat.mk : Int → Nat → Rat := mkRat
@@ -166,6 +167,15 @@ opaque getId : Term → Nat
 
 @[extern "term_getNumChildren"]
 opaque getNumChildren : Term → Nat
+
+@[extern "term_isSkolem"]
+opaque isSkolem : Term → Bool
+
+@[extern "term_getSkolemId"]
+opaque getSkolemId : Term → SkolemFunId
+
+@[extern "term_getSkolemArguments"]
+opaque getSkolemArguments : Term → Array Term
 
 @[extern "term_get"]
 protected opaque get : (t : Term) → Fin t.getNumChildren → Term

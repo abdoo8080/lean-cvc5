@@ -294,6 +294,27 @@ extern "C" lean_obj_res term_getNumChildren(lean_obj_arg t)
   return lean_usize_to_nat(term_unbox(t)->getNumChildren());
 }
 
+extern "C" uint8_t term_isSkolem(lean_obj_arg t)
+{
+  return bool_box(term_unbox(t)->isSkolem());
+}
+
+extern "C" uint8_t term_getSkolemId(lean_obj_arg t)
+{
+  return static_cast<int32_t>(term_unbox(t)->getSkolemId());
+}
+
+extern "C" lean_obj_res term_getSkolemArguments(lean_obj_arg t)
+{
+  std::vector<Term> args = term_unbox(t)->getSkolemArguments();
+  lean_object* as = lean_mk_empty_array();
+  for (const Term& arg : args)
+  {
+    as = lean_array_push(as, term_box(new Term(arg)));
+  }
+  return as;
+}
+
 extern "C" lean_obj_res term_get(lean_obj_arg t, lean_obj_arg i)
 {
   return term_box(new Term((*term_unbox(t))[lean_usize_of_nat(i)]));
