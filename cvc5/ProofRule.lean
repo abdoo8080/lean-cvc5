@@ -1,54 +1,54 @@
 namespace cvc5
 
 /--
- \internal
- This documentation is target for the online documentation that can
- be found at https://cvc5.github.io/docs/latest/proofs/proof_rules.html
- \endinternal
- *
- \verbatim embed:rst:leading-asterisk
- An enumeration for proof rules. This enumeration is analogous to Kind for
- Node objects.
- *
- All proof rules are given as inference rules, presented in the following
- form:
- *
- .. math::
- *
-   \texttt{RULENAME}:
-   \inferruleSC{\varphi_1 \dots \varphi_n \mid t_1 \dots t_m}{\psi}{if $C$}
- *
- where we call :math:`\varphi_i` its premises or children, :math:`t_i` its
- arguments, :math:`\psi` its conclusion, and :math:`C` its side condition.
- Alternatively, we can write the application of a proof rule as
- ``(RULENAME F1 ... Fn :args t1 ... tm)``, omitting the conclusion
- (since it can be uniquely determined from premises and arguments).
- Note that premises are sometimes given as proofs, i.e., application of
- proof rules, instead of formulas. This abuses the notation to see proof
- rule applications and their conclusions interchangeably.
- *
- Conceptually, the following proof rules form a calculus whose target
- user is the Node-level theory solvers. This means that the rules below
- are designed to reason about, among other things, common operations on Node
- objects like Rewriter::rewrite or Node::substitute. It is intended to be
- translated or printed in other formats.
- *
- The following ProofRule values include core rules and those categorized by
- theory, including the theory of equality.
- *
- The "core rules" include two distinguished rules which have special status:
- (1) :cpp:enumerator:`ASSUME <cvc5::ProofRule::ASSUME>`, which represents an open
- leaf in a proof; and (2) :cpp:enumerator:`SCOPE <cvc5::ProofRule::SCOPE>`, which
- encloses a scope (a subproof) with a set of scoped assumptions. The core rules
- additionally correspond to generic operations that are done internally on nodes,
- e.g., calling Rewriter::rewrite.
- *
- Rules with prefix ``MACRO_`` are those that can be defined in terms of other
- rules. These exist for convenience and can be replaced by their definition
- in post-processing.
- \endverbatim
- -/
-inductive ProofRule
+\internal
+This documentation is target for the online documentation that can
+be found at https://cvc5.github.io/docs/latest/proofs/proof_rules.html
+\endinternal
+
+\verbatim embed:rst:leading-asterisk
+An enumeration for proof rules. This enumeration is analogous to Kind for
+Node objects.
+
+All proof rules are given as inference rules, presented in the following
+form:
+
+.. math::
+
+  \texttt{RULENAME}:
+  \inferruleSC{\varphi_1 \dots \varphi_n \mid t_1 \dots t_m}{\psi}{if $C$}
+
+where we call :math:`\varphi_i` its premises or children, :math:`t_i` its
+arguments, :math:`\psi` its conclusion, and :math:`C` its side condition.
+Alternatively, we can write the application of a proof rule as
+``(RULENAME F1 ... Fn :args t1 ... tm)``, omitting the conclusion
+(since it can be uniquely determined from premises and arguments).
+Note that premises are sometimes given as proofs, i.e., application of
+proof rules, instead of formulas. This abuses the notation to see proof
+rule applications and their conclusions interchangeably.
+
+Conceptually, the following proof rules form a calculus whose target
+user is the Node-level theory solvers. This means that the rules below
+are designed to reason about, among other things, common operations on Node
+objects like Rewriter::rewrite or Node::substitute. It is intended to be
+translated or printed in other formats.
+
+The following ProofRule values include core rules and those categorized by
+theory, including the theory of equality.
+
+The "core rules" include two distinguished rules which have special status:
+(1) :cpp:enumerator:`ASSUME <cvc5::ProofRule::ASSUME>`, which represents an open
+leaf in a proof; and (2) :cpp:enumerator:`SCOPE <cvc5::ProofRule::SCOPE>`, which
+encloses a scope (a subproof) with a set of scoped assumptions. The core rules
+additionally correspond to generic operations that are done internally on nodes,
+e.g., calling Rewriter::rewrite.
+
+Rules with prefix ``MACRO_`` are those that can be defined in terms of other
+rules. These exist for convenience and can be replaced by their definition
+in post-processing.
+\endverbatim
+-/
+inductive ProofRule where
   /--
    \verbatim embed:rst:leading-asterisk
    **Assumption (a leaf)**
@@ -362,7 +362,7 @@ inductive ProofRule
    **Boolean -- N-ary Resolution**
 
    .. math::
-     \inferrule{C_1 \dots C_n \mid pol_1,L_1 \dots pol_{n-1},L_{n-1}}{C}
+     \inferrule{C_1 \dots C_n \mid (pol_1 \dots pol_{n-1} (L_1 \dots L_{n-1})}{C}
 
    where
 
@@ -373,6 +373,8 @@ inductive ProofRule
    - let :math:`C_1' = C_1`,
    - for each :math:`i > 1`, let :math:`C_i' = C_{i-1} \diamond{L_{i-1},
      \mathit{pol}_{i-1}} C_i'`
+
+   Note the list of polarities and pivots are provided as s-expressions.
 
    The result of the chain resolution is :math:`C = C_n'`
    \endverbatim
@@ -956,12 +958,37 @@ inductive ProofRule
      k(f?)(s_1,\dots, s_n)}
 
    where :math:`k` is the application kind. Notice that :math:`f` must be
-   provided iff :math:`k` is a parameterized kind, e.g. ``APPLY_UF``. The
-   actual node for :math:`k` is constructible via
-   ``ProofRuleChecker::mkKindNode``.
+   provided iff :math:`k` is a parameterized kind, e.g.
+   `cvc5::Kind::APPLY_UF`. The actual node for
+   :math:`k` is constructible via ``ProofRuleChecker::mkKindNode``.
+   If :math:`k` is a binder kind (e.g. ``cvc5::Kind::FORALL``) then :math:`f`
+   is a term of kind ``cvc5::Kind::VARIABLE_LIST``
+   denoting the variables bound by both sides of the conclusion.
+   This rule is used for kinds that have a fixed arity, such as
+   ``cvc5::Kind::ITE``, ``cvc5::Kind::EQUAL``, and so on. It is also used for
+   ``cvc5::Kind::APPLY_UF`` where :math:`f` must be provided.
+   It is not used for equality between
+   ``cvc5::Kind::HO_APPLY`` terms, which should
+   use the :cpp:enumerator:`HO_CONG <cvc5::ProofRule::HO_CONG>` proof rule.
    \endverbatim
   -/
   | CONG
+  /--
+   \verbatim embed:rst:leading-asterisk
+   **Equality -- N-ary Congruence**
+
+   .. math::
+
+     \inferrule{t_1=s_1,\dots,t_n=s_n\mid k}{k(t_1,\dots, t_n) =
+     k(s_1,\dots, s_n)}
+
+   where :math:`k` is the application kind. The actual node for :math:`k` is
+   constructible via ``ProofRuleChecker::mkKindNode``. This rule is used for
+   kinds that have variadic arity, such as ``cvc5::Kind::AND``,
+   ``cvc5::Kind::PLUS`` and so on.
+   \endverbatim
+  -/
+  | NARY_CONG
   /--
    \verbatim embed:rst:leading-asterisk
    **Equality -- True intro**
@@ -1021,10 +1048,11 @@ inductive ProofRule
 
    .. math::
 
-     \inferrule{f=g, t_1=s_1,\dots,t_n=s_n\mid -}{f(t_1,\dots, t_n) =
-     g(s_1,\dots, s_n)}
+     \inferrule{f=g, t_1=s_1,\dots,t_n=s_n\mid k}{k(f, t_1,\dots, t_n) =
+     k(g, s_1,\dots, s_n)}
 
-   Notice that this rule is only used when the application kinds are ``APPLY_UF``.
+   Notice that this rule is only used when the application kind :math:`k` is
+   either `cvc5::Kind::APPLY_UF` or `cvc5::Kind::HO_APPLY`.
    \endverbatim
   -/
   | HO_CONG
@@ -1261,13 +1289,15 @@ inductive ProofRule
 
    .. math::
 
-     \inferrule{\forall x_1\dots x_n.\> F\mid t_1,\dots,t_n, (id\, (t)?)?}
+     \inferrule{\forall x_1\dots x_n.\> F\mid (t_1 \dots t_n (id\, (t)?)?}
      {F\{x_1\mapsto t_1,\dots,x_n\mapsto t_n\}}
 
-   The optional argument :math:`id` indicates the inference id that caused the
-   instantiation. The term :math:`t` indicates an additional term (e.g. the trigger)
-   associated with the instantiation, which depends on the id. If the id
-   has prefix ``QUANTIFIERS_INST_E_MATCHING``, then :math:`t` is the trigger that
+   The list of terms to instantiate :math:`(t_1 \dots t_n)` is provided as
+   an s-expression as the first argument. The optional argument :math:`id`
+   indicates the inference id that caused the instantiation. The term
+   :math:`t` indicates an additional term (e.g. the trigger) associated with
+   the instantiation, which depends on the id. If the id has prefix
+   ``QUANTIFIERS_INST_E_MATCHING``, then :math:`t` is the trigger that
    generated the instantiation.
    \endverbatim
   -/
@@ -1278,7 +1308,7 @@ inductive ProofRule
 
    .. math::
 
-     \inferruleSC{-\mid F, y_1=z_1,\dots, y_n=z_n}
+     \inferruleSC{-\mid F, (y_1 \ldots y_n (z_1,\dots, z_n)}
      {F = F\{y_1\mapsto z_1,\dots,y_n\mapsto z_n\}}
      {if $y_1,\dots,y_n, z_1,\dots,z_n$ are unique bound variables}
 
@@ -1352,20 +1382,28 @@ inductive ProofRule
    other. Note it may be the case that one side of the equality denotes the
    empty string.
 
-   Alternatively, if the equality is between sequences, this rule has the
-   form:
+   This rule is used exclusively for strings.
+
+   \endverbatim
+  -/
+  | CONCAT_CONFLICT
+  /--
+   \verbatim embed:rst:leading-asterisk
+   **Strings -- Core rules -- Concatenation conflict for disequal characters**
 
    .. math::
 
      \inferrule{(t_1\cdot t) = (s_1 \cdot s t_1 \deq s_1 \mid b}{\bot}
 
-   where t_1 and s_1 are constants of length one, or otherwise one side
-   of the equality is the empty sequence and t_1 or s_1 corresponding to
+   where $t_1$ and $s_1$ are constants of length one, or otherwise one side
+   of the equality is the empty sequence and $t_1$ or $s_1$ corresponding to
    that side is the empty sequence.
+
+   This rule is used exclusively for sequences.
 
    \endverbatim
   -/
-  | CONCAT_CONFLICT
+  | CONCAT_CONFLICT_DEQ
   /--
    \verbatim embed:rst:leading-asterisk
    **Strings -- Core rules -- Concatenation split**
@@ -1724,7 +1762,7 @@ inductive ProofRule
    **Arithmetic -- Trichotomy of the reals**
 
    .. math::
-     \inferrule{A, B \mid C}{C}
+     \inferrule{A, B \mid -}{C}
 
    where :math:`\neg A, \neg B, C` are :math:`x < c, x = c, x > c` in some order.
    Note that :math:`\neg` here denotes arithmetic negation, i.e., flipping :math:`\geq` to :math:`<` etc.
@@ -2176,20 +2214,9 @@ inductive ProofRule
    \endverbatim
   -/
   | LEAN_RULE
-  /--
-   **External -- AletheLF**
-
-   Place holder for AletheLF rules.
-
-   .. math::
-     \inferrule{P_1, \dots, P_n\mid \texttt{id}, A_1,\dots, A_m}{Q}
-
-   Note that the premises and arguments are arbitrary. It's expected that
-   :math:`\texttt{id}` refer to a proof rule in the external AletheLF
-   calculus. \endverbatim
-  -/
-  | ALF_RULE
 
   --================================================= Unknown rule
   | UNKNOWN
 deriving BEq, Hashable, Inhabited, Repr
+
+end cvc5

@@ -1,9 +1,14 @@
 namespace cvc5
 
+/--
+The kind of a cvc5 skolem
+
+\internal
+
+-/
 inductive SkolemFunId where
   /-- The skolem is not exported -/
   | INTERNAL
-
   /-- input variable with a given name -/
   | INPUT_VARIABLE
   /-- purification skolem for a term t -/
@@ -82,7 +87,7 @@ inductive SkolemFunId where
   -/
   | STRINGS_STOI_RESULT
   /--
-   * An index containing a non-digit in a string, used when (str.to_int a) = -1.
+   An index containing a non-digit in a string, used when (str.to_int a) = -1.
   -/
   | STRINGS_STOI_NON_DIGIT
   /--
@@ -109,8 +114,6 @@ inductive SkolemFunId where
    i = 0, ..., n.
   -/
   | RE_UNFOLD_POS_COMPONENT
-  /-- Sequence model construction, element for base -/
-  | SEQ_MODEL_BASE_ELEMENT
   | BAGS_CARD_CARDINALITY
   | BAGS_CARD_ELEMENTS
   | BAGS_CARD_N
@@ -138,6 +141,7 @@ inductive SkolemFunId where
    where uf: Int -> E is a skolem function, and E is the type of elements of A
   -/
   | BAGS_MAP_PREIMAGE
+  | BAGS_MAP_PREIMAGE_INJECTIVE
   /--
    A skolem variable for the size of the preimage of {y} that is unique per
    terms (bag.map f A y which might be an element in (bag.map f A). (see the
@@ -200,22 +204,13 @@ inductive SkolemFunId where
   | SETS_FOLD_ELEMENTS
   | SETS_FOLD_UNION
   /--
-   A skolem variable that is unique per terms (set.map f A y which is an
+   A skolem variable that is unique per terms (set.map f A), y which is an
    element in (set.map f A). The skolem is constrained to be an element in A,
    and it is mapped to y by f.
   -/
   | SETS_MAP_DOWN_ELEMENT
-  /-- Higher-order type match predicate, see HoTermDb -/
-  | HO_TYPE_MATCH_PRED
-  ---------------------- internal
   /-- abstract value for a term t -/
   | ABSTRACT_VALUE
-  /-- the "none" term, for instantiation evaluation -/
-  | IEVAL_NONE
-  /-- the "some" term, for instantiation evaluation -/
-  | IEVAL_SOME
-  /-- sygus "any constant" placeholder -/
-  | SYGUS_ANY_CONSTANT
   --================================================= Unknown rule
   | NONE
 deriving BEq, Hashable, Inhabited, Repr

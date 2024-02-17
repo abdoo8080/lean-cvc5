@@ -2995,7 +2995,22 @@ inductive Kind where
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
   -/
   | TUPLE_PROJECT
+  /--
+   Lifting operator for nullable terms.
+   This operator lifts a built-in operator or a user-defined function
+   to nullable terms.
+   For built-in kinds use mkNullableLift.
+   For user-defined functions use mkTerm.
 
+   - Arity: ``n > 1``
+
+   - ``1..n:`` Terms of nullable sort
+
+   - Create Term of this Kind with:
+     - Solver::mkNullableLift(Kind, const std::vector<Term>&) const
+     - Solver::mkTerm(Kind, const std::vector<Term>&) const
+  -/
+  | NULLABLE_LIFT
   /- Separation Logic ------------------------------------------------------ -/
 
   /--
@@ -5783,7 +5798,7 @@ inductive SortKind
 
    - Create Sort of this Kind with:
 
-     - Solver::mkFiniteFieldSort(const std::string&) const
+     - Solver::mkFiniteFieldSort(const std::string&, uint32_t base) const
   -/
   | FINITE_FIELD_SORT
   /--
@@ -5868,6 +5883,15 @@ inductive SortKind
      - Solver::mkTupleSort(const std::vector<Sort>&) const
   -/
   | TUPLE_SORT
+  /--
+   A nullable sort, whose argument sort denotes the sort of the direct child
+   of the nullable.
+
+   - Create Sort of this Kind with:
+
+     - Solver::mkNullableSort(const Sort&) const
+  -/
+  | NULLABLE_SORT
   /--
    An uninterpreted sort.
 
