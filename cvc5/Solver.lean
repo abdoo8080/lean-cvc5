@@ -283,9 +283,10 @@ opaque setOption (option value : String) : SolverT m Unit
 @[extern "solver_mkBoolean"]
 opaque mkBoolean : Bool → SolverT m Term
 
-/-- condition: `-2⁶³ ≤ x < 2⁶³` -/
-@[extern "solver_mkInteger"]
-opaque mkInteger : (x : Int) → SolverT m Term
+@[extern "solver_mkIntegerFromString"]
+private opaque mkIntegerFromString : String → SolverT m Term
+
+def mkInteger : Int → SolverT m Term := mkIntegerFromString ∘ toString
 
 @[extern "solver_mkTerm"]
 opaque mkTerm (kind : Kind) (children : Array Term := #[]) : SolverT m Term

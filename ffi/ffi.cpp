@@ -271,7 +271,7 @@ extern "C" lean_obj_res term_getRationalValue(lean_obj_arg t)
   std::string r = term_unbox(t)->getRealValue();
   size_t i = r.find('/');
   return rat_mk(lean_cstr_to_int(r.substr(0, i).c_str()),
-                lean_cstr_to_nat(r.substr(i).c_str()));
+                lean_cstr_to_nat(r.substr(i + 1).c_str()));
 }
 
 extern "C" uint8_t term_hasSymbol(lean_obj_arg t)
@@ -475,15 +475,15 @@ extern "C" lean_obj_res solver_mkBoolean(lean_obj_arg inst,
       solver);
 }
 
-extern "C" lean_obj_res solver_mkInteger(lean_obj_arg inst,
-                                         lean_obj_arg val,
-                                         lean_obj_arg solver)
+extern "C" lean_obj_res solver_mkIntegerFromString(lean_obj_arg inst,
+                                                   lean_obj_arg val,
+                                                   lean_obj_arg solver)
 {
   return solver_val(lean_box(0),
                     inst,
                     lean_box(0),
                     term_box(new Term(solver_unbox(solver)->mkInteger(
-                        lean_scalar_to_int64(val)))),
+                        lean_string_cstr(val)))),
                     solver);
 }
 
