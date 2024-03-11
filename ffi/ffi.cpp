@@ -93,6 +93,22 @@ extern "C" uint8_t sort_getKind(lean_obj_arg s)
   return static_cast<int32_t>(sort_unbox(s)->getKind()) + 2;
 }
 
+extern "C" lean_obj_res sort_getFunctionDomainSorts(lean_obj_arg s)
+{
+  std::vector<Sort> domains = sort_unbox(s)->getFunctionDomainSorts();
+  lean_object* ds = lean_mk_empty_array();
+  for (const Sort& domain : domains)
+  {
+    ds = lean_array_push(ds, sort_box(new Sort(domain)));
+  }
+  return ds;
+}
+
+extern "C" lean_obj_res sort_getFunctionCodomainSort(lean_obj_arg s)
+{
+  return sort_box(new Sort(sort_unbox(s)->getFunctionCodomainSort()));
+}
+
 extern "C" lean_obj_res sort_getSymbol(lean_obj_arg s)
 {
   return lean_mk_string(sort_unbox(s)->getSymbol().c_str());

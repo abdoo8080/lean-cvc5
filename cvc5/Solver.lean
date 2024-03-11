@@ -69,6 +69,12 @@ instance Sort.instInhabitedSort : Inhabited cvc5.Sort := ⟨Sort.null ()⟩
 @[extern "sort_getKind"]
 opaque Sort.getKind : cvc5.Sort → SortKind
 
+@[extern "sort_getFunctionDomainSorts"]
+opaque Sort.getFunctionDomainSorts : cvc5.Sort → Array cvc5.Sort
+
+@[extern "sort_getFunctionCodomainSort"]
+opaque Sort.getFunctionCodomainSort : cvc5.Sort → cvc5.Sort
+
 @[extern "sort_getSymbol"]
 opaque Sort.getSymbol : cvc5.Sort → String
 
