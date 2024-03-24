@@ -126,6 +126,22 @@ inductive ProofRule where
   | EVALUATE
   /--
    \verbatim embed:rst:leading-asterisk
+   **Builtin theory -- associative/commutative/idempotency/identity normalization**
+
+   .. math::
+     \inferrule{- \mid t = s}{t = s}
+
+   where :math:`\texttt{expr::isACNorm(t, s)} = \top`. This
+   method normalizes currently based on two kinds of operators:
+   (1) those that are associative, commutative, idempotent, and have an
+   identity element (examples are or, and, bvand
+   (2) those that are associative and have an identity element (examples
+   are str.++, re.++).
+   \endverbatim
+  -/
+  | ACI_NORM
+  /--
+   \verbatim embed:rst:leading-asterisk
    **Builtin theory -- Substitution + Rewriting equality introduction**
 
    In this rule, we provide a term :math:`t` and conclude that it is equal to
@@ -303,18 +319,6 @@ inductive ProofRule where
   | TRUST_THEORY_REWRITE
   /--
    \verbatim embed:rst:leading-asterisk
-   **Other theory rewrite rules**
-
-   .. math::
-     \inferrule{- \mid t, trid}{t = t'}
-
-   where `trid` is a theory rewrite rule which transforms :math:`t` to :math
-   `t'` The result is checked by a theory proof checker.
-   \endverbatim
-  -/
-  | THEORY_REWRITE
-  /--
-   \verbatim embed:rst:leading-asterisk
    **SAT Refutation for assumption-based unsat cores**
 
    .. math::
@@ -324,7 +328,29 @@ inductive ProofRule where
    SAT solver. \endverbatim
   -/
   | SAT_REFUTATION
+  /--
+   \verbatim embed:rst:leading-asterisk
+   **DRAT Refutation**
 
+   .. math::
+     \inferrule{F_1 \dots F_n \mid D, P}{\bot}
+
+   where :math:`F_1 \dots F_n` correspond to the clauses in the
+   DIMACS file given by filename `D` and `P` is a filename of a file storing
+   a DRAT proof. \endverbatim
+  -/
+  | DRAT_REFUTATION
+  /--
+   \verbatim embed:rst:leading-asterisk
+   **SAT external prove Refutation**
+
+   .. math::
+     \inferrule{F_1 \dots F_n \mid D}{\bot}
+
+   where :math:`F_1 \dots F_n` correspond to the input clauses in the
+   DIMACS file `D`. \endverbatim
+  -/
+  | SAT_EXTERNAL_PROVE
   /--
    \verbatim embed:rst:leading-asterisk
    **Boolean -- Resolution**
@@ -1321,18 +1347,6 @@ inductive ProofRule where
   | ALPHA_EQUIV
   /--
    \verbatim embed:rst:leading-asterisk
-   **Quantifiers -- Exists elimination**
-
-   .. math::
-
-     \inferruleSC{-\mid \exists x_1\dots x_n.\> F}
-     {\exists x_1\dots x_n.\> F = \neg \forall x_1\dots x_n.\> \neg F}
-
-   \endverbatim
-  -/
-  | EXISTS_ELIM
-  /--
-   \verbatim embed:rst:leading-asterisk
    **Strings -- Core rules -- Concatenation equality**
 
    .. math::
@@ -1785,7 +1799,8 @@ inductive ProofRule where
    .. math::
      \inferrule{- \mid t = s}{t = s}
 
-   where :math:`\texttt{arith::PolyNorm::isArithPolyNorm(t, s)} = \top`.
+   where :math:`\texttt{arith::PolyNorm::isArithPolyNorm(t, s)} = \top`. This
+   method normalizes polynomials over arithmetic or bitvectors.
    \endverbatim
   -/
   | ARITH_POLY_NORM
@@ -1834,12 +1849,12 @@ inductive ProofRule where
    **Arithmetic -- Multiplication tangent plane**
 
    .. math::
-     \inferruleSC{- \mid t, x, y, a, b, \sigma}{(t \leq tplane) \leftrightarrow ((x \leq a \land y \geq b) \lor (x \geq a \land y \leq b))}{if $\sigma = -1$}
+     \inferruleSC{- \mid x, y, a, b, \sigma}{(t \leq tplane) \leftrightarrow ((x \leq a \land y \geq b) \lor (x \geq a \land y \leq b))}{if $\sigma = -1$}
 
-     \inferruleSC{- \mid t, x, y, a, b, \sigma}{(t \geq tplane) \leftrightarrow ((x \leq a \land y \leq b) \lor (x \geq a \land y \geq b))}{if $\sigma = 1$}
+     \inferruleSC{- \mid x, y, a, b, \sigma}{(t \geq tplane) \leftrightarrow ((x \leq a \land y \leq b) \lor (x \geq a \land y \geq b))}{if $\sigma = 1$}
 
    where :math:`x,y` are real terms (variables or extended terms
-   :math:`t = x \cdot y` (possibly under rewriting :math:`a,b` are real
+   :math:`t = x \cdot y`, :math:`a,b` are real
    constants, :math:`\sigma \in \{ 1, -1\}` and :math:`tplane := b \cdot x + a \cdot y - a \cdot b` is the tangent plane of :math:`x \cdot y` at :math:`(a,b)`.
    \endverbatim
   -/
@@ -2198,22 +2213,6 @@ inductive ProofRule where
    \endverbatim
   -/
   | ALETHE_RULE
-  /--
-   \verbatim embed:rst:leading-asterisk
-   **External -- Lean**
-
-   Place holder for Lean rules.
-
-   .. math::
-     \inferrule{P_1, \dots, P_n\mid \texttt{id}, Q, Q', A_1,\dots, A_m}{Q}
-
-   Note that the premises and arguments are arbitrary. It's expected that
-   :math:`\texttt{id}` refer to a proof rule in the external Lean calculus,
-   and that :math:`Q'` be the representation of Q to be printed by the Lean
-   printer.
-   \endverbatim
-  -/
-  | LEAN_RULE
 
   --================================================= Unknown rule
   | UNKNOWN

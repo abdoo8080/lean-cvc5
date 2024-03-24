@@ -43,6 +43,27 @@ def Proof : Type := ProofImpl.type
 
 instance Proof.instNonemptyProof : Nonempty Proof := ProofImpl.property
 
+private opaque TermManagerImpl : NonemptyType.{0}
+
+def TermManager : Type := TermManagerImpl.type
+
+instance TermManager.instNonemptyTermManager : Nonempty TermManager := TermManagerImpl.property
+
+inductive Error where
+  | missingValue
+  | user_error (msg : String)
+deriving Repr
+
+private opaque SolverImpl : NonemptyType.{0}
+
+def Solver : Type := SolverImpl.type
+
+instance Solver.instNonemptySolver : Nonempty Solver := SolverImpl.property
+
+abbrev SolverT m := ExceptT Error (StateT Solver m)
+
+abbrev SolverM := SolverT IO
+
 namespace Result
 
 @[extern "result_isSat"]
@@ -252,18 +273,24 @@ instance : Hashable Proof := ⟨Proof.hash⟩
 
 end Proof
 
-private opaque SolverImpl : NonemptyType.{0}
+namespace TermManager
 
-def Solver : Type := SolverImpl.type
+@[extern "termManager_new"]
+opaque new : BaseIO TermManager
 
-inductive SolverError where
-  | missingValue
-  | user_error (msg : String)
-deriving Repr
+@[extern "termManager_mkBoolean"]
+opaque mkBoolean : TermManager → Bool → Term
 
-abbrev SolverT m := ExceptT SolverError (StateT Solver m)
+@[extern "termManager_mkIntegerFromString"]
+private opaque mkIntegerFromString : TermManager → String → Term
 
-abbrev SolverM := SolverT IO
+def mkInteger (tm : TermManager) : Int → Term :=
+  (mkIntegerFromString tm) ∘ toString
+
+@[extern "termManager_mkTerm"]
+opaque mkTerm : TermManager → Kind → (children : Array Term := #[]) → Term
+
+end TermManager
 
 namespace Solver
 
@@ -273,29 +300,16 @@ variable [Monad m]
 private def val (a : α) : SolverT m α := pure a
 
 @[export solver_err]
-private def err (e : SolverError) : SolverT m α := throw e
-
-instance : Nonempty Solver := SolverImpl.property
+private def err (e : Error) : SolverT m α := throw e
 
 @[extern "solver_new"]
-private opaque new : Unit → Solver
+private opaque new : TermManager → Solver
 
 @[extern "solver_getVersion"]
 opaque getVersion : SolverT m String
 
 @[extern "solver_setOption"]
 opaque setOption (option value : String) : SolverT m Unit
-
-@[extern "solver_mkBoolean"]
-opaque mkBoolean : Bool → SolverT m Term
-
-@[extern "solver_mkIntegerFromString"]
-private opaque mkIntegerFromString : String → SolverT m Term
-
-def mkInteger : Int → SolverT m Term := mkIntegerFromString ∘ toString
-
-@[extern "solver_mkTerm"]
-opaque mkTerm (kind : Kind) (children : Array Term := #[]) : SolverT m Term
 
 @[extern "solver_assertFormula"]
 opaque assertFormula : Term → SolverT m Unit
@@ -312,15 +326,10 @@ opaque proofToString : Proof → SolverT m String
 @[extern "solver_parse"]
 opaque parse : String → SolverT m Unit
 
-@[export solver_runp]
-private def run' (query : SolverT m α) (s : Solver) : m (Except SolverError α) := do
-  return match ← ExceptT.run query s with
+def run (tm : TermManager) (query : SolverT m α) : m (Except Error α) :=
+  return match ← ExceptT.run query (new tm) with
   | (.ok x, _) => .ok x
   | (.error e, _) => .error e
-
-@[extern "solver_run"]
-opaque run (query : SolverT m α) : m (Except SolverError α) :=
-  run' query (new ())
 
 end Solver
 

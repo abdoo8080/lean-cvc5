@@ -2,9 +2,9 @@ namespace cvc5
 
 /--
  The kind of a cvc5 Term.
- *
+
  \internal
- *
+
  Note that the API type `cvc5::Kind` roughly corresponds to
  `cvc5::internal::Kind`, but is a different type. It hides internal kinds
  that should not be exported to the API, and maps all kinds that we want to
@@ -12,7 +12,7 @@ namespace cvc5
  `cvc5::Kind` must be signed (to enable range checks for validity). The size
  of this type depends on the size of `cvc5::internal::Kind`
  (`NodeValue::NBITS_KIND`, currently 10 bits, see expr/node_value.h).
- -/
+-/
 inductive Kind where
   /--
    Internal kind.
@@ -566,6 +566,27 @@ inductive Kind where
   -/
   | DIVISION
   /--
+   Real division, division by 0 defined to be 0, left associative.
+
+   - Arity: ``n > 1``
+
+     - ``1..n:`` Terms of Sort Real
+
+   - Create Term of this Kind with:
+
+     - Solver::mkTerm(Kind, const std::vector<Term>&) const
+     - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+
+   - Create Op of this kind with:
+
+     - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+
+   \rst
+   .. warning:: This kind is experimental and may be changed or removed in
+                future versions.
+  -/
+  | DIVISION_TOTAL
+  /--
    Integer division, division by 0 undefined, left associative.
 
    - Arity: ``n > 1``
@@ -582,6 +603,27 @@ inductive Kind where
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
   -/
   | INTS_DIVISION
+  /--
+   Integer division, division by 0 defined to be 0, left associative.
+
+   - Arity: ``n > 1``
+
+     - ``1..n:`` Terms of Sort Int
+
+   - Create Term of this Kind with:
+
+     - Solver::mkTerm(Kind, const std::vector<Term>&) const
+     - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+
+   - Create Op of this kind with:
+
+     - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+
+   \rst
+   .. warning:: This kind is experimental and may be changed or removed in
+                future versions.
+  -/
+  | INTS_DIVISION_TOTAL
   /--
    Integer modulus, modulus by 0 undefined.
 
@@ -600,6 +642,28 @@ inductive Kind where
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
   -/
   | INTS_MODULUS
+  /--
+   Integer modulus, modulus by 0 defined to be 0.
+
+   - Arity: ``2``
+
+     - ``1:`` Term of Sort Int
+     - ``2:`` Term of Sort Int
+
+   - Create Term of this Kind with:
+
+     - Solver::mkTerm(Kind, const std::vector<Term>&) const
+     - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+
+   - Create Op of this kind with:
+
+     - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+
+   \rst
+   .. warning:: This kind is experimental and may be changed or removed in
+                future versions.
+  -/
+  | INTS_MODULUS_TOTAL
   /--
    Absolute value.
 
@@ -3825,7 +3889,7 @@ inductive Kind where
   -/
   | BAG_MEMBER
   /--
-   Bag duplicate removal.
+   Bag setof.
 
    Eliminate duplicates in a given bag. The returned bag contains exactly the
    same elements in the given bag, but with multiplicity one.
@@ -3848,7 +3912,7 @@ inductive Kind where
                 future versions.
    \endrst
   -/
-  | BAG_DUPLICATE_REMOVAL
+  | BAG_SETOF
   /--
    Bag make.
 
@@ -3922,72 +3986,6 @@ inductive Kind where
    \endrst
   -/
   | BAG_CHOOSE
-  /--
-   Bag is singleton tester.
-
-   - Arity: ``1``
-
-     - ``1:`` Term of bag Sort
-
-   - Create Term of this Kind with:
-
-     - Solver::mkTerm(Kind, const std::vector<Term>&) const
-     - Solver::mkTerm(const Op&, const std::vector<Term>&) const
-
-   - Create Op of this kind with:
-
-     - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-
-   \rst
-   .. warning:: This kind is experimental and may be changed or removed in
-                future versions.
-   \endrst
-  -/
-  | BAG_IS_SINGLETON
-  /--
-   Conversion from set to bag.
-
-   - Arity: ``1``
-
-     - ``1:`` Term of set Sort
-
-   - Create Term of this Kind with:
-
-     - Solver::mkTerm(Kind, const std::vector<Term>&) const
-     - Solver::mkTerm(const Op&, const std::vector<Term>&) const
-
-   - Create Op of this kind with:
-
-     - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-
-   \rst
-   .. warning:: This kind is experimental and may be changed or removed in
-                future versions.
-   \endrst
-  -/
-  | BAG_FROM_SET
-  /--
-   Conversion from bag to set.
-
-   - Arity: ``1``
-
-     - ``1:`` Term of bag Sort
-
-   - Create Term of this Kind with:
-
-     - Solver::mkTerm(Kind, const std::vector<Term>&) const
-     - Solver::mkTerm(const Op&, const std::vector<Term>&) const
-
-   - Create Op of this kind with:
-
-     - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-
-   \rst
-   .. warning:: This kind is experimental and may be changed or removed in
-                future versions.
-   \endrst
-  -/
-  | BAG_TO_SET
   /--
    Bag map.
 
@@ -5687,15 +5685,11 @@ inductive Kind where
   | LAST_KIND
 deriving BEq, Hashable, Inhabited, Repr
 
-/- -------------------------------------------------------------------------- -/
-/- SortKind -/
-/- -------------------------------------------------------------------------- -/
-
 /--
  The kind of a cvc5 Sort.
- *
+
  \internal
- *
+
  Note that the API type `cvc5::SortKind` roughly corresponds to
  `cvc5::internal::Kind`, but is a different type. It hides internal kinds
  that should not be exported to the API, and maps all kinds that we want to
@@ -5703,8 +5697,8 @@ deriving BEq, Hashable, Inhabited, Repr
  `cvc5::Kind` must be signed (to enable range checks for validity). The size
  of this type depends on the size of `cvc5::internal::Kind`
  (`NodeValue::NBITS_KIND`, currently 10 bits, see expr/node_value.h).
- -/
-inductive SortKind
+-/
+inductive SortKind where
   /--
    Internal kind.
 

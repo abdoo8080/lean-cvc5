@@ -152,10 +152,12 @@ static inline const Op* op_unbox(b_lean_obj_arg op)
   return static_cast<Op*>(lean_get_external_data(op));
 }
 
-extern "C" lean_obj_res op_null(lean_obj_arg unit)
+static inline Op* mut_op_unbox(b_lean_obj_arg op)
 {
-  return op_box(new Op());
+  return static_cast<Op*>(lean_get_external_data(op));
 }
+
+extern "C" lean_obj_res op_null(lean_obj_arg unit) { return op_box(new Op()); }
 
 extern "C" uint16_t op_getKind(lean_obj_arg op)
 {
@@ -181,7 +183,7 @@ static inline lean_obj_res term_box(Term* t);
 
 extern "C" lean_obj_res op_get(lean_obj_arg op, lean_obj_arg i)
 {
-  return term_box(new Term((*op_unbox(op))[lean_usize_of_nat(i)]));
+  return term_box(new Term((*mut_op_unbox(op))[lean_usize_of_nat(i)]));
 }
 
 extern "C" lean_obj_res op_toString(lean_obj_arg op)
@@ -320,9 +322,9 @@ extern "C" uint8_t term_getSkolemId(lean_obj_arg t)
   return static_cast<int32_t>(term_unbox(t)->getSkolemId());
 }
 
-extern "C" lean_obj_res term_getSkolemArguments(lean_obj_arg t)
+extern "C" lean_obj_res term_getSkolemIndices(lean_obj_arg t)
 {
-  std::vector<Term> args = term_unbox(t)->getSkolemArguments();
+  std::vector<Term> args = term_unbox(t)->getSkolemIndices();
   lean_object* as = lean_mk_empty_array();
   for (const Term& arg : args)
   {
@@ -349,8 +351,7 @@ static inline lean_obj_res proof_box(Proof* p)
 {
   if (g_proof_class == nullptr)
   {
-    g_proof_class =
-        lean_register_external_class(result_finalize, result_foreach);
+    g_proof_class = lean_register_external_class(proof_finalize, proof_foreach);
   }
   return lean_alloc_external(g_proof_class, p);
 }
@@ -412,6 +413,68 @@ extern "C" uint16_t rewriterule_fromNat(lean_obj_arg n)
   return lean_usize_of_nat(n);
 }
 
+static void termManager_finalize(void* obj)
+{
+  delete static_cast<TermManager*>(obj);
+}
+
+static void termManager_foreach(void*, b_lean_obj_arg)
+{
+  // do nothing since `TermManager` does not contain nested Lean objects
+}
+
+static lean_external_class* g_termManager_class = nullptr;
+
+static inline lean_obj_res tm_box(TermManager* tm)
+{
+  if (g_termManager_class == nullptr)
+  {
+    g_termManager_class =
+        lean_register_external_class(termManager_finalize, termManager_foreach);
+  }
+  return lean_alloc_external(g_termManager_class, tm);
+}
+
+static inline const TermManager* tm_unbox(b_lean_obj_arg tm)
+{
+  return static_cast<TermManager*>(lean_get_external_data(tm));
+}
+
+static inline TermManager* mut_tm_unbox(b_lean_obj_arg tm)
+{
+  return static_cast<TermManager*>(lean_get_external_data(tm));
+}
+
+extern "C" lean_obj_res termManager_new(lean_obj_arg unit)
+{
+  return lean_io_result_mk_ok(tm_box(new TermManager()));
+}
+
+extern "C" lean_obj_res termManager_mkBoolean(lean_obj_arg tm, uint8_t val)
+{
+  return term_box(new Term(mut_tm_unbox(tm)->mkBoolean(bool_unbox(val))));
+}
+
+extern "C" lean_obj_res termManager_mkIntegerFromString(lean_obj_arg tm,
+                                                        lean_obj_arg val)
+{
+  return term_box(new Term(mut_tm_unbox(tm)->mkInteger(lean_string_cstr(val))));
+}
+
+extern "C" lean_obj_res termManager_mkTerm(lean_obj_arg tm,
+                                           uint16_t kind,
+                                           lean_obj_arg children)
+{
+  Kind k = static_cast<Kind>(static_cast<int32_t>(kind) - 2);
+  std::vector<Term> cs;
+  for (size_t i = 0, n = lean_array_size(children); i < n; ++i)
+  {
+    cs.push_back(*term_unbox(
+        lean_array_get(term_box(new Term()), children, lean_usize_to_nat(i))));
+  }
+  return term_box(new Term(mut_tm_unbox(tm)->mkTerm(k, cs)));
+}
+
 static void solver_finalize(void* obj) { delete static_cast<Solver*>(obj); }
 
 static void solver_foreach(void*, b_lean_obj_arg)
@@ -436,11 +499,6 @@ static inline Solver* solver_unbox(b_lean_obj_arg s)
   return static_cast<Solver*>(lean_get_external_data(s));
 }
 
-extern "C" lean_obj_res solver_new(lean_obj_arg unit)
-{
-  return solver_box(new Solver());
-}
-
 extern "C" lean_obj_res solver_val(lean_obj_arg m,
                                    lean_obj_arg inst,
                                    lean_obj_arg alpha,
@@ -453,11 +511,10 @@ extern "C" lean_obj_res solver_err(lean_obj_arg m,
                                    lean_obj_arg e,
                                    lean_obj_arg solver);
 
-extern "C" lean_obj_res solver_runp(lean_obj_arg m,
-                                    lean_obj_arg inst,
-                                    lean_obj_arg alpha,
-                                    lean_obj_arg query,
-                                    lean_obj_arg solver);
+extern "C" lean_obj_res solver_new(lean_obj_arg tm)
+{
+  return solver_box(new Solver(*mut_tm_unbox(tm)));
+}
 
 extern "C" lean_obj_res solver_getVersion(lean_obj_arg inst,
                                           lean_obj_arg solver)
@@ -477,49 +534,6 @@ extern "C" lean_obj_res solver_setOption(lean_obj_arg inst,
   solver_unbox(solver)->setOption(lean_string_cstr(option),
                                   lean_string_cstr(value));
   return solver_val(lean_box(0), inst, lean_box(0), mk_unit_unit(), solver);
-}
-
-extern "C" lean_obj_res solver_mkBoolean(lean_obj_arg inst,
-                                         uint8_t val,
-                                         lean_obj_arg solver)
-{
-  return solver_val(
-      lean_box(0),
-      inst,
-      lean_box(0),
-      term_box(new Term(solver_unbox(solver)->mkBoolean(bool_unbox(val)))),
-      solver);
-}
-
-extern "C" lean_obj_res solver_mkIntegerFromString(lean_obj_arg inst,
-                                                   lean_obj_arg val,
-                                                   lean_obj_arg solver)
-{
-  return solver_val(lean_box(0),
-                    inst,
-                    lean_box(0),
-                    term_box(new Term(solver_unbox(solver)->mkInteger(
-                        lean_string_cstr(val)))),
-                    solver);
-}
-
-extern "C" lean_obj_res solver_mkTerm(lean_obj_arg inst,
-                                      uint16_t kind,
-                                      lean_obj_arg children,
-                                      lean_obj_arg solver)
-{
-  Kind k = static_cast<Kind>(static_cast<int32_t>(kind) - 2);
-  std::vector<Term> cs;
-  for (size_t i = 0, n = lean_array_size(children); i < n; ++i)
-  {
-    cs.push_back(*term_unbox(
-        lean_array_get(term_box(new Term()), children, lean_usize_to_nat(i))));
-  }
-  return solver_val(lean_box(0),
-                    inst,
-                    lean_box(0),
-                    term_box(new Term(solver_unbox(solver)->mkTerm(k, cs))),
-                    solver);
 }
 
 extern "C" lean_obj_res solver_assertFormula(lean_obj_arg inst,
@@ -589,12 +603,4 @@ extern "C" lean_obj_res solver_parse(lean_obj_arg inst,
     cmd.invoke(slv, &sm, out);
   }
   return solver_val(lean_box(0), inst, lean_box(0), mk_unit_unit(), solver);
-}
-
-extern "C" lean_obj_res solver_run(lean_obj_arg inst, lean_obj_arg query)
-{
-  // This code is equivalent to the Lean implentation. We export this function
-  // to avoid caching the solver object in Lean.
-  return solver_runp(
-      lean_box(0), inst, lean_box(0), query, solver_new(mk_unit_unit()));
 }
