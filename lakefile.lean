@@ -1,7 +1,7 @@
 import Lake
 open Lake DSL
 
-require std from git "https://github.com/leanprover/std4" @ "v4.4.0"
+require std from git "https://github.com/leanprover/std4" @ "v4.6.1"
 
 package cvc5 {
   precompileModules := true
