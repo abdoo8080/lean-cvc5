@@ -201,8 +201,8 @@ opaque isSkolem : Term → Bool
 @[extern "term_getSkolemId"]
 opaque getSkolemId : Term → SkolemFunId
 
-@[extern "term_getSkolemArguments"]
-opaque getSkolemArguments : Term → Array Term
+@[extern "term_getSkolemIndices"]
+opaque getSkolemIndices : Term → Array Term
 
 @[extern "term_get"]
 protected opaque get : (t : Term) → Fin t.getNumChildren → Term
