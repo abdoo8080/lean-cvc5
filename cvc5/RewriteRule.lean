@@ -2,17 +2,7 @@ namespace cvc5
 
 /-- Identifiers for DSL proof rules -/
 inductive RewriteRule where
-  | FAIL
-  | REFL
-  | EVAL
-  -- the following rules can be generated temporarily during reconstruction
-  | TRANS
-  | CONG
-  | CONG_EVAL
-  | TRUE_ELIM
-  | TRUE_INTRO
-  | ARITH_POLY_NORM
-  | ACI_NORM
+  | NONE
   -- Generated rule ids
   | ARITH_PLUS_ZERO
   | ARITH_MUL_ONE

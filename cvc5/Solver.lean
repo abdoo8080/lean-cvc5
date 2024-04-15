@@ -1,11 +1,8 @@
-import Std.Data.Rat.Basic
+import Lean.Data.Rat
 
 import cvc5.Kind
 import cvc5.ProofRule
 import cvc5.SkolemId
-
-@[export rat_mk]
-private def Rat.mk : Int → Nat → Rat := mkRat
 
 namespace cvc5
 
@@ -181,7 +178,7 @@ opaque getBitVectorValue : Term → UInt32 → String
 opaque getIntegerValue : Term → Int
 
 @[extern "term_getRationalValue"]
-opaque getRationalValue : Term → Rat
+opaque getRationalValue : Term → Lean.Rat
 
 @[extern "term_hasSymbol"]
 opaque hasSymbol : Term → Bool

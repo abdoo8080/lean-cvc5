@@ -284,12 +284,14 @@ extern "C" lean_obj_res term_getIntegerValue(lean_obj_arg t)
   return lean_cstr_to_int(term_unbox(t)->getIntegerValue().c_str());
 }
 
+extern "C" lean_obj_res l_Lean_mkRat(lean_obj_arg num, lean_obj_arg den);
+
 extern "C" lean_obj_res term_getRationalValue(lean_obj_arg t)
 {
   std::string r = term_unbox(t)->getRealValue();
   size_t i = r.find('/');
-  return rat_mk(lean_cstr_to_int(r.substr(0, i).c_str()),
-                lean_cstr_to_nat(r.substr(i + 1).c_str()));
+  return l_Lean_mkRat(lean_cstr_to_int(r.substr(0, i).c_str()),
+                      lean_cstr_to_nat(r.substr(i + 1).c_str()));
 }
 
 extern "C" uint8_t term_hasSymbol(lean_obj_arg t)
