@@ -77,37 +77,51 @@ protected opaque toString : Result → String
 
 instance : ToString Result := ⟨Result.toString⟩
 
-end Result
+end cvc5.Result
+
+namespace cvc5.Sort
 
 @[extern "sort_null"]
-opaque Sort.null : Unit → cvc5.Sort
+opaque null : Unit → cvc5.Sort
 
-instance Sort.instInhabitedSort : Inhabited cvc5.Sort := ⟨Sort.null ()⟩
+instance instInhabitedSort : Inhabited cvc5.Sort := ⟨null ()⟩
 
 @[extern "sort_getKind"]
-opaque Sort.getKind : cvc5.Sort → SortKind
+opaque getKind : cvc5.Sort → SortKind
+
+@[extern "sort_beq"]
+protected opaque beq : cvc5.Sort → cvc5.Sort → Bool
+
+instance : BEq cvc5.Sort := ⟨Sort.beq⟩
+
+@[extern "sort_hash"]
+protected opaque hash : cvc5.Sort → UInt64
+
+instance : Hashable cvc5.Sort := ⟨Sort.hash⟩
 
 @[extern "sort_getFunctionDomainSorts"]
-opaque Sort.getFunctionDomainSorts : cvc5.Sort → Array cvc5.Sort
+opaque getFunctionDomainSorts : cvc5.Sort → Array cvc5.Sort
 
 @[extern "sort_getFunctionCodomainSort"]
-opaque Sort.getFunctionCodomainSort : cvc5.Sort → cvc5.Sort
+opaque getFunctionCodomainSort : cvc5.Sort → cvc5.Sort
 
 @[extern "sort_getSymbol"]
-opaque Sort.getSymbol : cvc5.Sort → String
+opaque getSymbol : cvc5.Sort → String
 
 @[extern "sort_isInteger"]
-opaque Sort.isInteger : cvc5.Sort → Bool
+opaque isInteger : cvc5.Sort → Bool
 
 @[extern "sort_getBitVectorSize"]
-opaque Sort.getBitVectorSize : cvc5.Sort → UInt32
+opaque getBitVectorSize : cvc5.Sort → UInt32
 
 @[extern "sort_toString"]
-protected opaque Sort.toString : cvc5.Sort → String
+protected opaque toString : cvc5.Sort → String
 
-instance Sort.instToStringSort : ToString cvc5.Sort := ⟨Sort.toString⟩
+instance instToStringSort : ToString cvc5.Sort := ⟨Sort.toString⟩
 
-namespace Op
+end cvc5.Sort
+
+namespace cvc5.Op
 
 @[extern "op_null"]
 opaque null : Unit → Op
@@ -328,6 +342,4 @@ def run (tm : TermManager) (query : SolverT m α) : m (Except Error α) :=
   | (.ok x, _) => .ok x
   | (.error e, _) => .error e
 
-end Solver
-
-end cvc5
+end cvc5.Solver

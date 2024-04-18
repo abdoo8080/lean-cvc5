@@ -93,6 +93,16 @@ extern "C" uint8_t sort_getKind(lean_obj_arg s)
   return static_cast<int32_t>(sort_unbox(s)->getKind()) + 2;
 }
 
+extern "C" uint8_t sort_beq(lean_obj_arg l, lean_obj_arg r)
+{
+  return bool_box(*sort_unbox(l) == *sort_unbox(r));
+}
+
+extern "C" uint64_t sort_hash(lean_obj_arg s)
+{
+  return std::hash<Sort>()(*sort_unbox(s));
+}
+
 extern "C" lean_obj_res sort_getFunctionDomainSorts(lean_obj_arg s)
 {
   std::vector<Sort> domains = sort_unbox(s)->getFunctionDomainSorts();
