@@ -263,6 +263,9 @@ instance : Inhabited Proof := ⟨null ()⟩
 @[extern "proof_getRule"]
 opaque getRule : Proof → ProofRule
 
+@[extern "proof_getRewriteRule"]
+opaque getRewriteRule : Proof → ProofRewriteRule
+
 @[extern "proof_getResult"]
 opaque getResult : Proof → Term
 

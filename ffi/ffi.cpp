@@ -383,6 +383,11 @@ extern "C" uint8_t proof_getRule(lean_obj_arg p)
   return static_cast<uint32_t>(proof_unbox(p)->getRule());
 }
 
+extern "C" uint16_t proof_getRewriteRule(lean_obj_arg p)
+{
+  return static_cast<uint32_t>(proof_unbox(p)->getRewriteRule());
+}
+
 extern "C" lean_obj_res proof_getResult(lean_obj_arg p)
 {
   return term_box(new Term(proof_unbox(p)->getResult()));
@@ -418,11 +423,6 @@ extern "C" uint8_t proof_beq(lean_obj_arg l, lean_obj_arg r)
 extern "C" uint64_t proof_hash(lean_obj_arg p)
 {
   return std::hash<Proof>()(*proof_unbox(p));
-}
-
-extern "C" uint16_t rewriterule_fromNat(lean_obj_arg n)
-{
-  return lean_usize_of_nat(n);
 }
 
 static void termManager_finalize(void* obj)
