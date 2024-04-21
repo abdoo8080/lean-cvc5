@@ -119,11 +119,22 @@ inductive Kind where
   -/
   | VARIABLE
   /--
+   A Skolem.
+
+   \rst
+   .. note:: Represents an internally generated term. Information on the
+   skolem is available via the calls `Solver::getSkolemId` and
+   `Solver::getSkolemIndices`.
+   \endrst
+  -/
+  | SKOLEM
+  /--
    Symbolic expression.
 
    - Arity: ``n > 0``
 
-     - ``1..n:`` Terms
+     - ``1..n:`` Terms with same sorts
+
 
    - Create Term of this Kind with:
 
@@ -140,26 +151,6 @@ inductive Kind where
    \endrst
   -/
   | SEXPR
-  /--
-   An (internal) skolem function.
-
-   This kind is used as a way of importing and exporting internally generated
-   symbols. It should only be used by expert users.
-
-   - Arity: ``n > 0``
-
-     - ``1..n:`` The arguments of the skolem function
-
-   - Create Term of this Kind with:
-
-     - Solver::mkSkolem(SkolemId id, const std::vector<Term>&) const
-
-   \rst
-   .. warning:: This kind is experimental and may be changed or removed in
-                future versions.
-   \endrst
-  -/
-  | SKOLEM_FUN
   /--
    Lambda expression.
 
