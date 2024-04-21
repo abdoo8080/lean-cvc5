@@ -70,17 +70,19 @@ def getLibOs (lakeDir : FilePath) (name : String) : BuildM (Array (BuildJob File
   let cvc5Os ← osDir.readDir
   (cvc5Os.map (·.path)).mapM (inputFile ·)
 
+target cadical.os pkg : Array (BuildJob FilePath) := getLibOs pkg.lakeDir "cadical" >>= pure ∘ pure
 target cvc5.os pkg : Array (BuildJob FilePath) := getLibOs pkg.lakeDir "cvc5" >>= pure ∘ pure
 target cvc5parser.os pkg : Array (BuildJob FilePath) := getLibOs pkg.lakeDir "cvc5parser" >>= pure ∘ pure
 -- target picpoly.os pkg : Array (BuildJob FilePath) := getLibOs pkg.buildDir "picpoly" >>= pure ∘ pure
 -- target picpolyxx.os pkg : Array (BuildJob FilePath) := getLibOs pkg.buildDir "picpolyxx" >>= pure ∘ pure
 
 target os pkg : Array (BuildJob FilePath) := do
+  let cadicalOs ← fetch (pkg.target ``cadical.os)
   let cvc5Os ← fetch (pkg.target ``cvc5.os)
   let cvc5parserOs ← fetch (pkg.target ``cvc5parser.os)
   -- let picpoly ← fetch (pkg.target ``picpoly.os)
   -- let picpolyxx ← fetch (pkg.target ``picpolyxx.os)
-  let os ← BuildJob.collectArray #[cvc5Os, cvc5parserOs] --, picpoly, picpolyxx]
+  let os ← BuildJob.collectArray #[cadicalOs, cvc5Os, cvc5parserOs] --, picpoly, picpolyxx]
   return os.map (Array.concatMap id)
 
 def compileO' (name : String) (oFile srcFile : FilePath)
