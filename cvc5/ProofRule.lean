@@ -2222,7 +2222,9 @@ deriving BEq, Hashable, Inhabited, Repr
 This enumeration represents the rewrite rules used in a rewrite proof. Some
 of the rules are internal ad-hoc rewrites, while others are rewrites
 specified by the RARE DSL. This enumeration is used as the first argument to
-the :cpp:enumerator:`DSL_REWRITE <cvc5::ProofRule::DSL_REWRITE>` proof rule.
+the :cpp:enumerator:`DSL_REWRITE <cvc5::ProofRule::DSL_REWRITE>` proof rule
+and the :cpp:enumerator:`DSL_REWRITE <cvc5::ProofRule::THEORY_REWRITE>` proof
+rule.
 -/
 inductive ProofRewriteRule where
   | NONE
@@ -2284,6 +2286,18 @@ inductive ProofRewriteRule where
    \endverbatim
   -/
   | DT_CONS_EQ
+  /--
+   \verbatim embed:rst:leading-asterisk
+   **Strings - regular expression loop elimination**
+
+   .. math::
+     ((_ re.loop l u) R) = (re.union R^l ... R^u)
+
+   where `u` :math:`\geq` `l`.
+
+   \endverbatim
+  -/
+  | RE_LOOP_ELIM
   -- RARE rules
   /-- Auto-generated from RARE rule arith-plus-zero -/
   | ARITH_PLUS_ZERO
