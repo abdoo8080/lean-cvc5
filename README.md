@@ -6,8 +6,8 @@ The Lean cvc5 is a Foreign Function Interface (FFI) library that provides a mini
 
 ## Limitations
 
-- Minimal interface to the cvc5 solver (Contributions are welcome!)
-- Currently only works with Linux (support for macOS and Windows is planned for future releases)
+- Minimal interface to the cvc5 solver (contributions are welcome!)
+- Currently only works with Linux (x86_64) and macOS (AArch64) (support for Windows and other architectures is planned for future releases)
 
 ## Getting Started
 

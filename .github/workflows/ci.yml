@@ -11,18 +11,15 @@ jobs:
         include:
         - name: Linux
           os: ubuntu-latest
+        - name: macOS
+          os: macos-latest
     steps:
-    - name: Install clang-15 (Linux)
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        sudo apt install clang-15 libc++-15-dev
-    - name: Install Elan (Linux)
-      if: matrix.os == 'ubuntu-latest'
+    - name: Install Elan
       run: |
         curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y
         echo "$HOME/.elan/bin" >> $GITHUB_PATH
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Build lean-cvc5
       run: |
         lake build
