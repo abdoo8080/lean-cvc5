@@ -270,7 +270,7 @@ inductive ProofRule where
    **Other theory rewrite rules**
 
    .. math::
-     \inferrule{- \mid id, t}{t = t'}
+     \inferrule{- \mid id, t = t'}{t = t'}
 
    where `id` is the :cpp:enum:`ProofRewriteRule` of the theory rewrite
    rule which transforms :math:`t` to :math:`t'`.
@@ -1145,8 +1145,7 @@ inductive ProofRule where
      \inferrule{a \neq b\mid -}
      {\mathit{select}(a,k)\neq\mathit{select}(b,k)}
 
-   where :math:`k` is
-   :math:`\texttt{arrays::SkolemCache::getExtIndexSkolem}(a\neq b)`.
+   where :math:`k` is the :math:`\texttt{ARRAY_DEQ_DIFF}` skolem for `(a, b)`.
    \endverbatim
   -/
   | ARRAYS_EXT
@@ -1213,20 +1212,6 @@ inductive ProofRule where
    \endverbatim
   -/
   | DT_UNIF
-  /--
-   \verbatim embed:rst:leading-asterisk
-   **Datatypes -- Instantiation**
-
-   .. math::
-
-     \inferrule{-\mid t,n}{\mathit{is}_C(t) =
-     (t = C(\mathit{sel}_1(t\dots,\mathit{sel}_n(t)))}
-
-   where :math:`C` is the :math:`n^{\mathit{th}}` constructor of the type of
-   t, and :math:`\mathit{is}_C` is the discriminator (tester) for :math:`C`.
-   \endverbatim
-  -/
-  | DT_INST
   /--
    \verbatim embed:rst:leading-asterisk
    **Datatypes -- Split**
@@ -1323,6 +1308,29 @@ inductive ProofRule where
   | ALPHA_EQUIV
   /--
    \verbatim embed:rst:leading-asterisk
+   **Sets -- Singleton injectivity**
+
+   .. math::
+
+     \inferrule{\mathit{set.singleton}(t) = \mathit{set.singleton}(s)\mid -}{t=s}
+   \endverbatim
+  -/
+  | SETS_SINGLETON_INJ
+  /--
+   \verbatim embed:rst:leading-asterisk
+   **Sets -- Sets extensionality**
+
+   .. math::
+
+     \inferrule{a \neq b\mid -}
+     {\mathit{set.member}(k,a)\neq\mathit{set.member}(k,b)}
+
+   where :math:`k` is the :math:`\texttt{SETS_DEQ_DIFF}` skolem for `(a, b)`.
+   \endverbatim
+  -/
+  | SETS_EXT
+  /--
+   \verbatim embed:rst:leading-asterisk
    **Strings -- Core rules -- Concatenation equality**
 
    .. math::
@@ -1408,7 +1416,8 @@ inductive ProofRule where
    :math:`\mathit{skolem}(\mathit{ite}(
    \mathit{len}(t_1) >= \mathit{len}(s_1
    \mathit{suf}(t_1,\mathit{len}(s_1)
-   \mathit{suf}(s_1,\mathit{len}(t_1))))`.
+   \mathit{suf}(s_1,\mathit{len}(t_1))))`
+   and `\epsilon` is the empty string (or sequence).
 
    .. math::
 
@@ -1416,11 +1425,11 @@ inductive ProofRule where
      \mathit{len}(t_2) \neq \mathit{len}(s_2)\mid b}{((t_2 = r \cdot s_2)
      \vee (s_2 = r \cdot t_2)) \wedge r \neq \epsilon \wedge \mathit{len}(r)>0}{if $b=\top$}
 
-   where :math:`r` is
-   :math:`\mathit{skolem}(\mathit{ite}(
+   where :math:`r` is the purification Skolem for
+   :math:`\mathit{ite}(
    \mathit{len}(t_2) >= \mathit{len}(s_2
    \mathit{pre}(t_2,\mathit{len}(t_2) - \mathit{len}(s_2)
-   \mathit{pre}(s_2,\mathit{len}(s_2) - \mathit{len}(t_2))))`
+   \mathit{pre}(s_2,\mathit{len}(s_2) - \mathit{len}(t_2)))`
    and `\epsilon` is the empty string (or sequence).
 
    Above, :math:`\mathit{suf}(x,n)` is shorthand for
@@ -1459,21 +1468,26 @@ inductive ProofRule where
    .. math::
 
      \inferrule{(t_1\cdot t_2) = (s_1 \cdot s_2\,
-     \mathit{len}(t_1) > \mathit{len}(s_1)\mid \bot}{(t_1 = s_1\cdot r_t)}
+     \mathit{len}(t_1) > \mathit{len}(s_1)\mid \bot}{(t_1 = s_1\cdot r)}
 
-   where :math:`r_t` is
-   :math:`\mathit{skolem}(\mathit{suf}(t_1,\mathit{len}(s_1)))`.
+   where :math:`r` is the purification Skolem for
+   :math:`\mathit{skolem}(\mathit{ite}(
+   \mathit{len}(t_1) >= \mathit{len}(s_1
+   \mathit{suf}(t_1,\mathit{len}(s_1)
+   \mathit{suf}(s_1,\mathit{len}(t_1))))`.
 
    Alternatively for the reverse:
 
    .. math::
 
      \inferrule{(t_1\cdot t_2) = (s_1 \cdot s_2\,
-     \mathit{len}(t_2) > \mathit{len}(s_2)\mid \top}{(t_2 = r_t\cdot s_2)}
+     \mathit{len}(t_2) > \mathit{len}(s_2)\mid \top}{(t_2 = r \cdot s_2)}
 
-   where :math:`r_t` is
-   :math:`\mathit{skolem}(\mathit{pre}(t_2,\mathit{len}(t_2) -
-   \mathit{len}(s_2)))`.
+   where :math:`r` is the purification Skolem for
+   :math:`\mathit{ite}(
+   \mathit{len}(t_2) >= \mathit{len}(s_2
+   \mathit{pre}(t_2,\mathit{len}(t_2) - \mathit{len}(s_2)
+   \mathit{pre}(s_2,\mathit{len}(s_2) - \mathit{len}(t_2)))`
    \endverbatim
   -/
   | CONCAT_LPROP
@@ -1484,9 +1498,9 @@ inductive ProofRule where
    .. math::
 
      \inferrule{(t_1\cdot w_1\cdot t_2) = (w_2 \cdot s\,
-     \mathit{len}(t_1) \neq 0\mid \bot}{(t_1 = w_3\cdot r)}
+     \mathit{len}(t_1) \neq 0\mid \bot}{(t_1 = t_3\cdot r)}
 
-   where :math:`w_1,\,w_2,\,w_3` are words, :math:`w_3` is
+   where :math:`w_1,\,w_2` are words, :math:`t_3` is
    :math:`\mathit{pre}(w_2,p)`, :math:`p` is
    :math:`\texttt{Word::overlap}(\mathit{suf}(w_2,1 w_1)`, and :math:`r` is
    :math:`\mathit{skolem}(\mathit{suf}(t_1,\mathit{len}(w_3)))`.  Note that
@@ -1500,10 +1514,10 @@ inductive ProofRule where
    .. math::
 
      \inferrule{(t_1\cdot w_1\cdot t_2) = (s \cdot w_2\,
-     \mathit{len}(t_2) \neq 0\mid \top}{(t_2 = r\cdot w_3)}
+     \mathit{len}(t_2) \neq 0\mid \top}{(t_2 = r\cdot t_3)}
 
-   where :math:`w_1,\,w_2,\,w_3` are words, :math:`w_3` is
-   :math:`\mathit{suf}(w_2, \mathit{len}(w_2) - p)`, :math:`p` is
+   where :math:`w_1,\,w_2` are words, :math:`t_3` is
+   :math:`\mathit{substr}(w_2, \mathit{len}(w_2) - p, p)`, :math:`p` is
    :math:`\texttt{Word::roverlap}(\mathit{pre}(w_2, \mathit{len}(w_2) - 1
    w_1)`, and :math:`r` is :math:`\mathit{skolem}(\mathit{pre}(t_2,
    \mathit{len}(t_2) - \mathit{len}(w_3)))`.  Note that
@@ -1613,9 +1627,17 @@ inductive ProofRule where
 
    .. math::
 
-     \inferrule{t\not\in R\mid -}{\texttt{RegExpOpr::reduceRegExpNeg}(t\not\in R)}
+     \inferrule{t \not \in \mathit{re}.\text{*}(R) \mid -}{t \neq \ '' \ \wedge \forall L. L \leq 0 \vee \mathit{str.len}(t) < L \vee \mathit{pre}(t, L) \not \in R \vee \mathit{suf}(t, L) \not \in \mathit{re}.\text{*}(R)}
 
-   corresponding to the one-step unfolding of the premise.
+   Or alternatively for regular expression concatenation:
+
+   .. math::
+
+     \inferrule{t \not \in \mathit{re}.\text{++}(R_1, \ldots, R_n)\mid -}{\forall L. L < 0 \vee \mathit{str.len}(t) < L \vee \mathit{pre}(t, L) \not \in R_1 \vee \mathit{suf}(t, L) \not \in \mathit{re}.\text{++}(R_2, \ldots, R_n)}
+
+   Note that in either case the varaible :math:`L` has type :math:`Int` and
+   name `"@var.str_index"`.
+
    \endverbatim
   -/
   | RE_UNFOLD_NEG
@@ -1625,13 +1647,22 @@ inductive ProofRule where
 
    .. math::
 
-     \inferrule{t\not\in R\mid
-     -}{\texttt{RegExpOpr::reduceRegExpNegConcatFixed}(t\not\in R,L,i)}
+     \inferrule{t\not\in \mathit{re}.\text{re.++}(r_1, \ldots, r_n) \mid \bot}{
+    \mathit{pre}(t, L) \not \in r_1 \vee \mathit{suf}(t, L) \not \in \mathit{re}.\text{re.++}(r_2, \ldots, r_n)}
 
-   where :math:`\texttt{RegExpOpr::getRegExpConcatFixed}(t\not\in R, i) = L`,
-   corresponding to the one-step unfolding of the premise, optimized for fixed
-   length of component :math:`i` of the regular expression concatenation
-   :math:`R`.
+   where :math:`r_1` has fixed length :math:`L`.
+
+   or alternatively for the reverse:
+
+
+   .. math::
+
+     \inferrule{t \not \in \mathit{re}.\text{re.++}(r_1, \ldots, r_n) \mid \top}{
+     \mathit{suf}(t, str.len(t) - L) \not \in r_n \vee
+     \mathit{pre}(t, str.len(t) - L) \not \in \mathit{re}.\text{re.++}(r_1, \ldots, r_{n-1})}
+
+   where :math:`r_n` has fixed length :math:`L`.
+
    \endverbatim
   -/
   | RE_UNFOLD_NEG_CONCAT_FIXED
@@ -2222,10 +2253,25 @@ inductive ProofRewriteRule where
   | DISTINCT_ELIM
   /--
    \verbatim embed:rst:leading-asterisk
+   **Booleans -- Negation Normal Form with normalization**
+
+   .. math::
+     F = G
+
+   where :math:`G` is the result of applying negation normal form to
+   :math:`F` with additional normalizations, see
+   TheoryBoolRewriter::computeNnfNorm.
+
+   \endverbatim
+  -/
+  | MACRO_BOOL_NNF_NORM
+  /--
+   \verbatim embed:rst:leading-asterisk
    **Equality -- Beta reduction**
 
    .. math::
-     ((\lambda x_1 \dots x_n.\> t) t_1 \ldots t_n) = t\{x_1 \mapsto t_1, \dots, x_n \mapsto t_n\}
+     ((\lambda x_1 \ldots x_n.\> t) \ t_1 \ldots t_n) = t\{x_1 \mapsto t_1,
+     \ldots, x_n \mapsto t_n\}
 
    The right hand side of the equality in the conclusion is computed using
    standard substitution via ``Node::substitute``.
@@ -2255,6 +2301,70 @@ inductive ProofRewriteRule where
   | EXISTS_ELIM
   /--
    \verbatim embed:rst:leading-asterisk
+   **Quantifiers -- Unused variables**
+
+   .. math::
+     \forall X.\> F = \forall X_1.\> F
+
+   where :math:`X_1` is the subset of :math:`X` that appear free in :math:`F`.
+
+   \endverbatim
+  -/
+  | QUANT_UNUSED_VARS
+  /--
+   \verbatim embed:rst:leading-asterisk
+   **Quantifiers -- Merge prenex**
+
+   .. math::
+     \forall X_1.\> \ldots \forall X_n.\> F = \forall X_1 \ldots X_n.\> F
+
+   where :math:`X_1 \ldots X_n` are lists of variables.
+
+   \endverbatim
+  -/
+  | QUANT_MERGE_PRENEX
+  /--
+   \verbatim embed:rst:leading-asterisk
+   **Quantifiers -- Miniscoping**
+
+   .. math::
+     \forall X.\> F_1 \wedge \ldots \wedge F_n =
+     (\forall X.\> F_1) \wedge \ldots \wedge (\forall X.\> F_n)
+
+   \endverbatim
+  -/
+  | QUANT_MINISCOPE
+  /--
+   \verbatim embed:rst:leading-asterisk
+   **Quantifiers -- Macro connected free variable partitioning**
+
+   .. math::
+     \forall X.\> F_1 \vee \ldots \vee F_n =
+     (\forall X_1.\> F_{1,1} \vee \ldots \vee F_{1,k_1}) \vee \ldots \vee
+     (\forall X_m.\> F_{m,1} \vee \ldots \vee F_{m,k_m})
+
+   where :math:`X_1, \ldots, X_m` is a partition of :math:`X`. This is
+   determined by computing the connected components when considering two
+   variables in :math:`X` to be connected if they occur in the same
+   :math:`F_i`.
+   \endverbatim
+  -/
+  | MACRO_QUANT_PARTITION_CONNECTED_FV
+  /--
+   \verbatim embed:rst:leading-asterisk
+   **Datatypes -- Instantiation**
+
+   .. math::
+      \mathit{is}_C(t) = (t = C(\mathit{sel}_1(t\dots,\mathit{sel}_n(t)))
+
+   where :math:`C` is the :math:`n^{\mathit{th}}` constructor of the type of
+   :math:`t`, and :math:`\mathit{is}_C` is the discriminator (tester) for
+   :math:`C`.
+   \endverbatim
+  -/
+  | DT_INST
+  /--
+   \verbatim embed:rst:leading-asterisk
    **Datatypes - collapse selector**
 
    .. math::
@@ -2270,18 +2380,30 @@ inductive ProofRewriteRule where
    **Datatypes - collapse tester**
 
    .. math::
-     is\text{-}c(c(t_1, \ldots, t_n)) = true
+     \mathit{is}_c(c(t_1, \ldots, t_n)) = true
 
    or alternatively
 
    .. math::
-     is\text{-}c(d(t_1, \ldots, t_n)) = false
+     \mathit{is}_c(d(t_1, \ldots, t_n)) = false
 
    where :math:`c` and :math:`d` are distinct constructors.
 
    \endverbatim
   -/
   | DT_COLLAPSE_TESTER
+  /--
+   \verbatim embed:rst:leading-asterisk
+   **Datatypes - collapse tester**
+
+   .. math::
+     \mathit{is}_c(t) = true
+
+   where :math:`c` is the only constructor of its associated datatype.
+
+   \endverbatim
+  -/
+  | DT_COLLAPSE_TESTER_SINGLETON
   /--
    \verbatim embed:rst:leading-asterisk
    **Datatypes - constructor equality**
@@ -2312,6 +2434,24 @@ inductive ProofRewriteRule where
    \endverbatim
   -/
   | RE_LOOP_ELIM
+  /--
+   \verbatim embed:rst:leading-asterisk
+   **Sets - empty tester evaluation**
+
+   .. math::
+     \mathit{sets.is\_empty}(as \ \mathit{set.empty} \ (\mathit{Set} \ T)) =
+   \top
+
+   or alternatively:
+
+   .. math::
+     \mathit{sets.is\_empty}(c) = \bot
+
+   where :math:`c` is a constant set that is not the empty set.
+
+   \endverbatim
+  -/
+  | SETS_IS_EMPTY_EVAL
   -- RARE rules
   /-- Auto-generated from RARE rule arith-plus-zero -/
   | ARITH_PLUS_ZERO
@@ -2367,6 +2507,10 @@ inductive ProofRewriteRule where
   | ARRAY_STORE_SELF
   /-- Auto-generated from RARE rule bool-double-not-elim -/
   | BOOL_DOUBLE_NOT_ELIM
+  /-- Auto-generated from RARE rule bool-not-true -/
+  | BOOL_NOT_TRUE
+  /-- Auto-generated from RARE rule bool-not-false -/
+  | BOOL_NOT_FALSE
   /-- Auto-generated from RARE rule bool-eq-true -/
   | BOOL_EQ_TRUE
   /-- Auto-generated from RARE rule bool-eq-false -/
@@ -2403,6 +2547,12 @@ inductive ProofRewriteRule where
   | BOOL_AND_CONF
   /-- Auto-generated from RARE rule bool-or-taut -/
   | BOOL_OR_TAUT
+  /-- Auto-generated from RARE rule bool-or-de-morgan -/
+  | BOOL_OR_DE_MORGAN
+  /-- Auto-generated from RARE rule bool-implies-de-morgan -/
+  | BOOL_IMPLIES_DE_MORGAN
+  /-- Auto-generated from RARE rule bool-and-de-morgan -/
+  | BOOL_AND_DE_MORGAN
   /-- Auto-generated from RARE rule bool-xor-refl -/
   | BOOL_XOR_REFL
   /-- Auto-generated from RARE rule bool-xor-nrefl -/
@@ -2415,6 +2565,10 @@ inductive ProofRewriteRule where
   | BOOL_XOR_COMM
   /-- Auto-generated from RARE rule bool-xor-elim -/
   | BOOL_XOR_ELIM
+  /-- Auto-generated from RARE rule bool-not-xor-elim -/
+  | BOOL_NOT_XOR_ELIM
+  /-- Auto-generated from RARE rule bool-not-eq-elim -/
+  | BOOL_NOT_EQ_ELIM
   /-- Auto-generated from RARE rule ite-neg-branch -/
   | ITE_NEG_BRANCH
   /-- Auto-generated from RARE rule ite-then-true -/
@@ -2771,20 +2925,46 @@ inductive ProofRewriteRule where
   | BV_SIGN_EXTEND_ULT_CONST_3
   /-- Auto-generated from RARE rule bv-sign-extend-ult-const-4 -/
   | BV_SIGN_EXTEND_ULT_CONST_4
+  /-- Auto-generated from RARE rule sets-eq-singleton-emp -/
+  | SETS_EQ_SINGLETON_EMP
   /-- Auto-generated from RARE rule sets-member-singleton -/
   | SETS_MEMBER_SINGLETON
+  /-- Auto-generated from RARE rule sets-member-emp -/
+  | SETS_MEMBER_EMP
   /-- Auto-generated from RARE rule sets-subset-elim -/
   | SETS_SUBSET_ELIM
   /-- Auto-generated from RARE rule sets-union-comm -/
   | SETS_UNION_COMM
   /-- Auto-generated from RARE rule sets-inter-comm -/
   | SETS_INTER_COMM
+  /-- Auto-generated from RARE rule sets-inter-emp1 -/
+  | SETS_INTER_EMP1
+  /-- Auto-generated from RARE rule sets-inter-emp2 -/
+  | SETS_INTER_EMP2
+  /-- Auto-generated from RARE rule sets-minus-emp1 -/
+  | SETS_MINUS_EMP1
+  /-- Auto-generated from RARE rule sets-minus-emp2 -/
+  | SETS_MINUS_EMP2
+  /-- Auto-generated from RARE rule sets-union-emp1 -/
+  | SETS_UNION_EMP1
+  /-- Auto-generated from RARE rule sets-union-emp2 -/
+  | SETS_UNION_EMP2
   /-- Auto-generated from RARE rule sets-inter-member -/
   | SETS_INTER_MEMBER
   /-- Auto-generated from RARE rule sets-minus-member -/
   | SETS_MINUS_MEMBER
   /-- Auto-generated from RARE rule sets-union-member -/
   | SETS_UNION_MEMBER
+  /-- Auto-generated from RARE rule sets-choose-singleton -/
+  | SETS_CHOOSE_SINGLETON
+  /-- Auto-generated from RARE rule sets-card-singleton -/
+  | SETS_CARD_SINGLETON
+  /-- Auto-generated from RARE rule sets-card-union -/
+  | SETS_CARD_UNION
+  /-- Auto-generated from RARE rule sets-card-minus -/
+  | SETS_CARD_MINUS
+  /-- Auto-generated from RARE rule sets-card-emp -/
+  | SETS_CARD_EMP
   /-- Auto-generated from RARE rule str-eq-ctn-false -/
   | STR_EQ_CTN_FALSE
   /-- Auto-generated from RARE rule str-concat-flatten -/
