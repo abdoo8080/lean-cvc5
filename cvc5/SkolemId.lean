@@ -36,7 +36,7 @@ In contrast, cvc5 reasons about division-by-zero using a single skolem
 function whose identifier is ``DIV_BY_ZERO``. This means its skolem indices
 are empty and the skolem has a functional type ``(-> Real Real)``.
 -/
-inductive SkolemFunId where
+inductive SkolemId where
   /--
    The identifier of the skolem is not exported. These skolems should not
    appear in any user-level API calls.
@@ -675,6 +675,15 @@ inductive SkolemFunId where
   --================================================= Unknown rule
   /-- Indicates this is not a skolem.-/
   | NONE
-deriving BEq, Hashable, Inhabited, Repr
+deriving BEq, Hashable, Inhabited
+
+namespace SkolemId
+
+@[extern "skolemId_toString"]
+protected opaque toString : SkolemId → String
+
+instance : ToString SkolemId := ⟨SkolemId.toString⟩
+
+end SkolemId
 
 end cvc5

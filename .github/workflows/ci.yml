@@ -21,5 +21,4 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
     - name: Build lean-cvc5
-      run: |
-        lake build
+      run: lake build

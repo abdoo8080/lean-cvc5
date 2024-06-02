@@ -2240,7 +2240,7 @@ inductive ProofRule where
 
   --================================================= Unknown rule
   | UNKNOWN
-deriving BEq, Hashable, Inhabited, Repr
+deriving BEq, Hashable, Inhabited
 
 /--
 \verbatim embed:rst:leading-asterisk
@@ -3274,6 +3274,24 @@ inductive ProofRewriteRule where
   | EQ_SYMM
   /-- Auto-generated from RARE rule distinct-binary-elim -/
   | DISTINCT_BINARY_ELIM
-deriving BEq, Hashable, Inhabited, Repr
+deriving BEq, Hashable, Inhabited
+
+namespace ProofRule
+
+@[extern "proofRule_toString"]
+protected opaque toString : ProofRule → String
+
+instance : ToString ProofRule := ⟨ProofRule.toString⟩
+
+end ProofRule
+
+namespace ProofRewriteRule
+
+@[extern "proofRewriteRule_toString"]
+protected opaque toString : ProofRewriteRule → String
+
+instance : ToString ProofRewriteRule := ⟨ProofRewriteRule.toString⟩
+
+end ProofRewriteRule
 
 end cvc5

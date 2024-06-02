@@ -16,6 +16,32 @@ extern "C" lean_obj_res rat_mk(lean_obj_arg num, lean_obj_arg den);
 
 inline bool bool_unbox(uint8_t b) { return static_cast<bool>(b); }
 
+extern "C" lean_obj_res kind_toString(uint16_t k)
+{
+  return lean_mk_string(std::to_string(static_cast<Kind>(k)).c_str());
+}
+
+extern "C" lean_obj_res sortKind_toString(uint8_t sk)
+{
+  return lean_mk_string(std::to_string(static_cast<SortKind>(sk)).c_str());
+}
+
+extern "C" lean_obj_res proofRule_toString(uint8_t pr)
+{
+  return lean_mk_string(std::to_string(static_cast<ProofRule>(pr)).c_str());
+}
+
+extern "C" lean_obj_res proofRewriteRule_toString(uint16_t prr)
+{
+  return lean_mk_string(
+      std::to_string(static_cast<ProofRewriteRule>(prr)).c_str());
+}
+
+extern "C" lean_obj_res skolemId_toString(uint8_t si)
+{
+  return lean_mk_string(std::to_string(static_cast<SkolemId>(si)).c_str());
+}
+
 static void result_finalize(void* obj) { delete static_cast<Result*>(obj); }
 
 static void result_foreach(void*, b_lean_obj_arg)

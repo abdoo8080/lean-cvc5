@@ -217,7 +217,7 @@ opaque getNumChildren : Term → Nat
 opaque isSkolem : Term → Bool
 
 @[extern "term_getSkolemId"]
-opaque getSkolemId : Term → SkolemFunId
+opaque getSkolemId : Term → SkolemId
 
 @[extern "term_getSkolemIndices"]
 opaque getSkolemIndices : Term → Array Term
@@ -243,6 +243,12 @@ protected def forIn {β : Type u} [Monad m] (t : Term) (b : β) (f : Term → β
 
 instance : ForIn m Term Term where
   forIn := Term.forIn
+
+def getChildren (t : Term) : Array Term := Id.run do
+  let mut cts := #[]
+  for ct in t do
+    cts := cts.push ct
+  cts
 
 @[extern "term_not"]
 protected opaque not : Term → Term
@@ -352,4 +358,6 @@ def run (tm : TermManager) (query : SolverT m α) : m (Except Error α) :=
   | (.ok x, _) => .ok x
   | (.error e, _) => .error e
 
-end cvc5.Solver
+end Solver
+
+end cvc5

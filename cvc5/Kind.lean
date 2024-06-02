@@ -5738,7 +5738,7 @@ inductive Kind where
   /- ----------------------------------------------------------------------- -/
   /-- Marks the upper-bound of this enumeration. -/
   | LAST_KIND
-deriving BEq, Hashable, Inhabited, Repr
+deriving BEq, Hashable, Inhabited
 
 /--
  The kind of a cvc5 Sort.
@@ -5952,4 +5952,24 @@ inductive SortKind where
   /- ----------------------------------------------------------------------- -/
   /-- Marks the upper-bound of this enumeration. -/
   | LAST_SORT_KIND
-deriving BEq, Hashable, Inhabited, Repr
+deriving BEq, Hashable, Inhabited
+
+namespace Kind
+
+@[extern "kind_toString"]
+protected opaque toString : Kind → String
+
+instance : ToString Kind := ⟨Kind.toString⟩
+
+end Kind
+
+namespace SortKind
+
+@[extern "sortKind_toString"]
+protected opaque toString : SortKind → String
+
+instance : ToString SortKind := ⟨SortKind.toString⟩
+
+end SortKind
+
+end cvc5
