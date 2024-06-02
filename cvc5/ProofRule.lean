@@ -1,3 +1,10 @@
+/-
+Copyright (c) 2023-2024 by the authors listed in the file AUTHORS and their
+institutional affiliations. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Abdalrhman Mohamed
+-/
+
 namespace cvc5
 
 /--
@@ -231,19 +238,26 @@ inductive ProofRule where
   | MACRO_SR_PRED_TRANSFORM
   /--
    \verbatim embed:rst:leading-asterisk
-   **Builtin theory -- Encode predicate transformation**
+   **Builtin theory -- Encode equality introduction**
 
    .. math::
-     \inferrule{F \mid G}{G}
+     \inferrule{- \mid t}{t=t'}
 
-   where :math:`F` and :math:`G` are equivalent up to their encoding in an
-   external proof format. This is currently verified by
-   :math:`\texttt{RewriteDbNodeConverter::convert}(F) = \texttt{RewriteDbNodeConverter::convert}(G)`.
-   This rule can be treated as a no-op when appropriate in external proof
-   formats.
+   where :math:`t` and :math:`t'` are equivalent up to their encoding in an
+   external proof format.
+
+   More specifically, it is the case that
+   :math:`\texttt{RewriteDbNodeConverter::postConvert}(t) = t;`.
+   This conversion method for instance may drop user patterns from quantified
+   formulas or change the representation of :math:`t` in a way that is a
+   no-op in external proof formats.
+
+   Note this rule can be treated as a
+   :cpp:enumerator:`REFL <cvc5::ProofRule::REFL>` when appropriate in
+   external proof formats.
    \endverbatim
   -/
-  | ENCODE_PRED_TRANSFORM
+  | ENCODE_EQ_INTRO
   /--
    \verbatim embed:rst:leading-asterisk
    **Builtin theory -- DSL rewrite**
@@ -2267,6 +2281,50 @@ inductive ProofRewriteRule where
   | MACRO_BOOL_NNF_NORM
   /--
    \verbatim embed:rst:leading-asterisk
+   **Arith -- Division by constant elimination**
+
+   .. math::
+     t / c = t * 1/c
+
+   where :math:`c` is a constant.
+
+   \endverbatim
+  -/
+  | ARITH_DIV_BY_CONST_ELIM
+  /--
+   \verbatim embed:rst:leading-asterisk
+   **Arithmetic - strings predicate entailment**
+
+   .. math::
+     (>= n 0) = true
+
+   Where :math:`n` can be shown to be greater than or equal to :math:`0` by
+   reasoning about string length being positive and basic properties of
+   addition and multiplication.
+
+   \endverbatim
+  -/
+  | ARITH_STRING_PRED_ENTAIL
+  /--
+   \verbatim embed:rst:leading-asterisk
+   **Arithmetic - strings predicate entailment**
+
+   .. math::
+     (>= n 0) = (>= m 0)
+
+   Where :math:`m` is a safe under-approximation of :math:`n`, namely
+   we have that :math:`(>= n m)` and :math:`(>= m 0)`.
+
+   In detail, subterms of :math:`n` may be replaced with other terms to
+   obtain :math:`m` based on the reasoning described in the paper
+   Reynolds et al, CAV 2019, "High-Level Abstractions for Simplifying
+   Extended String Constraints in SMT".
+
+   \endverbatim
+  -/
+  | ARITH_STRING_PRED_SAFE_APPROX
+  /--
+   \verbatim embed:rst:leading-asterisk
    **Equality -- Beta reduction**
 
    .. math::
@@ -2459,8 +2517,20 @@ inductive ProofRewriteRule where
   | ARITH_MUL_ONE
   /-- Auto-generated from RARE rule arith-mul-zero -/
   | ARITH_MUL_ZERO
-  /-- Auto-generated from RARE rule arith-int-div-one -/
-  | ARITH_INT_DIV_ONE
+  /-- Auto-generated from RARE rule arith-div-total -/
+  | ARITH_DIV_TOTAL
+  /-- Auto-generated from RARE rule arith-int-div-total -/
+  | ARITH_INT_DIV_TOTAL
+  /-- Auto-generated from RARE rule arith-int-div-total-one -/
+  | ARITH_INT_DIV_TOTAL_ONE
+  /-- Auto-generated from RARE rule arith-int-div-total-zero -/
+  | ARITH_INT_DIV_TOTAL_ZERO
+  /-- Auto-generated from RARE rule arith-int-mod-total -/
+  | ARITH_INT_MOD_TOTAL
+  /-- Auto-generated from RARE rule arith-int-mod-total-one -/
+  | ARITH_INT_MOD_TOTAL_ONE
+  /-- Auto-generated from RARE rule arith-int-mod-total-zero -/
+  | ARITH_INT_MOD_TOTAL_ZERO
   /-- Auto-generated from RARE rule arith-neg-neg-one -/
   | ARITH_NEG_NEG_ONE
   /-- Auto-generated from RARE rule arith-elim-uminus -/
@@ -2477,8 +2547,10 @@ inductive ProofRewriteRule where
   | ARITH_LEQ_NORM
   /-- Auto-generated from RARE rule arith-geq-tighten -/
   | ARITH_GEQ_TIGHTEN
-  /-- Auto-generated from RARE rule arith-geq-norm -/
-  | ARITH_GEQ_NORM
+  /-- Auto-generated from RARE rule arith-geq-norm1 -/
+  | ARITH_GEQ_NORM1
+  /-- Auto-generated from RARE rule arith-geq-norm2 -/
+  | ARITH_GEQ_NORM2
   /-- Auto-generated from RARE rule arith-refl-leq -/
   | ARITH_REFL_LEQ
   /-- Auto-generated from RARE rule arith-refl-lt -/
@@ -2487,6 +2559,10 @@ inductive ProofRewriteRule where
   | ARITH_REFL_GEQ
   /-- Auto-generated from RARE rule arith-refl-gt -/
   | ARITH_REFL_GT
+  /-- Auto-generated from RARE rule arith-real-eq-elim -/
+  | ARITH_REAL_EQ_ELIM
+  /-- Auto-generated from RARE rule arith-int-eq-elim -/
+  | ARITH_INT_EQ_ELIM
   /-- Auto-generated from RARE rule arith-plus-flatten -/
   | ARITH_PLUS_FLATTEN
   /-- Auto-generated from RARE rule arith-mult-flatten -/
@@ -2497,6 +2573,16 @@ inductive ProofRewriteRule where
   | ARITH_PLUS_CANCEL1
   /-- Auto-generated from RARE rule arith-plus-cancel2 -/
   | ARITH_PLUS_CANCEL2
+  /-- Auto-generated from RARE rule arith-abs-elim -/
+  | ARITH_ABS_ELIM
+  /-- Auto-generated from RARE rule arith-to-real-elim -/
+  | ARITH_TO_REAL_ELIM
+  /-- Auto-generated from RARE rule arith-to-int-elim-to-real -/
+  | ARITH_TO_INT_ELIM_TO_REAL
+  /-- Auto-generated from RARE rule arith-div-elim-to-real1 -/
+  | ARITH_DIV_ELIM_TO_REAL1
+  /-- Auto-generated from RARE rule arith-div-elim-to-real2 -/
+  | ARITH_DIV_ELIM_TO_REAL2
   /-- Auto-generated from RARE rule array-read-over-write -/
   | ARRAY_READ_OVER_WRITE
   /-- Auto-generated from RARE rule array-read-over-write2 -/
@@ -2583,6 +2669,8 @@ inductive ProofRewriteRule where
   | ITE_THEN_LOOKAHEAD_SELF
   /-- Auto-generated from RARE rule ite-else-lookahead-self -/
   | ITE_ELSE_LOOKAHEAD_SELF
+  /-- Auto-generated from RARE rule bool-not-ite-elim -/
+  | BOOL_NOT_ITE_ELIM
   /-- Auto-generated from RARE rule ite-true-cond -/
   | ITE_TRUE_COND
   /-- Auto-generated from RARE rule ite-false-cond -/
@@ -2993,16 +3081,6 @@ inductive ProofRewriteRule where
   | STR_LEN_SUBSTR_UB1
   /-- Auto-generated from RARE rule str-len-substr-ub2 -/
   | STR_LEN_SUBSTR_UB2
-  /-- Auto-generated from RARE rule re-in-empty -/
-  | RE_IN_EMPTY
-  /-- Auto-generated from RARE rule re-in-sigma -/
-  | RE_IN_SIGMA
-  /-- Auto-generated from RARE rule re-in-sigma-star -/
-  | RE_IN_SIGMA_STAR
-  /-- Auto-generated from RARE rule re-in-cstring -/
-  | RE_IN_CSTRING
-  /-- Auto-generated from RARE rule re-in-comp -/
-  | RE_IN_COMP
   /-- Auto-generated from RARE rule str-concat-clash -/
   | STR_CONCAT_CLASH
   /-- Auto-generated from RARE rule str-concat-clash-rev -/
@@ -3015,6 +3093,10 @@ inductive ProofRewriteRule where
   | STR_CONCAT_UNIFY
   /-- Auto-generated from RARE rule str-concat-unify-rev -/
   | STR_CONCAT_UNIFY_REV
+  /-- Auto-generated from RARE rule str-concat-unify-base -/
+  | STR_CONCAT_UNIFY_BASE
+  /-- Auto-generated from RARE rule str-concat-unify-base-rev -/
+  | STR_CONCAT_UNIFY_BASE_REV
   /-- Auto-generated from RARE rule str-concat-clash-char -/
   | STR_CONCAT_CLASH_CHAR
   /-- Auto-generated from RARE rule str-concat-clash-char-rev -/
@@ -3043,14 +3125,26 @@ inductive ProofRewriteRule where
   | STR_CONTAINS_SPLIT_CHAR
   /-- Auto-generated from RARE rule str-contains-leq-len-eq -/
   | STR_CONTAINS_LEQ_LEN_EQ
+  /-- Auto-generated from RARE rule str-contains-emp -/
+  | STR_CONTAINS_EMP
+  /-- Auto-generated from RARE rule str-contains-is-emp -/
+  | STR_CONTAINS_IS_EMP
   /-- Auto-generated from RARE rule str-concat-emp -/
   | STR_CONCAT_EMP
   /-- Auto-generated from RARE rule str-at-elim -/
   | STR_AT_ELIM
+  /-- Auto-generated from RARE rule str-replace-no-contains -/
+  | STR_REPLACE_NO_CONTAINS
+  /-- Auto-generated from RARE rule str-replace-empty -/
+  | STR_REPLACE_EMPTY
+  /-- Auto-generated from RARE rule str-len-concat-rec -/
+  | STR_LEN_CONCAT_REC
   /-- Auto-generated from RARE rule re-all-elim -/
   | RE_ALL_ELIM
   /-- Auto-generated from RARE rule re-opt-elim -/
   | RE_OPT_ELIM
+  /-- Auto-generated from RARE rule re-diff-elim -/
+  | RE_DIFF_ELIM
   /-- Auto-generated from RARE rule re-concat-emp -/
   | RE_CONCAT_EMP
   /-- Auto-generated from RARE rule re-concat-none -/
@@ -3059,6 +3153,8 @@ inductive ProofRewriteRule where
   | RE_CONCAT_FLATTEN
   /-- Auto-generated from RARE rule re-concat-star-swap -/
   | RE_CONCAT_STAR_SWAP
+  /-- Auto-generated from RARE rule re-concat-merge -/
+  | RE_CONCAT_MERGE
   /-- Auto-generated from RARE rule re-union-all -/
   | RE_UNION_ALL
   /-- Auto-generated from RARE rule re-union-none -/
@@ -3075,16 +3171,103 @@ inductive ProofRewriteRule where
   | RE_INTER_FLATTEN
   /-- Auto-generated from RARE rule re-inter-dup -/
   | RE_INTER_DUP
-  /-- Auto-generated from RARE rule str-len-concat-rec -/
-  | STR_LEN_CONCAT_REC
-  /-- Auto-generated from RARE rule str-in-re-range-elim -/
-  | STR_IN_RE_RANGE_ELIM
+  /-- Auto-generated from RARE rule re-inter-cstring -/
+  | RE_INTER_CSTRING
+  /-- Auto-generated from RARE rule re-inter-cstring-neg -/
+  | RE_INTER_CSTRING_NEG
+  /-- Auto-generated from RARE rule str-nth-elim-code -/
+  | STR_NTH_ELIM_CODE
   /-- Auto-generated from RARE rule seq-len-unit -/
   | SEQ_LEN_UNIT
   /-- Auto-generated from RARE rule seq-nth-unit -/
   | SEQ_NTH_UNIT
   /-- Auto-generated from RARE rule seq-rev-unit -/
   | SEQ_REV_UNIT
+  /-- Auto-generated from RARE rule re-in-empty -/
+  | RE_IN_EMPTY
+  /-- Auto-generated from RARE rule re-in-sigma -/
+  | RE_IN_SIGMA
+  /-- Auto-generated from RARE rule re-in-sigma-star -/
+  | RE_IN_SIGMA_STAR
+  /-- Auto-generated from RARE rule re-in-cstring -/
+  | RE_IN_CSTRING
+  /-- Auto-generated from RARE rule re-in-comp -/
+  | RE_IN_COMP
+  /-- Auto-generated from RARE rule str-in-re-union-elim -/
+  | STR_IN_RE_UNION_ELIM
+  /-- Auto-generated from RARE rule str-in-re-inter-elim -/
+  | STR_IN_RE_INTER_ELIM
+  /-- Auto-generated from RARE rule str-in-re-range-elim -/
+  | STR_IN_RE_RANGE_ELIM
+  /-- Auto-generated from RARE rule str-in-re-contains -/
+  | STR_IN_RE_CONTAINS
+  /-- Auto-generated from RARE rule str-in-re-strip-prefix -/
+  | STR_IN_RE_STRIP_PREFIX
+  /-- Auto-generated from RARE rule str-in-re-strip-prefix-neg -/
+  | STR_IN_RE_STRIP_PREFIX_NEG
+  /-- Auto-generated from RARE rule str-in-re-strip-prefix-sr-single -/
+  | STR_IN_RE_STRIP_PREFIX_SR_SINGLE
+  /-- Auto-generated from RARE rule str-in-re-strip-prefix-sr-single-neg -/
+  | STR_IN_RE_STRIP_PREFIX_SR_SINGLE_NEG
+  /-- Auto-generated from RARE rule str-in-re-strip-prefix-srs-single -/
+  | STR_IN_RE_STRIP_PREFIX_SRS_SINGLE
+  /-- Auto-generated from RARE rule str-in-re-strip-prefix-srs-single-neg -/
+  | STR_IN_RE_STRIP_PREFIX_SRS_SINGLE_NEG
+  /-- Auto-generated from RARE rule str-in-re-strip-prefix-s-single -/
+  | STR_IN_RE_STRIP_PREFIX_S_SINGLE
+  /-- Auto-generated from RARE rule str-in-re-strip-prefix-s-single-neg -/
+  | STR_IN_RE_STRIP_PREFIX_S_SINGLE_NEG
+  /-- Auto-generated from RARE rule str-in-re-strip-prefix-base -/
+  | STR_IN_RE_STRIP_PREFIX_BASE
+  /-- Auto-generated from RARE rule str-in-re-strip-prefix-base-neg -/
+  | STR_IN_RE_STRIP_PREFIX_BASE_NEG
+  /-- Auto-generated from RARE rule str-in-re-strip-prefix-base-s-single -/
+  | STR_IN_RE_STRIP_PREFIX_BASE_S_SINGLE
+  /-- Auto-generated from RARE rule str-in-re-strip-prefix-base-s-single-neg -/
+  | STR_IN_RE_STRIP_PREFIX_BASE_S_SINGLE_NEG
+  /-- Auto-generated from RARE rule str-in-re-strip-char -/
+  | STR_IN_RE_STRIP_CHAR
+  /-- Auto-generated from RARE rule str-in-re-strip-char-s-single -/
+  | STR_IN_RE_STRIP_CHAR_S_SINGLE
+  /-- Auto-generated from RARE rule str-in-re-strip-prefix-rev -/
+  | STR_IN_RE_STRIP_PREFIX_REV
+  /-- Auto-generated from RARE rule str-in-re-strip-prefix-neg-rev -/
+  | STR_IN_RE_STRIP_PREFIX_NEG_REV
+  /-- Auto-generated from RARE rule str-in-re-strip-prefix-sr-single-rev -/
+  | STR_IN_RE_STRIP_PREFIX_SR_SINGLE_REV
+  /-- Auto-generated from RARE rule str-in-re-strip-prefix-sr-single-neg-rev -/
+  | STR_IN_RE_STRIP_PREFIX_SR_SINGLE_NEG_REV
+  /-- Auto-generated from RARE rule str-in-re-strip-prefix-srs-single-rev -/
+  | STR_IN_RE_STRIP_PREFIX_SRS_SINGLE_REV
+  /-- Auto-generated from RARE rule str-in-re-strip-prefix-srs-single-neg-rev -/
+  | STR_IN_RE_STRIP_PREFIX_SRS_SINGLE_NEG_REV
+  /-- Auto-generated from RARE rule str-in-re-strip-prefix-s-single-rev -/
+  | STR_IN_RE_STRIP_PREFIX_S_SINGLE_REV
+  /-- Auto-generated from RARE rule str-in-re-strip-prefix-s-single-neg-rev -/
+  | STR_IN_RE_STRIP_PREFIX_S_SINGLE_NEG_REV
+  /-- Auto-generated from RARE rule str-in-re-strip-prefix-base-rev -/
+  | STR_IN_RE_STRIP_PREFIX_BASE_REV
+  /-- Auto-generated from RARE rule str-in-re-strip-prefix-base-neg-rev -/
+  | STR_IN_RE_STRIP_PREFIX_BASE_NEG_REV
+  /-- Auto-generated from RARE rule str-in-re-strip-prefix-base-s-single-rev -/
+  | STR_IN_RE_STRIP_PREFIX_BASE_S_SINGLE_REV
+  /-- Auto-generated from RARE rule str-in-re-strip-prefix-base-s-single-neg-rev
+  -/
+  | STR_IN_RE_STRIP_PREFIX_BASE_S_SINGLE_NEG_REV
+  /-- Auto-generated from RARE rule str-in-re-strip-char-rev -/
+  | STR_IN_RE_STRIP_CHAR_REV
+  /-- Auto-generated from RARE rule str-in-re-strip-char-s-single-rev -/
+  | STR_IN_RE_STRIP_CHAR_S_SINGLE_REV
+  /-- Auto-generated from RARE rule str-in-re-no-prefix -/
+  | STR_IN_RE_NO_PREFIX
+  /-- Auto-generated from RARE rule str-in-re-no-prefix-rev -/
+  | STR_IN_RE_NO_PREFIX_REV
+  /-- Auto-generated from RARE rule str-in-re-concat-allchar -/
+  | STR_IN_RE_CONCAT_ALLCHAR
+  /-- Auto-generated from RARE rule str-in-re-concat-allchar-base-geq -/
+  | STR_IN_RE_CONCAT_ALLCHAR_BASE_GEQ
+  /-- Auto-generated from RARE rule str-in-re-concat-allchar-base-eq -/
+  | STR_IN_RE_CONCAT_ALLCHAR_BASE_EQ
   /-- Auto-generated from RARE rule eq-refl -/
   | EQ_REFL
   /-- Auto-generated from RARE rule eq-symm -/
