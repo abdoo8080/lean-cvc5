@@ -45,8 +45,9 @@ target libcvc5 pkg : Unit := do
   return pure ()
 
 def Lake.compileStaticLib'
-  (name : String) (libFile : FilePath) (oFiles : Array FilePath) (ar : FilePath := "ar")
-: JobM Unit := do
+  (libFile : FilePath) (oFiles : Array FilePath)
+  (ar : FilePath := "ar")
+: LogIO Unit := do
   logVerbose s!"Creating {name}"
   createParentDirs libFile
   proc {
