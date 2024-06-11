@@ -48,7 +48,6 @@ def Lake.compileStaticLib'
   (libFile : FilePath) (oFiles : Array FilePath)
   (ar : FilePath := "ar")
 : LogIO Unit := do
-  logVerbose s!"Creating {name}"
   createParentDirs libFile
   proc {
     cmd := ar.toString
