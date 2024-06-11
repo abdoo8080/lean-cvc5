@@ -58,7 +58,6 @@ def Lake.compileStaticLib'
 def Lake.buildStaticLib'
   (libFile : FilePath) (oFileJobs : Array (BuildJob FilePath))
 : SpawnM (BuildJob FilePath) :=
-  let name := libFile.fileName.getD libFile.toString
   buildFileAfterDepArray libFile oFileJobs fun oFiles => do
     compileStaticLib' libFile oFiles (← getLeanAr)
 
