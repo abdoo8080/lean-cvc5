@@ -57,10 +57,10 @@ def Lake.compileStaticLib'
 /-- Build a static library from object file jobs using the `ar` packaged with Lean. -/
 def Lake.buildStaticLib'
   (libFile : FilePath) (oFileJobs : Array (BuildJob FilePath))
-: FetchM (BuildJob FilePath) :=
+: SpawnM (BuildJob FilePath) :=
   let name := libFile.fileName.getD libFile.toString
   buildFileAfterDepArray libFile oFileJobs fun oFiles => do
-    compileStaticLib' name libFile oFiles (← getLeanAr)
+    compileStaticLib' libFile oFiles (← getLeanAr)
 
 target ffiO pkg : FilePath := do
   let oFile := pkg.buildDir / "ffi" / "ffi.o"
