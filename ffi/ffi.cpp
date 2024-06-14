@@ -18,12 +18,12 @@ inline bool bool_unbox(uint8_t b) { return static_cast<bool>(b); }
 
 extern "C" lean_obj_res kind_toString(uint16_t k)
 {
-  return lean_mk_string(std::to_string(static_cast<Kind>(k)).c_str());
+  return lean_mk_string(std::to_string(static_cast<Kind>(k - 2)).c_str());
 }
 
 extern "C" lean_obj_res sortKind_toString(uint8_t sk)
 {
-  return lean_mk_string(std::to_string(static_cast<SortKind>(sk)).c_str());
+  return lean_mk_string(std::to_string(static_cast<SortKind>(sk - 2)).c_str());
 }
 
 extern "C" lean_obj_res proofRule_toString(uint8_t pr)

@@ -17,12 +17,14 @@ lean_lib cvc5 {
   moreLeanArgs := #[s!"--load-dynlib={libcpp}"]
 }
 
-def Lake.unzip (name : String) (file : FilePath) (dir : FilePath) : LogIO Unit := do
-  logVerbose s!"Extracting {name}"
-  proc {
+def Lake.unzip (file : FilePath) (dir : FilePath) : LogIO PUnit := do
+  IO.FS.createDirAll dir
+  proc (quiet := true) {
     cmd := "unzip"
-    args := #["-qd", dir.toString, file.toString]
+    args := #["-d", dir.toString, file.toString]
   }
+
+def cvc5.url := "https://github.com/abdoo8080/cvc5/releases/download"
 
 def cvc5.version : String := "v0.0.1"
 
@@ -37,10 +39,9 @@ def cvc5.arch : String :=
 
 target libcvc5 pkg : Unit := do
   if !(← (pkg.lakeDir / "cvc5").pathExists) then
-    let url := "https://github.com/abdoo8080/cvc5/releases/download"
     let zipPath := pkg.lakeDir / "cvc5.zip"
-    download s!"{url}/{cvc5.version}/cvc5-{cvc5.os}-{cvc5.arch}-static.zip" zipPath
-    unzip "cvc5" zipPath pkg.lakeDir
+    download s!"{cvc5.url}/{cvc5.version}/cvc5-{cvc5.os}-{cvc5.arch}-static.zip" zipPath
+    unzip zipPath pkg.lakeDir
     IO.FS.removeFile zipPath
   return pure ()
 
