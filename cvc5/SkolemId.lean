@@ -35,6 +35,9 @@ to k apart from having the same skolem identifier.
 In contrast, cvc5 reasons about division-by-zero using a single skolem
 function whose identifier is ``DIV_BY_ZERO``. This means its skolem indices
 are empty and the skolem has a functional type ``(-> Real Real)``.
+
+\internal
+
 -/
 inductive SkolemId where
   /--
@@ -673,7 +676,7 @@ inductive SkolemId where
   -/
   | FP_TO_REAL
   --================================================= Unknown rule
-  /-- Indicates this is not a skolem.-/
+  /-- Indicates this is not a skolem. -/
   | NONE
 deriving BEq, Hashable, Inhabited
 

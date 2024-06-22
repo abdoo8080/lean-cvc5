@@ -620,12 +620,12 @@ extern "C" lean_obj_res solver_parse(lean_obj_arg inst,
                                      lean_obj_arg solver)
 {
   Solver* slv = solver_unbox(solver);
-  parser::SymbolManager sm(slv);
   // construct an input parser associated the solver above
-  parser::InputParser parser(slv, &sm);
-  parser.setIncrementalStringInput(modes::InputLanguage::SMT_LIB_2_6,
-                                   "lean-smt");
-  parser.appendIncrementalStringInput(lean_string_cstr(query));
+  parser::InputParser parser(slv);
+  // get the symbol manager of the parser, used when invoking commands below
+  parser::SymbolManager* sm = parser.getSymbolManager();
+  parser.setStringInput(
+      modes::InputLanguage::SMT_LIB_2_6, lean_string_cstr(query), "lean-smt");
   // parse commands until finished
   std::stringstream out;
   parser::Command cmd;
@@ -638,7 +638,7 @@ extern "C" lean_obj_res solver_parse(lean_obj_arg inst,
     }
     // invoke the command on the solver and the symbol manager, print the result
     // to out
-    cmd.invoke(slv, &sm, out);
+    cmd.invoke(slv, sm, out);
   }
   return solver_val(lean_box(0), inst, lean_box(0), mk_unit_unit(), solver);
 }

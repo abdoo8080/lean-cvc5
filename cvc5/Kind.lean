@@ -8,17 +8,17 @@ Authors: Abdalrhman Mohamed
 namespace cvc5
 
 /--
- The kind of a cvc5 Term.
+The kind of a cvc5 Term.
 
- \internal
+\internal
 
- Note that the API type `cvc5::Kind` roughly corresponds to
- `cvc5::internal::Kind`, but is a different type. It hides internal kinds
- that should not be exported to the API, and maps all kinds that we want to
- export to its corresponding internal kinds. The underlying type of
- `cvc5::Kind` must be signed (to enable range checks for validity). The size
- of this type depends on the size of `cvc5::internal::Kind`
- (`NodeValue::NBITS_KIND`, currently 10 bits, see expr/node_value.h).
+Note that the API type `cvc5::Kind` roughly corresponds to
+`cvc5::internal::Kind`, but is a different type. It hides internal kinds
+that should not be exported to the API, and maps all kinds that we want to
+export to its corresponding internal kinds. The underlying type of
+`cvc5::Kind` must be signed (to enable range checks for validity). The size
+of this type depends on the size of `cvc5::internal::Kind`
+(`NodeValue::NBITS_KIND`, currently 10 bits, see expr/node_value.h).
 -/
 inductive Kind where
   /--
@@ -141,7 +141,6 @@ inductive Kind where
    - Arity: ``n > 0``
 
      - ``1..n:`` Terms with same sorts
-
 
    - Create Term of this Kind with:
 
@@ -1124,23 +1123,6 @@ inductive Kind where
   -/
   | CONST_BITVECTOR
   /--
-   Create bit-vector from a list of Booleans.
-
-   - Arity: ``n > 1``
-
-     - ``1..n:`` Terms of Boolean Sort (sorts must match)
-
-   - Create Term of this Kind with:
-
-     - Solver::mkTerm(Kind, const std::vector<Term>&) const
-     - Solver::mkTerm(const Op&, const std::vector<Term>&) const
-
-   - Create Op of this kind with:
-
-     - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-  -/
-  | BITVECTOR_BB_TERM
-  /--
    Concatenation of two or more bit-vectors.
 
    - Arity: ``n > 1``
@@ -1894,26 +1876,6 @@ inductive Kind where
   -/
   | BITVECTOR_EXTRACT
   /--
-   Bit-vector bit-of.
-
-   - Arity: ``1``
-
-     - ``1:`` Term of bit-vector Sort
-
-   - Indices: ``1``
-
-     - ``1:`` The bit index.
-
-   - Create Term of this Kind with:
-
-     - Solver::mkTerm(const Op&, const std::vector<Term>&) const
-
-   - Create Op of this kind with:
-
-     - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
-  -/
-  | BITVECTOR_BITOF
-  /--
    Bit-vector repeat.
 
    - Arity: ``1``
@@ -2050,6 +2012,38 @@ inductive Kind where
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
   -/
   | BITVECTOR_TO_NAT
+  /--
+   Converts a list of Bool terms to a bit-vector.
+
+   - Arity: ``n > 0``
+
+     - ``1..n:`` Terms of Sort Bool
+
+   \rst
+   .. note:: May be returned as the result of an API call, but terms of this
+             kind may not be created explicitly via the API and may not
+             appear in assertions.
+   \endrst
+  -/
+  | BITVECTOR_FROM_BOOLS
+  /--
+   Retrieves the bit at the given index from a bit-vector as a Bool term.
+
+   - Arity: ``1``
+
+     - ``1:`` Term of bit-vector Sort
+
+   - Indices: ``1``
+
+     - ``1:`` The bit index
+
+   \rst
+   .. note:: May be returned as the result of an API call, but terms of this
+             kind may not be created explicitly via the API and may not
+             appear in assertions.
+   \endrst
+  -/
+  | BITVECTOR_BIT
 
   /- Finite Fields --------------------------------------------------------- -/
 
@@ -3581,15 +3575,15 @@ inductive Kind where
      - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
   -/
   | RELATION_JOIN
-  /--
+   /--
    \rst
-   Table join operator for relations has the form
-   :math:`((\_ \; rel.table\_join \; m_1 \; n_1 \; \dots \; m_k \; n_k) \; A \; B)`
-   where :math:`m_1 \; n_1 \; \dots \; m_k \; n_k` are natural numbers,
-   and :math:`A, B` are relations.
-   This operator filters the product of two sets based on the equality of
-   projected tuples using indices :math:`m_1, \dots, m_k` in relation :math:`A`,
-   and indices :math:`n_1, \dots, n_k` in relation :math:`B`.
+    Table join operator for relations has the form
+    :math:`((\_ \; rel.table\_join \; m_1 \; n_1 \; \dots \; m_k \; n_k) \; A \; B)`
+    where :math:`m_1 \; n_1 \; \dots \; m_k \; n_k` are natural numbers,
+    and :math:`A, B` are relations.
+    This operator filters the product of two sets based on the equality of
+    projected tuples using indices :math:`m_1, \dots, m_k` in relation :math:`A`,
+    and indices :math:`n_1, \dots, n_k` in relation :math:`B`.
 
    - Arity: ``2``
 
@@ -5741,17 +5735,17 @@ inductive Kind where
 deriving BEq, Hashable, Inhabited
 
 /--
- The kind of a cvc5 Sort.
+The kind of a cvc5 Sort.
 
- \internal
+\internal
 
- Note that the API type `cvc5::SortKind` roughly corresponds to
- `cvc5::internal::Kind`, but is a different type. It hides internal kinds
- that should not be exported to the API, and maps all kinds that we want to
- export to its corresponding internal kinds. The underlying type of
- `cvc5::Kind` must be signed (to enable range checks for validity). The size
- of this type depends on the size of `cvc5::internal::Kind`
- (`NodeValue::NBITS_KIND`, currently 10 bits, see expr/node_value.h).
+Note that the API type `cvc5::SortKind` roughly corresponds to
+`cvc5::internal::Kind`, but is a different type. It hides internal kinds
+that should not be exported to the API, and maps all kinds that we want to
+export to its corresponding internal kinds. The underlying type of
+`cvc5::Kind` must be signed (to enable range checks for validity). The size
+of this type depends on the size of `cvc5::internal::Kind`
+(`NodeValue::NBITS_KIND`, currently 10 bits, see expr/node_value.h).
 -/
 inductive SortKind where
   /--
