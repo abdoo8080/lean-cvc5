@@ -90,3 +90,206 @@ extern_lib libffi pkg := do
   let mut libs := #[ffiO, libcadical, libcvc5, libcvc5parser, libpicpoly, libpicpolyxx]
   if System.Platform.isOSX then libs := libs.push libgmp
   buildStaticLib' libFile libs
+
+
+
+section test
+
+open System
+
+partial def readAllFiles (dir : FilePath) : IO (Array FilePath) := do
+  let mut files := #[]
+  for entry in (← FilePath.readDir dir) do
+    if ← entry.path.isDir then
+      files := (← readAllFiles entry.path) ++ files
+    else
+      files := files.push entry.path
+  return files
+
+/-- Naive implementation. -/
+partial def isSubstring (sub str : String) (start := 0) : Bool := Id.run do
+  let mut idx := start
+  let mut okay := true
+  for c in sub.data do
+    match str.get? <| String.Pos.mk idx with
+    | none =>
+      return false
+    | some c' =>
+      if c = c' then
+        idx := idx.succ
+        continue
+      else
+        okay := false
+        break
+  if okay then
+    return true
+  else
+    return isSubstring sub str start.succ
+
+/-- Run with `lake script run test` or just `lake test`.
+
+The input arguments `args` define a `cargo`-style filter over the tests to run. If empty, then all
+tests run. Otherwise, a test with path `path` runs iff there is a `arg ∈ args` such that `arg` is a
+substring of `path`.
+-/
+@[test_runner]
+script test args := do
+  /- True if the file is accepted by the user's filter. -/
+  let isFileRequested : FilePath → Bool :=
+    if let [] := args
+    then fun _ => true
+    else fun file =>
+      let file := file.toString
+      args.any fun arg => isSubstring arg file
+
+  /- Total number of tests, including ignored ones. -/
+  let mut total := 0
+  /- Tests to run, i.e. requested by the user. -/
+  let mut todo := #[]
+
+  -- sets `total` and `todo`
+  for file in ← readAllFiles (FilePath.mk "Test") do
+    if file.extension = "lean" then
+      total := total.succ
+      if isFileRequested file then
+        todo := todo.push file
+
+  /- Test tasks to join. -/
+  let mut tasks := []
+
+  -- nothing to do, warn user
+  if todo.isEmpty then
+    if total = 0 then
+      println! "`Test` directory does not contain any `.lean` file"
+    else
+      println! "none of the {total} test{plural total} in `Test` match your filter {args}"
+  else
+    -- let's do this
+    println! "running {todo.size} test{plural todo.size}..."
+
+    -- spawn test tasks, populate `tasks`
+    for file in todo do
+      let task ← IO.asTask (runTest file (← readThe Lake.Context))
+      tasks := task :: tasks
+
+  -- join all `tasks` and count failures
+  let mut failed := 0
+  for task in tasks do
+    let okay ← IO.ofExcept task.get
+    if ¬ okay then
+      failed := failed.succ
+
+  -- final summary
+  let success := todo.size - failed
+  let failed_blah :=
+    if failed = 0 then "" else s!"\n- ❌ {failed} test{plural failed} failed"
+  let ignored_blah :=
+    let ignored := total - todo.size
+    if ignored = 0 then "" else s!"\n- ⏭️  {ignored} test{plural ignored} ignored by your filter"
+
+  println! "\ndone running {todo.size} test{plural todo.size}
+- ✅ {success} successful test{plural success}{failed_blah}{ignored_blah}\
+    "
+
+  if 0 < failed then
+    return 1
+  else
+    return 0
+where
+  plural : Nat → String
+  | 1 => ""
+  | _ => "s"
+
+  /-- Returns `true` if the test succeeded, `false` otherwise.
+
+  Will search for an *"expected output file"* `<file>.expected`. If none is found, then the test is
+  expected to have return code `0` and produce no output.
+  -/
+  runTest (file : FilePath) : ScriptM Bool := do
+    let imports ← Lean.parseImports' (← IO.FS.readFile file) file.fileName.get!
+    let modules ← imports.filterMapM (findModule? ∘ Lean.Import.module)
+    let out ← IO.Process.output {
+      cmd := (← getLean).toString
+      args :=
+        #[s!"--load-dynlib={libcpp}"]
+        ++ modules.map (s!"--load-dynlib={·.dynlibFile}")
+        ++ #[file.toString]
+      env := ← getAugmentedEnv
+    }
+    let expectedFile := file.withExtension "expected"
+    let expectedErrFile := expectedFile.withExtension "err"
+
+    let expectedOut ←
+      if ← expectedFile.pathExists then
+        if ← expectedFile.isDir then
+          println! "\
+            [{file}] illegal expected output path `{expectedFile}`: \
+            expected file, found directory\
+          "
+          return false
+        else
+          IO.FS.readFile expectedFile
+      else
+        pure ""
+    let expectedOut := expectedOut.trim
+
+    let (expectedErr, expectSuccess) ←
+      if ← expectedErrFile.pathExists then
+        if ← expectedErrFile.isDir then
+          println! "\
+            [{file}] illegal expected error output path `{expectedErrFile}`: \
+            expected file, found directory\
+          "
+          return false
+        else
+          pure (← IO.FS.readFile expectedFile, false)
+      else
+        pure ("", true)
+    let expectedErr := expectedErr.trim
+
+    let (stdout, stderr) := (out.stdout.trim, out.stderr.trim)
+
+    let mut failures := #[]
+
+    if (expectSuccess ∧ out.exitCode ≠ 0) ∨ (¬ expectSuccess ∧ out.exitCode = 0) then
+      let exp :=
+        if expectSuccess then "exit code `0`" else "non-zero exit code"
+      failures := failures.push s!"
+  - expected {exp}, got exit code {out.exitCode}\
+        "
+
+    if stdout ≠ expectedOut then
+      failures := failures.push s!"
+  - expected stdout
+    ```
+    {expectedOut}
+    ```
+
+    but got
+    ```
+    {stdout}
+    ```\
+      "
+
+    if stderr ≠ expectedErr then
+      failures := failures.push s!"
+  - expected stderr
+    ```
+    {expectedErr}
+    ```
+
+    but got
+    ```
+    {stderr}
+    ```\
+      "
+
+    if failures.isEmpty then
+      println! "- ✅ `{file}`: success"
+      return true
+    else
+      let blah := failures.foldl String.append ""
+      println! "- ❌ `{file}`: failure{blah}"
+      return false
+
+end test
