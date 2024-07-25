@@ -124,7 +124,8 @@ opaque getBitVectorSize : cvc5.Sort → UInt32
 @[extern "sort_toString"]
 protected opaque toString : cvc5.Sort → String
 
-instance instToStringSort : ToString cvc5.Sort := ⟨Sort.toString⟩
+instance instToString : ToString cvc5.Sort := ⟨Sort.toString⟩
+instance instRepr : Repr cvc5.Sort := ⟨fun self _ => self.toString⟩
 
 end cvc5.Sort
 

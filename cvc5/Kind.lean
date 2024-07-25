@@ -5732,7 +5732,7 @@ inductive Kind where
   /- ----------------------------------------------------------------------- -/
   /-- Marks the upper-bound of this enumeration. -/
   | LAST_KIND
-deriving BEq, Hashable, Inhabited
+deriving BEq, Hashable, Inhabited, Repr
 
 /--
 The kind of a cvc5 Sort.
