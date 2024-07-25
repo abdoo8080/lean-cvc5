@@ -134,6 +134,10 @@ substring of `path`.
 -/
 @[test_runner]
 script test args := do
+  if args.any fun arg => arg = "-h" ∨ arg = "--help" then
+    showReadme
+    return 0
+
   /- True if the file is accepted by the user's filter. -/
   let isFileRequested : FilePath → Bool :=
     if let [] := args
@@ -200,6 +204,16 @@ where
   plural : Nat → String
   | 1 => ""
   | _ => "s"
+
+  /-- Shows the test framework's readme. -/
+  showReadme : ScriptM Unit := do
+    let path : FilePath := "Test/readme.md"
+    if ¬ (← path.pathExists) ∨ (← path.isDir) then
+      IO.eprintln s!"file `{path}` does not exist, did you modify this repository?"
+    else
+      let help ← IO.FS.readFile path
+      println! "The following is the content of `{path}`.\n\n"
+      println! help
 
   /-- Returns `true` if the test succeeded, `false` otherwise.
 
