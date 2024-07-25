@@ -205,13 +205,14 @@ script testRunner args := do
   -- produce final summary
   let success := todo.size - failed
   let failed_blah :=
-    if failed = 0 then "" else s!"\n- ❌ {failed} test{plural failed} failed"
+    if failed = 0 then "" else s!"\n- ❌\t{failed} test{plural failed} failed"
   let ignored_blah :=
     let ignored := total - todo.size
-    if ignored = 0 then "" else s!"\n- ⏭️  {ignored} test{plural ignored} ignored by your filter"
+    if ignored = 0 then "" else
+      s!"\n- ⏭️\t{ignored} test{plural ignored} ignored by your filter{plural args.length}"
 
   println! "\ndone running {todo.size} test{plural todo.size}
-- ✅ {success} successful test{plural success}{failed_blah}{ignored_blah}\
+- ✅\t{success} successful test{plural success}{failed_blah}{ignored_blah}\
     "
 
   if 0 < failed then
