@@ -7,6 +7,9 @@
 
 Tests should be in (sub-directories of) the `Test` directory at the root of the package.
 
+**NB**: `Test/Init.lean` is always ignored as it is assumed to contain boilerplate code for the
+actual tests.
+
 Run all tests with
 
 ```text
@@ -34,9 +37,9 @@ where
 A given test file `Test/Path/myTest.lean` has two optional associated files that modify the
 conditions for a test to succeed.
 
-`Test/Path/myTest.lean.expected`: if present, then its (trimmed) content must match the (trimmed)
+`Test/Path/myTest.out`: if present, then its (trimmed) content must match the (trimmed)
 `stdout` of the test. If absent, the test's `stdout` must be empty.
 
-`Test/Path/myTest.lean.expected.out`: if present, then its (trimmed) content must match the
+`Test/Path/myTest.err`: if present, then its (trimmed) content must match the
 (trimmed) `stderr` of the test; also, the test must produce a non-zero return code. If absent, the
 test's `stderr` must be empty and the test must produce a successful return code (`0`).

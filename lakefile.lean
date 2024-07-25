@@ -17,6 +17,9 @@ lean_lib cvc5 {
   moreLeanArgs := #[s!"--load-dynlib={libcpp}"]
 }
 
+lean_lib test where
+  roots := #[`Test.Init]
+
 def Lake.unzip (file : FilePath) (dir : FilePath) : LogIO PUnit := do
   IO.FS.createDirAll dir
   proc (quiet := true) {
@@ -128,21 +131,34 @@ partial def isSubstring (sub str : String) (start := 0) : Bool := Id.run do
 
 /-- Run with `lake script run test` or just `lake test`.
 
+This runs the tests in `Test/`.
+
+**NB**: `Test/Init.lean` is considered boilerplate for all other tests: it is always ignored.
+
 The input arguments `args` define a `cargo`-style filter over the tests to run. If empty, then all
 tests run. Otherwise, a test with path `path` runs iff there is a `arg ∈ args` such that `arg` is a
 substring of `path`.
 -/
 @[test_runner]
-script test args := do
+script testRunner args := do
   if args.any fun arg => arg = "-h" ∨ arg = "--help" then
     showReadme
     return 0
 
-  /- True if the file is accepted by the user's filter. -/
-  let isFileRequested : FilePath → Bool :=
-    if let [] := args
-    then fun _ => true
-    else fun file =>
+  /- This file is always skipped. -/
+  let initFile : FilePath := "Test/Init.lean"
+
+  /- True if the file is accepted by the user's filter, false otherwise.
+
+  A `none` return value indicates that the file should not contribute to the total number of tests.
+  Currently, this only happens when `file = initFile`.
+  -/
+  let isFileRequested (file : FilePath) : Option Bool :=
+    if file = initFile then
+      none
+    else if let [] := args then
+      true
+    else
       let file := file.toString
       args.any fun arg => isSubstring arg file
 
@@ -154,9 +170,12 @@ script test args := do
   -- sets `total` and `todo`
   for file in ← readAllFiles (FilePath.mk "Test") do
     if file.extension = "lean" then
-      total := total.succ
-      if isFileRequested file then
-        todo := todo.push file
+      match isFileRequested file with
+      | none => continue
+      | some requested =>
+        total := total.succ
+        if requested then
+          todo := todo.push file
 
   /- Test tasks to join. -/
   let mut tasks := []
@@ -217,12 +236,11 @@ where
 
   /-- Returns `true` if the test succeeded, `false` otherwise.
 
-  Will search for an *"expected output file"* `<file>.expected`. If none is found, then the test is
-  expected to have return code `0` and produce no output.
+  See `Test/readme.md` for details about the `.out` and `.err` files.
   -/
   runTest (file : FilePath) : ScriptM Bool := do
     -- files for expected stdout/stderr
-    let expectedFile := file.withExtension "expected"
+    let expectedFile := file.withExtension "out"
     let expectedErrFile := expectedFile.withExtension "err"
 
     -- extract expected stdout string
@@ -251,7 +269,7 @@ where
           "
           return false
         else
-          pure (← IO.FS.readFile expectedFile, false)
+          pure (← IO.FS.readFile expectedErrFile, false)
       else
         pure ("", true)
     -- trimmed version of stderr for user convenience
@@ -285,17 +303,20 @@ where
   - expected {exp}, got exit code {out.exitCode}\
         "
 
+    let withLinePref (s : String) : String :=
+      s.splitOn "\n" |>.foldl (fun acc s => acc ++ "\n    " ++ s) ""
+
     -- confirm stdout
     if stdout ≠ expectedOut then
       failures := failures.push s!"
   - expected stdout
-    ```
-    {expectedOut}
+    ```\
+    {withLinePref expectedOut}
     ```
 
     but got
-    ```
-    {stdout}
+    ```\
+    {withLinePref stdout}
     ```\
       "
 
@@ -303,13 +324,13 @@ where
     if stderr ≠ expectedErr then
       failures := failures.push s!"
   - expected stderr
-    ```
-    {expectedErr}
+    ```\
+    {withLinePref expectedErr}
     ```
 
     but got
-    ```
-    {stderr}
+    ```\
+    {withLinePref stderr}
     ```\
       "
 
