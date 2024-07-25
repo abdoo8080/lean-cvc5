@@ -179,7 +179,7 @@ script test args := do
     if ¬ okay then
       failed := failed.succ
 
-  -- final summary
+  -- produce final summary
   let success := todo.size - failed
   let failed_blah :=
     if failed = 0 then "" else s!"\n- ❌ {failed} test{plural failed} failed"
@@ -196,6 +196,7 @@ script test args := do
   else
     return 0
 where
+  /-- Returns `""` if the input natural is `1`, `"s"` otherwise. -/
   plural : Nat → String
   | 1 => ""
   | _ => "s"
@@ -206,19 +207,11 @@ where
   expected to have return code `0` and produce no output.
   -/
   runTest (file : FilePath) : ScriptM Bool := do
-    let imports ← Lean.parseImports' (← IO.FS.readFile file) file.fileName.get!
-    let modules ← imports.filterMapM (findModule? ∘ Lean.Import.module)
-    let out ← IO.Process.output {
-      cmd := (← getLean).toString
-      args :=
-        #[s!"--load-dynlib={libcpp}"]
-        ++ modules.map (s!"--load-dynlib={·.dynlibFile}")
-        ++ #[file.toString]
-      env := ← getAugmentedEnv
-    }
+    -- files for expected stdout/stderr
     let expectedFile := file.withExtension "expected"
     let expectedErrFile := expectedFile.withExtension "err"
 
+    -- extract expected stdout string
     let expectedOut ←
       if ← expectedFile.pathExists then
         if ← expectedFile.isDir then
@@ -231,8 +224,10 @@ where
           IO.FS.readFile expectedFile
       else
         pure ""
+    -- trimmed version of stdout for user convenience
     let expectedOut := expectedOut.trim
 
+    -- extract expected stderr string and whether we're confirming a success or a failure
     let (expectedErr, expectSuccess) ←
       if ← expectedErrFile.pathExists then
         if ← expectedErrFile.isDir then
@@ -245,12 +240,30 @@ where
           pure (← IO.FS.readFile expectedFile, false)
       else
         pure ("", true)
+    -- trimmed version of stderr for user convenience
     let expectedErr := expectedErr.trim
 
+    -- run the test, retrieve the output
+    let imports ← Lean.parseImports' (← IO.FS.readFile file) file.fileName.get!
+    let modules ← imports.filterMapM (findModule? ∘ Lean.Import.module)
+    let out ← IO.Process.output {
+      cmd := (← getLean).toString
+      args :=
+        #[s!"--load-dynlib={libcpp}"]
+        ++ modules.map (s!"--load-dynlib={·.dynlibFile}")
+        ++ #[file.toString]
+      env := ← getAugmentedEnv
+    }
+
+    -- trim stdout and stderr for user convenience
     let (stdout, stderr) := (out.stdout.trim, out.stderr.trim)
 
+    /- stores the strings that discuss what failed
+      note that these strings all start with a newline
+    -/
     let mut failures := #[]
 
+    -- confirm success/failure
     if (expectSuccess ∧ out.exitCode ≠ 0) ∨ (¬ expectSuccess ∧ out.exitCode = 0) then
       let exp :=
         if expectSuccess then "exit code `0`" else "non-zero exit code"
@@ -258,6 +271,7 @@ where
   - expected {exp}, got exit code {out.exitCode}\
         "
 
+    -- confirm stdout
     if stdout ≠ expectedOut then
       failures := failures.push s!"
   - expected stdout
@@ -271,6 +285,7 @@ where
     ```\
       "
 
+    -- confirm stderr
     if stderr ≠ expectedErr then
       failures := failures.push s!"
   - expected stderr
@@ -284,6 +299,7 @@ where
     ```\
       "
 
+    -- final test report
     if failures.isEmpty then
       println! "- ✅ `{file}`: success"
       return true
