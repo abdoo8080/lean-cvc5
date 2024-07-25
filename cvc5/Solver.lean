@@ -58,6 +58,9 @@ inductive Error where
   | user_error (msg : String)
 deriving Repr
 
+instance Error.instToString : ToString Error :=
+  ⟨toString ∘ (reprPrec · 1)⟩
+
 private opaque SolverImpl : NonemptyType.{0}
 
 def Solver : Type := SolverImpl.type
