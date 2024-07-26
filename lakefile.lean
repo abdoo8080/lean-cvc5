@@ -145,8 +145,21 @@ script testRunner args := do
     showReadme
     return 0
 
+  -- make sure the `test` lib is built
+  let testLib ← test.get
+  let _ ← Lake.runBuild (testLib.recBuildStatic false)
+
   /- This file is always skipped. -/
   let initFile : FilePath := "Test/Init.lean"
+
+  /- Modules imported by `Test/Init.lean`, all expected to come from `cvc5`. -/
+  let initModules ←
+    if ← initFile.pathExists then
+      if ¬ (← initFile.isDir) then
+        let imports ← Lean.parseImports' (← IO.FS.readFile initFile) initFile.fileName.get!
+        imports.filterMapM (findModule? ∘ Lean.Import.module)
+      else pure #[]
+    else pure #[]
 
   /- True if the file is accepted by the user's filter, false otherwise.
 
@@ -192,7 +205,7 @@ script testRunner args := do
 
     -- spawn test tasks, populate `tasks`
     for file in todo do
-      let task ← IO.asTask (runTest file (← readThe Lake.Context))
+      let task ← IO.asTask (runTest initModules file (← readThe Lake.Context))
       tasks := task :: tasks
 
   -- join all `tasks` and count failures
@@ -239,7 +252,7 @@ where
 
   See `Test/readme.md` for details about the `.out` and `.err` files.
   -/
-  runTest (file : FilePath) : ScriptM Bool := do
+  runTest (initModules : Array Module) (file : FilePath) : ScriptM Bool := do
     -- files for expected stdout/stderr
     let expectedFile := file.withExtension "out"
     let expectedErrFile := expectedFile.withExtension "err"
@@ -278,11 +291,18 @@ where
 
     -- run the test, retrieve the output
     let imports ← Lean.parseImports' (← IO.FS.readFile file) file.fileName.get!
-    let modules ← imports.filterMapM (findModule? ∘ Lean.Import.module)
+    let modules ← imports.filterMapM (
+      fun i => do
+        -- ignore the test boilerplate module
+        if i.module ≠ `Test.Init then
+          findModule? <| Lean.Import.module i
+        else pure none
+    )
     let out ← IO.Process.output {
       cmd := (← getLean).toString
       args :=
         #[s!"--load-dynlib={libcpp}"]
+        ++ initModules.map (s!"--load-dynlib={·.dynlibFile}")
         ++ modules.map (s!"--load-dynlib={·.dynlibFile}")
         ++ #[file.toString]
       env := ← getAugmentedEnv
