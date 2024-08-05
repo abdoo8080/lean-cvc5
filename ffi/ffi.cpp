@@ -124,6 +124,16 @@ extern "C" uint8_t sort_beq(lean_obj_arg l, lean_obj_arg r)
   return bool_box(*sort_unbox(l) == *sort_unbox(r));
 }
 
+extern "C" uint8_t sort_blt(lean_obj_arg l, lean_obj_arg r)
+{
+  return bool_box(*sort_unbox(l) < *sort_unbox(r));
+}
+
+extern "C" uint8_t sort_ble(lean_obj_arg l, lean_obj_arg r)
+{
+  return bool_box(*sort_unbox(l) <= *sort_unbox(r));
+}
+
 extern "C" uint64_t sort_hash(lean_obj_arg s)
 {
   return std::hash<Sort>()(*sort_unbox(s));
@@ -513,6 +523,61 @@ extern "C" lean_obj_res termManager_mkTerm(lean_obj_arg tm,
   return term_box(new Term(mut_tm_unbox(tm)->mkTerm(k, cs)));
 }
 
+
+
+// # `TermManager`: sorts
+
+extern "C" lean_obj_res termManager_mkBooleanSort(
+  lean_obj_arg tm
+) {
+  return sort_box(new Sort(mut_tm_unbox(tm)->getBooleanSort()));
+}
+
+extern "C" lean_obj_res termManager_mkIntegerSort(
+  lean_obj_arg tm
+) {
+  return sort_box(new Sort(mut_tm_unbox(tm)->getIntegerSort()));
+}
+
+extern "C" lean_obj_res termManager_mkRealSort(
+  lean_obj_arg tm
+) {
+  return sort_box(new Sort(mut_tm_unbox(tm)->getRealSort()));
+}
+
+extern "C" lean_obj_res termManager_mkRegExpSort(
+  lean_obj_arg tm
+) {
+  return sort_box(new Sort(mut_tm_unbox(tm)->getRegExpSort()));
+}
+
+extern "C" lean_obj_res termManager_mkStringSort(
+  lean_obj_arg tm
+) {
+  return sort_box(new Sort(mut_tm_unbox(tm)->getStringSort()));
+}
+
+extern "C" lean_obj_res termManager_mkArraySort(
+  lean_obj_arg tm,
+  b_lean_obj_arg leanIdxSort,
+  b_lean_obj_arg leanElmSort
+) {
+  const Sort* idxSort = sort_unbox(leanIdxSort);
+  const Sort* elmSort = sort_unbox(leanElmSort);
+  return sort_box(new Sort(mut_tm_unbox(tm)->mkArraySort(*idxSort, *elmSort)));
+}
+
+extern "C" lean_obj_res termManager_mkBitVectorSort(
+  lean_obj_arg tm,
+  lean_obj_arg size
+) {
+  return sort_box(new Sort(mut_tm_unbox(tm)->mkBitVectorSort(lean_uint32_of_nat(size))));
+}
+
+
+
+
+
 static void solver_finalize(void* obj) { delete static_cast<Solver*>(obj); }
 
 static void solver_foreach(void*, b_lean_obj_arg)
@@ -552,26 +617,6 @@ extern "C" lean_obj_res solver_err(lean_obj_arg m,
 extern "C" lean_obj_res solver_new(lean_obj_arg tm)
 {
   return solver_box(new Solver(*mut_tm_unbox(tm)));
-}
-
-extern "C" lean_obj_res solver_getVersion(lean_obj_arg inst,
-                                          lean_obj_arg solver)
-{
-  return solver_val(lean_box(0),
-                    inst,
-                    lean_box(0),
-                    lean_mk_string(solver_unbox(solver)->getVersion().c_str()),
-                    solver);
-}
-
-extern "C" lean_obj_res solver_setOption(lean_obj_arg inst,
-                                         lean_object* option,
-                                         lean_object* value,
-                                         lean_obj_arg solver)
-{
-  solver_unbox(solver)->setOption(lean_string_cstr(option),
-                                  lean_string_cstr(value));
-  return solver_val(lean_box(0), inst, lean_box(0), mk_unit_unit(), solver);
 }
 
 extern "C" lean_obj_res solver_assertFormula(lean_obj_arg inst,
@@ -640,5 +685,204 @@ extern "C" lean_obj_res solver_parse(lean_obj_arg inst,
     // to out
     cmd.invoke(slv, sm, out);
   }
+  return solver_val(lean_box(0), inst, lean_box(0), mk_unit_unit(), solver);
+}
+
+
+
+// # `Solver`: declarations
+
+extern "C" lean_obj_res solver_declareFun(
+  lean_obj_arg inst,
+  lean_obj_arg symbol,
+  lean_obj_arg sorts,
+  lean_obj_arg sort,
+  lean_obj_arg fresh,
+  lean_obj_arg solver
+) {
+  std::vector<Sort> sort_vec;
+  for (size_t i = 0, n = lean_array_size(sorts); i < n; ++i) {
+    sort_vec.push_back(*sort_unbox(
+      lean_array_get(sort_box(new Sort()), sorts, lean_usize_to_nat(i))
+    ));
+  }
+  Term f = solver_unbox(solver)->declareFun(
+    lean_string_cstr(symbol),
+    sort_vec,
+    *sort_unbox(sort),
+    bool_unbox(lean_unbox(fresh))
+  );
+  return solver_val(lean_box(0), inst, lean_box(0), term_box(new Term(f)), solver);
+}
+
+extern "C" lean_obj_res solver_declareSort(
+  lean_obj_arg inst,
+  lean_obj_arg symbol,
+  lean_obj_arg arity,
+  lean_obj_arg fresh,
+  lean_obj_arg solver
+) {
+  Sort s = solver_unbox(solver)->declareSort(
+    lean_string_cstr(symbol),
+    lean_uint32_of_nat(arity),
+    bool_unbox(lean_unbox(fresh))
+  );
+  return solver_val(lean_box(0), inst, lean_box(0), sort_box(new Sort(s)), solver);
+}
+
+
+
+// # `Solver`: setters (logic, options, ...)
+
+extern "C" lean_obj_res solver_setLogic(
+  lean_obj_arg inst,
+  lean_object* logic,
+  lean_obj_arg solver
+) {
+  solver_unbox(solver)->setLogic(
+    lean_string_cstr(logic)
+  );
+  return solver_val(lean_box(0), inst, lean_box(0), mk_unit_unit(), solver);
+}
+
+extern "C" lean_obj_res solver_setOption(
+  lean_obj_arg inst,
+  lean_object* option,
+  lean_object* value,
+  lean_obj_arg solver
+) {
+  solver_unbox(solver)->setOption(
+    lean_string_cstr(option),
+    lean_string_cstr(value)
+  );
+  return solver_val(lean_box(0), inst, lean_box(0), mk_unit_unit(), solver);
+}
+
+
+
+// # `Solver`: information extraction
+
+extern "C" lean_obj_res solver_getVersion(
+  lean_obj_arg inst,
+  lean_obj_arg solver
+) {
+  return solver_val(
+    lean_box(0),
+    inst,
+    lean_box(0),
+    lean_mk_string(solver_unbox(solver)->getVersion().c_str()),
+    solver
+  );
+}
+
+extern "C" lean_obj_res solver_getAssertions(
+  lean_obj_arg inst,
+  lean_obj_arg solver
+) {
+  std::vector<Term> assertions = solver_unbox(solver)->getAssertions();
+  lean_object* res = lean_mk_empty_array();
+  for (const Term& assertion : assertions)
+  {
+    res = lean_array_push(res, term_box(new Term(assertion)));
+  }
+  return solver_val(lean_box(0), inst, lean_box(0), res, solver);
+}
+
+extern "C" lean_obj_res solver_getUnsatAssumptions(
+  lean_obj_arg inst,
+  lean_obj_arg solver
+) {
+  std::vector<Term> assertions = solver_unbox(solver)->getUnsatAssumptions();
+  lean_object* res = lean_mk_empty_array();
+  for (const Term& assertion : assertions)
+  {
+    res = lean_array_push(res, term_box(new Term(assertion)));
+  }
+  return solver_val(lean_box(0), inst, lean_box(0), res, solver);
+}
+
+extern "C" lean_obj_res solver_getUnsatCore(
+  lean_obj_arg inst,
+  lean_obj_arg solver
+) {
+  std::vector<Term> assertions = solver_unbox(solver)->getUnsatCore();
+  lean_object* res = lean_mk_empty_array();
+  for (const Term& assertion : assertions)
+  {
+    res = lean_array_push(res, term_box(new Term(assertion)));
+  }
+  return solver_val(lean_box(0), inst, lean_box(0), res, solver);
+}
+
+extern "C" lean_obj_res solver_getUnsatCoreLemmas(
+  lean_obj_arg inst,
+  lean_obj_arg solver
+) {
+  std::vector<Term> assertions = solver_unbox(solver)->getUnsatCoreLemmas();
+  lean_object* res = lean_mk_empty_array();
+  for (const Term& assertion : assertions)
+  {
+    res = lean_array_push(res, term_box(new Term(assertion)));
+  }
+  return solver_val(lean_box(0), inst, lean_box(0), res, solver);
+}
+
+extern "C" lean_obj_res solver_getInfo(
+  lean_obj_arg inst,
+  lean_obj_arg flag,
+  lean_obj_arg solver
+) {
+  std::string info = solver_unbox(solver)->getInfo(
+    lean_string_cstr(flag)
+  );
+  return solver_val(lean_box(0), inst, lean_box(0), lean_mk_string(info.c_str()), solver);
+}
+
+extern "C" lean_obj_res solver_getOption(
+  lean_obj_arg inst,
+  lean_obj_arg option,
+  lean_obj_arg solver
+) {
+  std::string info = solver_unbox(solver)->getOption(
+    lean_string_cstr(option)
+  );
+  return solver_val(lean_box(0), inst, lean_box(0), lean_mk_string(info.c_str()), solver);
+}
+
+extern "C" lean_obj_res solver_getOptionNames(
+  lean_obj_arg inst,
+  lean_obj_arg solver
+) {
+  std::vector<std::string> options = solver_unbox(solver)->getOptionNames();
+  lean_object* res = lean_mk_empty_array();
+  for (const std::string& name : options)
+  {
+    res = lean_array_push(res, lean_mk_string(name.c_str()));
+  }
+  return solver_val(lean_box(0), inst, lean_box(0), res, solver);
+}
+
+
+
+// # `Solver`: evaluation
+
+extern "C" lean_obj_res solver_getValue(
+  lean_obj_arg inst,
+  lean_obj_arg term,
+  lean_obj_arg solver
+) {
+  Term value = solver_unbox(solver)->getValue(*term_unbox(term));
+  return solver_val(lean_box(0), inst, lean_box(0), term_box(new Term(value)), solver);
+}
+
+
+
+// # `Solver`: restart/reset
+
+extern "C" lean_obj_res solver_resetAssertions(
+  lean_obj_arg inst,
+  lean_obj_arg solver
+) {
+  solver_unbox(solver)->resetAssertions();
   return solver_val(lean_box(0), inst, lean_box(0), mk_unit_unit(), solver);
 }
