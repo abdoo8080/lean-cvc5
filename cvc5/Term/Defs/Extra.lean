@@ -8,7 +8,7 @@ Authors: Abdalrhman Mohamed
 import Lean.Data.Rat
 
 import cvc5.Term.Defs.Basic
-import cvc5.Op.Defs
+import cvc5.Op.Extra
 
 
 namespace cvc5.Term

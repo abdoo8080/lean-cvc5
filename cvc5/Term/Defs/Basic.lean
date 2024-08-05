@@ -8,6 +8,7 @@ Authors: Abdalrhman Mohamed
 import Lean.Data.Rat
 
 import cvc5.Init
+import cvc5.Op.Defs
 import cvc5.Term.Defs.SkolemId
 
 

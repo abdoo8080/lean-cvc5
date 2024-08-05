@@ -6,7 +6,7 @@ Authors: Abdalrhman Mohamed
 -/
 
 import cvc5.Op.Defs
-import cvc5.Term.Defs
+import cvc5.Term.Defs.Basic
 
 
 
