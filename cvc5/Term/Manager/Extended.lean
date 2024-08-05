@@ -60,6 +60,9 @@ instance instToCvc5SortBool : ToCvc5Sort Bool :=
 instance instToCvc5SortInt : ToCvc5Sort Int :=
   ⟨mkSortInt⟩
 
+instance instToCvc5SortNat : ToCvc5Sort Nat :=
+  ⟨mkSortInt⟩
+
 -- # TODO
 -- `Lean.Rat` is not cvc5's `Real`, maybe a bad idea to have that
 instance instToCvc5SortRat : ToCvc5Sort Lean.Rat :=
