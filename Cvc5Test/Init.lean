@@ -4,11 +4,18 @@ import cvc5
 
 namespace cvc5
 
-def Test.assertEq [Repr α] [BEq α] (lft rgt : α) (hint := "") : IO Unit := do
+def Test.assertEq [ToString α] [BEq α] (lft rgt : α) (hint := "") : IO Unit := do
   if lft != rgt then
     let pref := if hint.isEmpty then "" else s!"[{hint}] "
     IO.eprintln s!"\
-{pref}comparison failed: `{reprPrec lft 1}` is different from `{reprPrec rgt 1}\
+{pref}comparison failed: `{lft}` is different from `{rgt}\
+      "
+
+def Test.assertNe [ToString α] [BEq α] (lft rgt : α) (hint := "") : IO Unit := do
+  if lft == rgt then
+    let pref := if hint.isEmpty then "" else s!"[{hint}] "
+    IO.eprintln s!"\
+{pref}comparison failed: `{lft}` is the same as `{rgt}\
       "
 
 
@@ -16,10 +23,6 @@ def Test.assertEq [Repr α] [BEq α] (lft rgt : α) (hint := "") : IO Unit := do
 namespace Solver
 
 variable [Monad m]
-
-def parseAnd (s : String) (andThen : SolverT m α) : SolverT m α := do
-  Solver.parse s
-  andThen
 
 def checkSat? : SolverT m (Option Bool) := do
   let res ← Solver.checkSat
@@ -38,5 +41,3 @@ def run! [Inhabited α] (tm : TermManager) (query : SolverT m α) : m α := do
 end Solver
 
 end cvc5
-
-abbrev String.smtParseAnd := @cvc5.Solver.parseAnd

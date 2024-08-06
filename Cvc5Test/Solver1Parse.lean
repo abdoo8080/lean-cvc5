@@ -1,12 +1,12 @@
-import Test.Init
+import Cvc5Test.Init
 
 namespace cvc5.Test
 
 def solver1Parse : IO Unit := do
   let tm ← TermManager.new
 
-  let query :=
-    "
+  let query := do
+    Solver.parse "
 (set-logic QF_LIA)
 
 (declare-fun n1 () Int)
@@ -16,7 +16,8 @@ def solver1Parse : IO Unit := do
 
 (assert (ite b (= n1 n2) (not (= n1 n2))))
 (assert (= n1 n2))
-    ".smtParseAnd Solver.checkSat?
+    "
+    Solver.checkSat?
 
   match ← Solver.run! tm query with
   | none =>
@@ -28,8 +29,8 @@ def solver1Parse : IO Unit := do
 
 
 
-  let query : SolverM (Array Proof) :=
-    "
+  let query : SolverM (Array Proof) := do
+    Solver.parse "
 (set-option :produce-proofs true)
 
 (set-logic QF_LIA)
@@ -43,14 +44,14 @@ def solver1Parse : IO Unit := do
 (assert (=> (not b) (not (= n1 n2))))
 (assert (= n1 n2))
 (assert (not b))
-    ".smtParseAnd
-    do
-      match ← Solver.checkSat? with
-      | none => panic! "got a timeout"
-      | some false => println! "confirmed `unsat` result"
-      | some true => panic! "unexpected `sat` result"
+    "
 
-      Solver.getProof
+    match ← Solver.checkSat? with
+    | some false => println! "confirmed `unsat` result"
+    | none => panic! "got a timeout"
+    | some true => panic! "unexpected `sat` result"
+
+    Solver.getProof
 
   let proofs ← Solver.run! tm query
 
