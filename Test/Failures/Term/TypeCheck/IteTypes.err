@@ -1,5 +1,0 @@
-libc++abi: terminating due to uncaught exception of type cvc5::CVC5ApiException: Branches of the ITE must have comparable type.
-then branch: 7
-its type   : Int
-else branch: false
-its type   : Bool

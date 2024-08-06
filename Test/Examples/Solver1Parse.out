@@ -1,4 +1,0 @@
-confirmed `sat` result
-confirmed `unsat` result
-proof:
-- (let ((_let_1 (not b))) (let ((_let_2 (= n1 n2))) (not (and (=> b _let_2) (=> _let_1 (not _let_2)) _let_2 _let_1))))

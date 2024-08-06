@@ -1,4 +1,0 @@
-libc++abi: terminating due to uncaught exception of type cvc5::CVC5ApiException: Subexpressions must have the same type:
-Equation: (= true 7)
-Type 1: Bool
-Type 2: Int

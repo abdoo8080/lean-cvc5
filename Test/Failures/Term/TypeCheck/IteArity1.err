@@ -1,1 +1,0 @@
-libc++abi: terminating due to uncaught exception of type cvc5::CVC5ApiException: invalid kind 'ITE', expected Terms with kind ITE must have at least 3 children and at most 3 children (the one under construction has 2)

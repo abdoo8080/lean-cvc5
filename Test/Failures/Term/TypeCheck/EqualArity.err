@@ -1,1 +1,0 @@
-libc++abi: terminating due to uncaught exception of type cvc5::CVC5ApiException: invalid kind 'EQUAL', expected Terms with kind EQUAL must have at least 2 children and at most 2 children (the one under construction has 1)
