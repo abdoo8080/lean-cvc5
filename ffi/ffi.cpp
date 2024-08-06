@@ -215,6 +215,11 @@ extern "C" lean_obj_res op_getNumIndices(lean_obj_arg op)
   return lean_usize_to_nat(op_unbox(op)->getNumIndices());
 }
 
+extern "C" uint8_t op_beq(lean_obj_arg l, lean_obj_arg r)
+{
+  return bool_box(*op_unbox(l) == *op_unbox(r));
+}
+
 static inline lean_obj_res term_box(Term* t);
 
 extern "C" lean_obj_res op_get(lean_obj_arg op, lean_obj_arg i)
@@ -537,6 +542,21 @@ extern "C" lean_obj_arg termManager_mkFloatingPointSort(
   return sort_box(new Sort(mut_tm_unbox(tm)->mkFloatingPointSort(exp, sig)));
 }
 
+extern "C" lean_obj_arg termManager_mkFunctionSort(
+  lean_obj_arg tm,
+  lean_obj_arg sorts,
+  lean_obj_arg codomain
+)
+{
+  std::vector<Sort> cvc5Sorts;
+  for (size_t i = 0, n = lean_array_size(sorts); i < n; ++i)
+  {
+    cvc5Sorts.push_back(*sort_unbox(
+        lean_array_get(sort_box(new Sort()), sorts, lean_usize_to_nat(i))));
+  }
+  return sort_box(new Sort(mut_tm_unbox(tm)->mkFunctionSort(cvc5Sorts, *sort_unbox(codomain))));
+}
+
 extern "C" lean_obj_res termManager_mkBoolean(lean_obj_arg tm, uint8_t val)
 {
   return term_box(new Term(mut_tm_unbox(tm)->mkBoolean(bool_unbox(val))));
@@ -560,6 +580,57 @@ extern "C" lean_obj_res termManager_mkTerm(lean_obj_arg tm,
         lean_array_get(term_box(new Term()), children, lean_usize_to_nat(i))));
   }
   return term_box(new Term(mut_tm_unbox(tm)->mkTerm(k, cs)));
+}
+
+extern "C" lean_obj_res termManager_mkTermOfOp(
+  lean_obj_arg tm,
+  lean_obj_arg op,
+  lean_obj_arg children
+)
+{
+  std::vector<Term> cs;
+  for (size_t i = 0, n = lean_array_size(children); i < n; ++i)
+  {
+    cs.push_back(*term_unbox(
+        lean_array_get(term_box(new Term()), children, lean_usize_to_nat(i))));
+  }
+  return term_box(new Term(mut_tm_unbox(tm)->mkTerm(*op_unbox(op), cs)));
+}
+
+extern "C" lean_obj_res termManager_mkConst(
+  lean_obj_arg tm,
+  lean_obj_arg sort,
+  lean_obj_arg symbol
+)
+{
+  return term_box(new Term(mut_tm_unbox(tm)->mkConst(*sort_unbox(sort), lean_string_cstr(symbol))));
+}
+
+extern "C" lean_obj_res termManager_mkOpOfIndices(
+  lean_obj_arg tm,
+  uint16_t kind,
+  lean_obj_arg args
+)
+{
+  Kind k = static_cast<Kind>(static_cast<int32_t>(kind) - 2);
+  std::vector<uint32_t> indices;
+  for (size_t i = 0, n = lean_array_size(args); i < n; ++i)
+  {
+    indices.push_back(
+      lean_uint32_of_nat(lean_array_get(0, args, lean_usize_to_nat(i)))
+    );
+  }
+  return op_box(new Op(mut_tm_unbox(tm)->mkOp(k, indices)));
+}
+
+extern "C" lean_obj_res termManager_mkOpOfString(
+  lean_obj_arg tm,
+  uint16_t kind,
+  lean_obj_arg arg
+)
+{
+  Kind k = static_cast<Kind>(static_cast<int32_t>(kind) - 2);
+  return op_box(new Op(mut_tm_unbox(tm)->mkOp(k, lean_string_cstr(arg))));
 }
 
 static void solver_finalize(void* obj) { delete static_cast<Solver*>(obj); }

@@ -146,6 +146,11 @@ opaque null : Unit → Op
 
 instance : Inhabited Op := ⟨null ()⟩
 
+@[extern "op_beq"]
+protected opaque beq : Op → Op → Bool
+
+instance : BEq Op := ⟨Op.beq⟩
+
 @[extern "op_getKind"]
 opaque getKind : Op → Kind
 
@@ -363,6 +368,14 @@ opaque mkBitVectorSort : TermManager → (size : Nat) → cvc5.Sort
 @[extern "termManager_mkFloatingPointSort"]
 opaque mkFloatingPointSort : TermManager → (exp sig : Nat) → cvc5.Sort
 
+/-- Create function sort.
+
+- `sorts` The sort of the function arguments.
+- `codomain` The sort of the function return value.
+-/
+@[extern "termManager_mkFunctionSort"]
+opaque mkFunctionSort : TermManager → (sorts : Array cvc5.Sort) → (codomain : cvc5.Sort) → cvc5.Sort
+
 @[extern "termManager_mkBoolean"]
 opaque mkBoolean : TermManager → Bool → Term
 
@@ -372,8 +385,77 @@ private opaque mkIntegerFromString : TermManager → String → Term
 def mkInteger (tm : TermManager) : Int → Term :=
   (mkIntegerFromString tm) ∘ toString
 
+/-- Create operator of Kind:
+
+- `Kind.BITVECTOR_EXTRACT`
+- `Kind.BITVECTOR_REPEAT`
+- `Kind.BITVECTOR_ROTATE_LEFT`
+- `Kind.BITVECTOR_ROTATE_RIGHT`
+- `Kind.BITVECTOR_SIGN_EXTEND`
+- `Kind.BITVECTOR_ZERO_EXTEND`
+- `Kind.DIVISIBLE`
+- `Kind.FLOATINGPOINT_TO_FP_FROM_FP`
+- `Kind.FLOATINGPOINT_TO_FP_FROM_IEEE_BV`
+- `Kind.FLOATINGPOINT_TO_FP_FROM_REAL`
+- `Kind.FLOATINGPOINT_TO_FP_FROM_SBV`
+- `Kind.FLOATINGPOINT_TO_FP_FROM_UBV`
+- `Kind.FLOATINGPOINT_TO_SBV`
+- `Kind.FLOATINGPOINT_TO_UBV`
+- `Kind.INT_TO_BITVECTOR`
+- `Kind.TUPLE_PROJECT`
+
+See `cvc5.Kind` for a description of the parameters.
+
+- `kind` The kind of the operator.
+- `args` The arguments (indices) of the operator.
+
+If `args` is empty, the `Op` simply wraps the `cvc5.Kind`. The `Kind` can be used in `Solver.mkTerm`
+directly without creating an `Op` first.
+-/
+@[extern "termManager_mkOpOfIndices"]
+opaque mkOpOfIndices : TermManager → (kind : Kind) → (args : Array Nat) → Op
+
+/-- Create operator of kind:
+
+- `Kind.DIVISIBLE` (to support arbitrary precision integers)
+
+See `cvc5.Kind` for a description of the parameters.
+
+- `kind` The kind of the operator.
+- `arg` The string argument to this operator.
+
+-/
+@[extern "termManager_mkOpOfString"]
+opaque mkOpOfString : TermManager → (kind : Kind) → (arg : String) → Op
+
+/-- Create n-ary term of given kind.
+
+- `kind` The kind of the term.
+- `children` The children of the term.
+-/
 @[extern "termManager_mkTerm"]
-opaque mkTerm : TermManager → Kind → (children : Array Term := #[]) → Term
+opaque mkTerm : TermManager → (kind : Kind) → (children : Array Term := #[]) → Term
+
+/-- Create n-ary term of given kind from a given operator.
+
+Create operators with `mkOp`.
+
+- `op` The operator.
+- `children` The children of the term.
+-/
+@[extern "termManager_mkTermOfOp"]
+opaque mkTermOfOp : TermManager → (op : Op) → (children : Array Term := #[]) → Term
+
+/-- Create a free constant.
+
+Note that the returned term is always fresh, even if the same arguments were provided on a previous
+call to `mkConst`.
+
+- `sort` The sort of the constant.
+- `symbol` The name of the constant.
+-/
+@[extern "termManager_mkConst"]
+opaque mkConst : TermManager → (sort : cvc5.Sort) → (symbol : String) → Term
 
 end TermManager
 
