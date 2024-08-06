@@ -1,7 +1,5 @@
 import cvc5
 
-
-
 namespace cvc5
 
 def Test.assertEq [ToString α] [BEq α] (lft rgt : α) (hint := "") : IO Unit := do
@@ -17,8 +15,6 @@ def Test.assertNe [ToString α] [BEq α] (lft rgt : α) (hint := "") : IO Unit :
     IO.eprintln s!"\
 {pref}comparison failed: `{lft}` is the same as `{rgt}\
       "
-
-
 
 namespace Solver
 
