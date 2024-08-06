@@ -58,9 +58,6 @@ inductive Error where
   | user_error (msg : String)
 deriving Repr
 
-instance Error.instToString : ToString Error :=
-  ⟨toString ∘ (reprPrec · 1)⟩
-
 private opaque SolverImpl : NonemptyType.{0}
 
 def Solver : Type := SolverImpl.type
@@ -70,6 +67,16 @@ instance Solver.instNonemptySolver : Nonempty Solver := SolverImpl.property
 abbrev SolverT m := ExceptT Error (StateT Solver m)
 
 abbrev SolverM := SolverT IO
+
+namespace Error
+
+protected def toString : Error → String :=
+  toString ∘ repr
+
+instance instToString : ToString Error :=
+  ⟨Error.toString⟩
+
+end Error
 
 namespace Result
 
@@ -127,8 +134,8 @@ opaque getBitVectorSize : cvc5.Sort → UInt32
 @[extern "sort_toString"]
 protected opaque toString : cvc5.Sort → String
 
-instance instToString : ToString cvc5.Sort := ⟨Sort.toString⟩
-instance instRepr : Repr cvc5.Sort := ⟨fun self _ => self.toString⟩
+instance : ToString cvc5.Sort := ⟨Sort.toString⟩
+instance : Repr cvc5.Sort := ⟨fun self _ => self.toString⟩
 
 end cvc5.Sort
 
@@ -308,6 +315,53 @@ namespace TermManager
 
 @[extern "termManager_new"]
 opaque new : BaseIO TermManager
+
+/-- Get the Boolean sort. -/
+@[extern "termManager_getBooleanSort"]
+opaque getBooleanSort : TermManager → cvc5.Sort
+
+/-- Get the Integer sort. -/
+@[extern "termManager_getIntegerSort"]
+opaque getIntegerSort : TermManager → cvc5.Sort
+
+/-- Get the Real sort. -/
+@[extern "termManager_getRealSort"]
+opaque getRealSort : TermManager → cvc5.Sort
+
+/-- Get the regular expression sort. -/
+@[extern "termManager_getRegExpSort"]
+opaque getRegExpSort : TermManager → cvc5.Sort
+
+/-- Get the rounding mode sort. -/
+@[extern "termManager_getRoundingModeSort"]
+opaque getRoundingModeSort : TermManager → cvc5.Sort
+
+/-- Get the string sort. -/
+@[extern "termManager_getStringSort"]
+opaque getStringSort : TermManager → cvc5.Sort
+
+/-- Create an array sort.
+
+- `indexSort` The array index sort.
+- `elemSort` The array element sort.
+-/
+@[extern "termManager_mkArraySort"]
+opaque mkArraySort : TermManager → (indexSort elemSort : cvc5.Sort) → cvc5.Sort
+
+/-- Create a bit-vector sort.
+
+- `size` The bit-width of the bit-vector sort.
+-/
+@[extern "termManager_mkBitVectorSort"]
+opaque mkBitVectorSort : TermManager → (size : Nat) → cvc5.Sort
+
+/-- Create a floating-point sort.
+
+- `exp` The bit-width of the exponent of the floating-point sort.
+- `sig` The bit-width of the significand of the floating-point sort.
+-/
+@[extern "termManager_mkFloatingPointSort"]
+opaque mkFloatingPointSort : TermManager → (exp sig : Nat) → cvc5.Sort
 
 @[extern "termManager_mkBoolean"]
 opaque mkBoolean : TermManager → Bool → Term

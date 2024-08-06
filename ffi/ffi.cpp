@@ -488,6 +488,55 @@ extern "C" lean_obj_res termManager_new(lean_obj_arg unit)
   return lean_io_result_mk_ok(tm_box(new TermManager()));
 }
 
+extern "C" lean_obj_arg termManager_getBooleanSort(lean_obj_arg tm)
+{
+  return sort_box(new Sort(mut_tm_unbox(tm)->getBooleanSort()));
+}
+
+extern "C" lean_obj_arg termManager_getIntegerSort(lean_obj_arg tm)
+{
+  return sort_box(new Sort(mut_tm_unbox(tm)->getIntegerSort()));
+}
+
+extern "C" lean_obj_arg termManager_getRealSort(lean_obj_arg tm)
+{
+  return sort_box(new Sort(mut_tm_unbox(tm)->getRealSort()));
+}
+
+extern "C" lean_obj_arg termManager_getRegExpSort(lean_obj_arg tm)
+{
+  return sort_box(new Sort(mut_tm_unbox(tm)->getRegExpSort()));
+}
+
+extern "C" lean_obj_arg termManager_getRoundingModeSort(lean_obj_arg tm)
+{
+  return sort_box(new Sort(mut_tm_unbox(tm)->getRoundingModeSort()));
+}
+
+extern "C" lean_obj_arg termManager_getStringSort(lean_obj_arg tm)
+{
+  return sort_box(new Sort(mut_tm_unbox(tm)->getStringSort()));
+}
+
+extern "C" lean_obj_arg termManager_mkArraySort(lean_obj_arg tm, lean_obj_arg idx, lean_obj_arg elm)
+{
+  return sort_box(new Sort(mut_tm_unbox(tm)->mkArraySort(*sort_unbox(idx), *sort_unbox(elm))));
+}
+
+extern "C" lean_obj_arg termManager_mkBitVectorSort(lean_obj_arg tm, uint32_t size)
+{
+  return sort_box(new Sort(mut_tm_unbox(tm)->mkBitVectorSort(size)));
+}
+
+extern "C" lean_obj_arg termManager_mkFloatingPointSort(
+  lean_obj_arg tm,
+  uint32_t exp,
+  uint32_t sig
+)
+{
+  return sort_box(new Sort(mut_tm_unbox(tm)->mkFloatingPointSort(exp, sig)));
+}
+
 extern "C" lean_obj_res termManager_mkBoolean(lean_obj_arg tm, uint8_t val)
 {
   return term_box(new Term(mut_tm_unbox(tm)->mkBoolean(bool_unbox(val))));
