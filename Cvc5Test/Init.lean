@@ -5,16 +5,12 @@ namespace cvc5
 def Test.assertEq [ToString α] [BEq α] (lft rgt : α) (hint := "") : IO Unit := do
   if lft != rgt then
     let pref := if hint.isEmpty then "" else s!"[{hint}] "
-    IO.eprintln s!"\
-{pref}comparison failed: `{lft}` is different from `{rgt}\
-      "
+    IO.eprintln s!"{pref}comparison failed: `{lft}` is different from `{rgt}`"
 
 def Test.assertNe [ToString α] [BEq α] (lft rgt : α) (hint := "") : IO Unit := do
   if lft == rgt then
     let pref := if hint.isEmpty then "" else s!"[{hint}] "
-    IO.eprintln s!"\
-{pref}comparison failed: `{lft}` is the same as `{rgt}\
-      "
+    IO.eprintln s!"{pref}comparison failed: `{lft}` is the same as `{rgt}`"
 
 namespace Solver
 
