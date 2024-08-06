@@ -73,7 +73,7 @@ namespace Error
 protected def toString : Error → String :=
   toString ∘ repr
 
-instance instToString : ToString Error :=
+instance : ToString Error :=
   ⟨Error.toString⟩
 
 end Error
@@ -101,7 +101,7 @@ namespace cvc5.Sort
 @[extern "sort_null"]
 opaque null : Unit → cvc5.Sort
 
-instance instInhabitedSort : Inhabited cvc5.Sort := ⟨null ()⟩
+instance : Inhabited cvc5.Sort := ⟨null ()⟩
 
 @[extern "sort_getKind"]
 opaque getKind : cvc5.Sort → SortKind
