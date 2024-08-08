@@ -55,7 +55,8 @@ instance TermManager.instNonemptyTermManager : Nonempty TermManager := TermManag
 
 inductive Error where
   | missingValue
-  | user_error (msg : String)
+  | userError (msg : String)
+  | cvc5Error (msg : String)
 deriving Repr
 
 private opaque SolverImpl : NonemptyType.{0}
@@ -69,6 +70,12 @@ abbrev SolverT m := ExceptT Error (StateT Solver m)
 abbrev SolverM := SolverT IO
 
 namespace Error
+
+def unwrap! [Inhabited α] : Except Error α → α
+| .ok a => a
+| .error (.userError e) => panic! s!"user error: {e}"
+| .error (.cvc5Error e) => panic! s!"cvc5 error: {e}"
+| .error .missingValue => panic! s!"missing value"
 
 protected def toString : Error → String :=
   toString ∘ repr
@@ -318,6 +325,16 @@ end Proof
 
 namespace TermManager
 
+/-- Only used by FFI to inject values. -/
+@[export termManager_val]
+private def val {α : Type} : α → Except Error α :=
+  .ok
+
+/-- Only used by FFI to inject errors. -/
+@[export termManager_err]
+private def err {α : Type} : String → Except Error α :=
+  .error ∘ Error.cvc5Error
+
 @[extern "termManager_new"]
 opaque new : BaseIO TermManager
 
@@ -351,14 +368,24 @@ opaque getStringSort : TermManager → cvc5.Sort
 - `elemSort` The array element sort.
 -/
 @[extern "termManager_mkArraySort"]
-opaque mkArraySort : TermManager → (indexSort elemSort : cvc5.Sort) → cvc5.Sort
+opaque mkArraySort : TermManager → (indexSort elemSort : cvc5.Sort) → Except Error cvc5.Sort
+
+@[inherit_doc mkArraySort]
+def mkArraySort! tm indexSort elemSort :=
+  mkArraySort tm indexSort elemSort
+  |> Error.unwrap!
 
 /-- Create a bit-vector sort.
 
 - `size` The bit-width of the bit-vector sort.
 -/
 @[extern "termManager_mkBitVectorSort"]
-opaque mkBitVectorSort : TermManager → (size : Nat) → cvc5.Sort
+opaque mkBitVectorSort : TermManager → (size : Nat) → Except Error cvc5.Sort
+
+@[inherit_doc mkBitVectorSort]
+def mkBitVectorSort! tm size :=
+  mkBitVectorSort tm size
+  |> Error.unwrap!
 
 /-- Create a floating-point sort.
 
@@ -366,7 +393,12 @@ opaque mkBitVectorSort : TermManager → (size : Nat) → cvc5.Sort
 - `sig` The bit-width of the significand of the floating-point sort.
 -/
 @[extern "termManager_mkFloatingPointSort"]
-opaque mkFloatingPointSort : TermManager → (exp sig : Nat) → cvc5.Sort
+opaque mkFloatingPointSort : TermManager → (exp sig : Nat) → Except Error cvc5.Sort
+
+@[inherit_doc mkFloatingPointSort]
+def mkFloatingPointSort! tm exp sig :=
+  mkFloatingPointSort tm exp sig
+  |> Error.unwrap!
 
 /-- Create function sort.
 
@@ -374,16 +406,40 @@ opaque mkFloatingPointSort : TermManager → (exp sig : Nat) → cvc5.Sort
 - `codomain` The sort of the function return value.
 -/
 @[extern "termManager_mkFunctionSort"]
-opaque mkFunctionSort : TermManager → (sorts : Array cvc5.Sort) → (codomain : cvc5.Sort) → cvc5.Sort
+opaque mkFunctionSort
+: TermManager → (sorts : Array cvc5.Sort) → (codomain : cvc5.Sort) → Except Error cvc5.Sort
 
+@[inherit_doc mkFunctionSort]
+def mkFunctionSort! tm sorts codomain :=
+  mkFunctionSort tm sorts codomain
+  |> Error.unwrap!
+
+/-- Create a Boolean constant.
+
+- `b` The Boolean constant.
+-/
 @[extern "termManager_mkBoolean"]
-opaque mkBoolean : TermManager → Bool → Term
+opaque mkBoolean : TermManager → (b : Bool) → Except Error Term
+
+@[inherit_doc mkBoolean]
+def mkBoolean! tm b :=
+  mkBoolean tm b
+  |> Error.unwrap!
 
 @[extern "termManager_mkIntegerFromString"]
-private opaque mkIntegerFromString : TermManager → String → Term
+private opaque mkIntegerFromString : TermManager → String → Except Error Term
 
-def mkInteger (tm : TermManager) : Int → Term :=
-  (mkIntegerFromString tm) ∘ toString
+/-- Create an integer constant.
+
+- `i` The integer constant.
+-/
+def mkInteger (tm : TermManager) : (i : Int) → Except Error Term :=
+  mkIntegerFromString tm ∘ toString
+
+@[inherit_doc mkInteger]
+def mkInteger! tm i :=
+  mkInteger tm i
+  |> Error.unwrap!
 
 /-- Create operator of Kind:
 
@@ -413,7 +469,12 @@ If `args` is empty, the `Op` simply wraps the `cvc5.Kind`. The `Kind` can be use
 directly without creating an `Op` first.
 -/
 @[extern "termManager_mkOpOfIndices"]
-opaque mkOpOfIndices : TermManager → (kind : Kind) → (args : Array Nat) → Op
+opaque mkOpOfIndices : TermManager → (kind : Kind) → (args : Array Nat) → Except Error Op
+
+@[inherit_doc mkOpOfIndices]
+def mkOpOfIndices! tm kind args :=
+  mkOpOfIndices tm kind args
+  |> Error.unwrap!
 
 /-- Create operator of kind:
 
@@ -426,7 +487,12 @@ See `cvc5.Kind` for a description of the parameters.
 
 -/
 @[extern "termManager_mkOpOfString"]
-opaque mkOpOfString : TermManager → (kind : Kind) → (arg : String) → Op
+opaque mkOpOfString : TermManager → (kind : Kind) → (arg : String) → Except Error Op
+
+@[inherit_doc mkOpOfString]
+def mkOpOfString! tm kind args :=
+  mkOpOfString tm kind args
+  |> Error.unwrap!
 
 /-- Create n-ary term of given kind.
 
@@ -434,7 +500,12 @@ opaque mkOpOfString : TermManager → (kind : Kind) → (arg : String) → Op
 - `children` The children of the term.
 -/
 @[extern "termManager_mkTerm"]
-opaque mkTerm : TermManager → (kind : Kind) → (children : Array Term := #[]) → Term
+opaque mkTerm : TermManager → (kind : Kind) → (children : Array Term := #[]) → Except Error Term
+
+@[inherit_doc mkTerm]
+def mkTerm! tm kind children :=
+  mkTerm tm kind children
+  |> Error.unwrap!
 
 /-- Create n-ary term of given kind from a given operator.
 
@@ -444,7 +515,12 @@ Create operators with `mkOp`.
 - `children` The children of the term.
 -/
 @[extern "termManager_mkTermOfOp"]
-opaque mkTermOfOp : TermManager → (op : Op) → (children : Array Term := #[]) → Term
+opaque mkTermOfOp : TermManager → (op : Op) → (children : Array Term := #[]) → Except Error Term
+
+@[inherit_doc mkTermOfOp]
+def mkTermOfOp! tm op children :=
+  mkTermOfOp tm op children
+  |> Error.unwrap!
 
 /-- Create a free constant.
 
@@ -470,7 +546,7 @@ private def val (a : α) : SolverT m α := pure a
 private def err (e : Error) : SolverT m α := throw e
 
 @[export solver_errOfString]
-private def errOfString (msg : String) : SolverT m α := throw (.user_error msg)
+private def cvc5ErrOfString (msg : String) : SolverT m α := throw (.cvc5Error msg)
 
 @[extern "solver_new"]
 private opaque new : TermManager → Solver

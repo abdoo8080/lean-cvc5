@@ -6,6 +6,9 @@ namespace cvc5
 
 namespace Test
 
+def IO.run : IO Unit → IO Unit :=
+  id
+
 def fail {α : outParam Type} (msg : String) : IO α :=
   IO.throwServerError msg
 
@@ -22,31 +25,62 @@ def assertNe [ToString α] [BEq α] (lft rgt : α) (hint := "") : IO Unit := do
     IO.eprintln s!"{Test.pref hint}comparison failed: `{lft}` is the same as `{rgt}`"
     fail "assertion failed"
 
-def assertOk [Inhabited α] (code : SolverM α) (hint := "") : SolverM α :=
+def assertOk
+  (result : Except Error α)
+  (hint : String := "")
+: IO α := do
+  match result with
+  | .ok res => return res
+  | .error e =>
+    IO.eprintln s!"{Test.pref hint}expected `.ok` result, got `{e}`"
+    fail "assertion failed"
+
+def assertSolverOk [Inhabited α] (code : SolverM α) (hint := "") : SolverM α :=
   fun solver => do
-    match ← code solver with
-    | (.ok res, solver) => return (.ok res, solver)
-    | (.error e, _) =>
-      IO.eprintln s!"{Test.pref hint}expected `.ok` result, got {e}"
-      fail "assertion failed"
+    let (result, solver) ← code solver
+    let _ ← assertOk result hint
+    return (result, solver)
 
 def assertError
+  (expected : String)
+  (errorDo : Error → IO Unit)
+  (result : ExceptT Error IO α)
+  (hint : String := "")
+: IO Unit := do
+  match ← result with
+  | .ok _ =>
+    IO.eprintln s!"{Test.pref hint}expected {expected}, got `.ok` result"
+    fail "assertion failed"
+  | .error e => errorDo e
+
+def assertCvc5Error
+  (expected : String)
+  (result : ExceptT Error IO α)
+  (hint : String := "")
+: IO Unit :=
+  assertError s!"cvc5 error `{expected}`"
+    (fun
+    | .cvc5Error err => do
+      if err = expected then
+        return ()
+      else
+        IO.eprintln s!"{Test.pref hint}expected cvc5 error `{expected}`, got cvc5 error `{err}`"
+        fail "assertion failed"
+    | .userError err => do
+        IO.eprintln s!"{Test.pref hint}expected cvc5 error `{expected}`, got user error `{err}`"
+        fail "assertion failed"
+    | .missingValue => do
+        IO.eprintln s!"{Test.pref hint}expected cvc5 error `{expected}`, got missing value error"
+        fail "assertion failed"
+    )
+    result hint
+
+def assertSolverCvc5Error
   (expected : String) (code : SolverM α) (hint := "")
 : SolverM Unit := fun solver => do
-  match ← code solver with
-  | (.ok _, _) =>
-    IO.eprintln s!"{Test.pref hint}expected `.error {expected}`, got `.ok` result"
-    fail "assertion failed"
-  | (.error err, solver) =>
-    let err :=
-      match err with
-      | .user_error msg => msg
-      | .missingValue => "missing value"
-    if err = expected then
-      return (.ok (), solver)
-    else
-      IO.eprintln s!"{Test.pref hint}expected `.error {expected}`, got `.error {err}`"
-      fail "assertion failed"
+  let (result, solver) ← code solver
+  assertCvc5Error expected result hint
+  return (.ok (), solver)
 
 end Test
 

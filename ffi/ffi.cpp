@@ -493,6 +493,30 @@ extern "C" lean_obj_res termManager_new(lean_obj_arg unit)
   return lean_io_result_mk_ok(tm_box(new TermManager()));
 }
 
+extern "C" lean_obj_res termManager_val(
+  lean_obj_arg alpha,
+  lean_obj_arg val
+);
+
+extern "C" lean_obj_res termManager_err(
+  lean_obj_arg alpha,
+  lean_obj_arg msg
+);
+
+#define CVC5_TRY_CATCH_TERM_MANAGER(code) \
+  try { \
+    code \
+  } catch (CVC5ApiException& e) { \
+    return termManager_err(lean_box(0), lean_mk_string(e.what())); \
+  } catch (char const* e) { \
+    return termManager_err(lean_box(0), lean_mk_string(e)); \
+  } catch (...) { \
+    return termManager_err( \
+      lean_box(0), \
+      lean_mk_string("cvc5's term manager raised an unexpected exception") \
+    ); \
+  }
+
 extern "C" lean_obj_arg termManager_getBooleanSort(lean_obj_arg tm)
 {
   return sort_box(new Sort(mut_tm_unbox(tm)->getBooleanSort()));
@@ -523,63 +547,91 @@ extern "C" lean_obj_arg termManager_getStringSort(lean_obj_arg tm)
   return sort_box(new Sort(mut_tm_unbox(tm)->getStringSort()));
 }
 
-extern "C" lean_obj_arg termManager_mkArraySort(lean_obj_arg tm, lean_obj_arg idx, lean_obj_arg elm)
+extern "C" lean_obj_res termManager_mkArraySort(lean_obj_arg tm, lean_obj_arg idx, lean_obj_arg elm)
 {
-  return sort_box(new Sort(mut_tm_unbox(tm)->mkArraySort(*sort_unbox(idx), *sort_unbox(elm))));
+  CVC5_TRY_CATCH_TERM_MANAGER(
+    return termManager_val(lean_box(0),
+      sort_box(new Sort(mut_tm_unbox(tm)->mkArraySort(*sort_unbox(idx), *sort_unbox(elm))))
+    );
+  )
 }
 
-extern "C" lean_obj_arg termManager_mkBitVectorSort(lean_obj_arg tm, uint32_t size)
+extern "C" lean_obj_res termManager_mkBitVectorSort(lean_obj_arg tm, uint32_t size)
 {
-  return sort_box(new Sort(mut_tm_unbox(tm)->mkBitVectorSort(size)));
+  CVC5_TRY_CATCH_TERM_MANAGER(
+    return termManager_val(lean_box(0),
+      sort_box(new Sort(mut_tm_unbox(tm)->mkBitVectorSort(size)))
+    );
+  )
 }
 
-extern "C" lean_obj_arg termManager_mkFloatingPointSort(
+extern "C" lean_obj_res termManager_mkFloatingPointSort(
   lean_obj_arg tm,
   uint32_t exp,
   uint32_t sig
 )
 {
-  return sort_box(new Sort(mut_tm_unbox(tm)->mkFloatingPointSort(exp, sig)));
+  CVC5_TRY_CATCH_TERM_MANAGER(
+    return termManager_val(lean_box(0),
+      sort_box(new Sort(mut_tm_unbox(tm)->mkFloatingPointSort(exp, sig)))
+    );
+  )
 }
 
-extern "C" lean_obj_arg termManager_mkFunctionSort(
+extern "C" lean_obj_res termManager_mkFunctionSort(
   lean_obj_arg tm,
   lean_obj_arg sorts,
   lean_obj_arg codomain
 )
 {
-  std::vector<Sort> cvc5Sorts;
-  for (size_t i = 0, n = lean_array_size(sorts); i < n; ++i)
-  {
-    cvc5Sorts.push_back(*sort_unbox(
-        lean_array_get(sort_box(new Sort()), sorts, lean_usize_to_nat(i))));
-  }
-  return sort_box(new Sort(mut_tm_unbox(tm)->mkFunctionSort(cvc5Sorts, *sort_unbox(codomain))));
+  CVC5_TRY_CATCH_TERM_MANAGER(
+    std::vector<Sort> cvc5Sorts;
+    for (size_t i = 0, n = lean_array_size(sorts); i < n; ++i)
+    {
+      cvc5Sorts.push_back(*sort_unbox(
+          lean_array_get(sort_box(new Sort()), sorts, lean_usize_to_nat(i))));
+    }
+    return termManager_val(lean_box(0),
+      sort_box(new Sort(mut_tm_unbox(tm)->mkFunctionSort(cvc5Sorts, *sort_unbox(codomain))))
+    );
+  )
 }
 
 extern "C" lean_obj_res termManager_mkBoolean(lean_obj_arg tm, uint8_t val)
 {
-  return term_box(new Term(mut_tm_unbox(tm)->mkBoolean(bool_unbox(val))));
+  CVC5_TRY_CATCH_TERM_MANAGER(
+    return termManager_val(lean_box(0),
+      term_box(new Term(mut_tm_unbox(tm)->mkBoolean(bool_unbox(val))))
+    );
+  )
 }
 
 extern "C" lean_obj_res termManager_mkIntegerFromString(lean_obj_arg tm,
                                                         lean_obj_arg val)
 {
-  return term_box(new Term(mut_tm_unbox(tm)->mkInteger(lean_string_cstr(val))));
+  CVC5_TRY_CATCH_TERM_MANAGER(
+    return termManager_val(lean_box(0),
+      term_box(new Term(mut_tm_unbox(tm)->mkInteger(lean_string_cstr(val))))
+    );
+  )
 }
 
 extern "C" lean_obj_res termManager_mkTerm(lean_obj_arg tm,
                                            uint16_t kind,
                                            lean_obj_arg children)
 {
-  Kind k = static_cast<Kind>(static_cast<int32_t>(kind) - 2);
-  std::vector<Term> cs;
-  for (size_t i = 0, n = lean_array_size(children); i < n; ++i)
-  {
-    cs.push_back(*term_unbox(
-        lean_array_get(term_box(new Term()), children, lean_usize_to_nat(i))));
-  }
-  return term_box(new Term(mut_tm_unbox(tm)->mkTerm(k, cs)));
+  CVC5_TRY_CATCH_TERM_MANAGER(
+    Kind k = static_cast<Kind>(static_cast<int32_t>(kind) - 2);
+    std::vector<Term> cs;
+    for (size_t i = 0, n = lean_array_size(children); i < n; ++i)
+    {
+      cs.push_back(*term_unbox(
+          lean_array_get(term_box(new Term()), children, lean_usize_to_nat(i))));
+    }
+    return termManager_val(lean_box(0),
+      term_box(new Term(mut_tm_unbox(tm)->mkTerm(k, cs)))
+    );
+  )
 }
 
 extern "C" lean_obj_res termManager_mkTermOfOp(
@@ -588,13 +640,17 @@ extern "C" lean_obj_res termManager_mkTermOfOp(
   lean_obj_arg children
 )
 {
-  std::vector<Term> cs;
-  for (size_t i = 0, n = lean_array_size(children); i < n; ++i)
-  {
-    cs.push_back(*term_unbox(
-        lean_array_get(term_box(new Term()), children, lean_usize_to_nat(i))));
-  }
-  return term_box(new Term(mut_tm_unbox(tm)->mkTerm(*op_unbox(op), cs)));
+  CVC5_TRY_CATCH_TERM_MANAGER(
+    std::vector<Term> cs;
+    for (size_t i = 0, n = lean_array_size(children); i < n; ++i)
+    {
+      cs.push_back(*term_unbox(
+          lean_array_get(term_box(new Term()), children, lean_usize_to_nat(i))));
+    }
+    return termManager_val(lean_box(0),
+      term_box(new Term(mut_tm_unbox(tm)->mkTerm(*op_unbox(op), cs)))
+    );
+  )
 }
 
 extern "C" lean_obj_res termManager_mkConst(
@@ -612,15 +668,19 @@ extern "C" lean_obj_res termManager_mkOpOfIndices(
   lean_obj_arg args
 )
 {
-  Kind k = static_cast<Kind>(static_cast<int32_t>(kind) - 2);
-  std::vector<uint32_t> indices;
-  for (size_t i = 0, n = lean_array_size(args); i < n; ++i)
-  {
-    indices.push_back(
-      lean_uint32_of_nat(lean_array_get(0, args, lean_usize_to_nat(i)))
+  CVC5_TRY_CATCH_TERM_MANAGER(
+    Kind k = static_cast<Kind>(static_cast<int32_t>(kind) - 2);
+    std::vector<uint32_t> indices;
+    for (size_t i = 0, n = lean_array_size(args); i < n; ++i)
+    {
+      indices.push_back(
+        lean_uint32_of_nat(lean_array_get(0, args, lean_usize_to_nat(i)))
+      );
+    }
+    return termManager_val(lean_box(0),
+      op_box(new Op(mut_tm_unbox(tm)->mkOp(k, indices)))
     );
-  }
-  return op_box(new Op(mut_tm_unbox(tm)->mkOp(k, indices)));
+  )
 }
 
 extern "C" lean_obj_res termManager_mkOpOfString(
@@ -762,39 +822,43 @@ extern "C" lean_obj_res solver_proofToString(lean_obj_arg inst,
                                              lean_obj_arg proof,
                                              lean_obj_arg solver)
 {
-  return solver_val(
-      lean_box(0),
-      inst,
-      lean_box(0),
-      lean_mk_string(
-          solver_unbox(solver)->proofToString(*proof_unbox(proof)).c_str()),
-      solver);
+  CVC5_TRY_CATCH_SOLVER("proofToString", inst, solver,
+    return solver_val(
+        lean_box(0),
+        inst,
+        lean_box(0),
+        lean_mk_string(
+            solver_unbox(solver)->proofToString(*proof_unbox(proof)).c_str()),
+        solver);
+  )
 }
 
 extern "C" lean_obj_res solver_parse(lean_obj_arg inst,
                                      lean_obj_arg query,
                                      lean_obj_arg solver)
 {
-  Solver* slv = solver_unbox(solver);
-  // construct an input parser associated the solver above
-  parser::InputParser parser(slv);
-  // get the symbol manager of the parser, used when invoking commands below
-  parser::SymbolManager* sm = parser.getSymbolManager();
-  parser.setStringInput(
-      modes::InputLanguage::SMT_LIB_2_6, lean_string_cstr(query), "lean-smt");
-  // parse commands until finished
-  std::stringstream out;
-  parser::Command cmd;
-  while (true)
-  {
-    cmd = parser.nextCommand();
-    if (cmd.isNull())
+  CVC5_TRY_CATCH_SOLVER("parse", inst, solver,
+    Solver* slv = solver_unbox(solver);
+    // construct an input parser associated the solver above
+    parser::InputParser parser(slv);
+    // get the symbol manager of the parser, used when invoking commands below
+    parser::SymbolManager* sm = parser.getSymbolManager();
+    parser.setStringInput(
+        modes::InputLanguage::SMT_LIB_2_6, lean_string_cstr(query), "lean-smt");
+    // parse commands until finished
+    std::stringstream out;
+    parser::Command cmd;
+    while (true)
     {
-      break;
+      cmd = parser.nextCommand();
+      if (cmd.isNull())
+      {
+        break;
+      }
+      // invoke the command on the solver and the symbol manager, print the result
+      // to out
+      cmd.invoke(slv, sm, out);
     }
-    // invoke the command on the solver and the symbol manager, print the result
-    // to out
-    cmd.invoke(slv, sm, out);
-  }
-  return solver_val(lean_box(0), inst, lean_box(0), mk_unit_unit(), solver);
+    return solver_val(lean_box(0), inst, lean_box(0), mk_unit_unit(), solver);
+  )
 }
