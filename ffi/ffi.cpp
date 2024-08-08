@@ -689,11 +689,9 @@ extern "C" lean_obj_res solver_errOfString(
       lean_box(0), inst, lean_box(0), lean_mk_string(e), solver \
     ); \
   } catch (...) { \
-    char macro_errorMsg[] = "Error in cvc5 FFI function `"; \
-    std::strcat(macro_errorMsg, fnName); \
-    std::strcat(macro_errorMsg, "`: unexpected exception"); \
     return solver_errOfString( \
-      lean_box(0), inst, lean_box(0), lean_mk_string(macro_errorMsg), solver \
+      lean_box(0), inst, lean_box(0), \
+      lean_mk_string("cvc5 raised an unexpected exception"), solver \
     ); \
   }
 
