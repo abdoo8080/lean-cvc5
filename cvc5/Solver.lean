@@ -469,6 +469,9 @@ private def val (a : α) : SolverT m α := pure a
 @[export solver_err]
 private def err (e : Error) : SolverT m α := throw e
 
+@[export solver_errOfString]
+private def errOfString (msg : String) : SolverT m α := throw (.user_error msg)
+
 @[extern "solver_new"]
 private opaque new : TermManager → Solver
 

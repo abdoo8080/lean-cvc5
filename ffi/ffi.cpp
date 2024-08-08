@@ -669,6 +669,34 @@ extern "C" lean_obj_res solver_err(lean_obj_arg m,
                                    lean_obj_arg e,
                                    lean_obj_arg solver);
 
+extern "C" lean_obj_res solver_errOfString(
+  lean_obj_arg m,
+  lean_obj_arg inst,
+  lean_obj_arg alpha,
+  lean_obj_arg msg,
+  lean_obj_arg solver
+);
+
+#define CVC5_TRY_CATCH_SOLVER(fnName, inst, solver, code) \
+  try { \
+    code \
+  } catch (CVC5ApiException& e) { \
+    return solver_errOfString( \
+      lean_box(0), inst, lean_box(0), lean_mk_string(e.what()), solver \
+    ); \
+  } catch (char const* e) { \
+    return solver_errOfString( \
+      lean_box(0), inst, lean_box(0), lean_mk_string(e), solver \
+    ); \
+  } catch (...) { \
+    char macro_errorMsg[] = "Error in cvc5 FFI function `"; \
+    strcat(macro_errorMsg, fnName); \
+    strcat(macro_errorMsg, "`: unexpected exception"); \
+    return solver_errOfString( \
+      lean_box(0), inst, lean_box(0), lean_mk_string(macro_errorMsg), solver \
+    ); \
+  }
+
 extern "C" lean_obj_res solver_new(lean_obj_arg tm)
 {
   return solver_box(new Solver(*mut_tm_unbox(tm)));
@@ -677,11 +705,13 @@ extern "C" lean_obj_res solver_new(lean_obj_arg tm)
 extern "C" lean_obj_res solver_getVersion(lean_obj_arg inst,
                                           lean_obj_arg solver)
 {
-  return solver_val(lean_box(0),
-                    inst,
-                    lean_box(0),
-                    lean_mk_string(solver_unbox(solver)->getVersion().c_str()),
-                    solver);
+  CVC5_TRY_CATCH_SOLVER("getVersion", inst, solver,
+    return solver_val(lean_box(0),
+                      inst,
+                      lean_box(0),
+                      lean_mk_string(solver_unbox(solver)->getVersion().c_str()),
+                      solver);
+  )
 }
 
 extern "C" lean_obj_res solver_setOption(lean_obj_arg inst,
@@ -689,37 +719,45 @@ extern "C" lean_obj_res solver_setOption(lean_obj_arg inst,
                                          lean_object* value,
                                          lean_obj_arg solver)
 {
-  solver_unbox(solver)->setOption(lean_string_cstr(option),
-                                  lean_string_cstr(value));
-  return solver_val(lean_box(0), inst, lean_box(0), mk_unit_unit(), solver);
+  CVC5_TRY_CATCH_SOLVER("setOption", inst, solver,
+    solver_unbox(solver)->setOption(lean_string_cstr(option),
+                                    lean_string_cstr(value));
+    return solver_val(lean_box(0), inst, lean_box(0), mk_unit_unit(), solver);
+  )
 }
 
 extern "C" lean_obj_res solver_assertFormula(lean_obj_arg inst,
                                              lean_object* term,
                                              lean_obj_arg solver)
 {
-  solver_unbox(solver)->assertFormula(*term_unbox(term));
-  return solver_val(lean_box(0), inst, lean_box(0), mk_unit_unit(), solver);
+  CVC5_TRY_CATCH_SOLVER("assertFormula", inst, solver,
+    solver_unbox(solver)->assertFormula(*term_unbox(term));
+    return solver_val(lean_box(0), inst, lean_box(0), mk_unit_unit(), solver);
+  )
 }
 
 extern "C" lean_obj_res solver_checkSat(lean_obj_arg inst, lean_obj_arg solver)
 {
-  return solver_val(lean_box(0),
-                    inst,
-                    lean_box(0),
-                    result_box(new Result(solver_unbox(solver)->checkSat())),
-                    solver);
+  CVC5_TRY_CATCH_SOLVER("checkSat", inst, solver,
+    return solver_val(lean_box(0),
+                      inst,
+                      lean_box(0),
+                      result_box(new Result(solver_unbox(solver)->checkSat())),
+                      solver);
+  )
 }
 
 extern "C" lean_obj_res solver_getProof(lean_obj_arg inst, lean_obj_arg solver)
 {
-  std::vector<Proof> proofs = solver_unbox(solver)->getProof();
-  lean_object* ps = lean_mk_empty_array();
-  for (const Proof& proof : proofs)
-  {
-    ps = lean_array_push(ps, proof_box(new Proof(proof)));
-  }
-  return solver_val(lean_box(0), inst, lean_box(0), ps, solver);
+  CVC5_TRY_CATCH_SOLVER("getProof", inst, solver,
+    std::vector<Proof> proofs = solver_unbox(solver)->getProof();
+    lean_object* ps = lean_mk_empty_array();
+    for (const Proof& proof : proofs)
+    {
+      ps = lean_array_push(ps, proof_box(new Proof(proof)));
+    }
+    return solver_val(lean_box(0), inst, lean_box(0), ps, solver);
+  )
 }
 
 extern "C" lean_obj_res solver_proofToString(lean_obj_arg inst,
