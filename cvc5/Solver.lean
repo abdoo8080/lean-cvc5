@@ -450,17 +450,6 @@ Create operators with `mkOp`.
 @[extern "termManager_mkTermOfOp"]
 opaque mkTermOfOp : TermManager → (op : Op) → (children : Array Term := #[]) → Term
 
-/-- Create a free constant.
-
-Note that the returned term is always fresh, even if the same arguments were provided on a previous
-call to `mkConst`.
-
-- `sort` The sort of the constant.
-- `symbol` The name of the constant.
--/
-@[extern "termManager_mkConst"]
-opaque mkConst : TermManager → (sort : cvc5.Sort) → (symbol : String) → Term
-
 end TermManager
 
 namespace Solver
