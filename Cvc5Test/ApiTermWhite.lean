@@ -12,7 +12,7 @@ namespace cvc5.Test
   let tm ← TermManager.new
 
   let intSort := tm.getIntegerSort
-  let bvSort := tm.mkBitVectorSort! 8;
+  let bvSort := tm.mkBitVectorSort 8;
   let arrSort := tm.mkArraySort! bvSort intSort;
   let funSort := tm.mkFunctionSort! #[intSort] bvSort;
 
