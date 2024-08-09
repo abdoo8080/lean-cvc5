@@ -393,11 +393,20 @@ def mkBitVectorSort (tm : TermManager) (size : UInt32) (_valid : 0 < size := by 
 - `sig` The bit-width of the significand of the floating-point sort.
 -/
 @[extern "termManager_mkFloatingPointSort"]
-opaque mkFloatingPointSort : TermManager → (exp sig : UInt32) → Except Error cvc5.Sort
+opaque mkFloatingPointSortUnsafe : TermManager → (exp sig : UInt32) → Except Error cvc5.Sort
+
+@[inherit_doc mkFloatingPointSortUnsafe]
+def mkFloatingPointSort
+  (tm : TermManager) (exp sig : UInt32)
+  (_valid_exp : 1 < exp := by simp) (_valid_sig : 1 < sig := by simp)
+: Except Error cvc5.Sort :=
+  tm.mkFloatingPointSortUnsafe exp sig
 
 @[inherit_doc mkFloatingPointSort]
-def mkFloatingPointSort! tm exp sig :=
-  mkFloatingPointSort tm exp sig
+def mkFloatingPointSort! tm (exp sig : UInt32)
+  (valid_exp : 1 < exp := by simp) (valid_sig : 1 < sig := by simp)
+:=
+  mkFloatingPointSort tm exp sig valid_exp valid_sig
   |> Error.unwrap!
 
 /-- Create a finite-field sort from a given string of base n.
