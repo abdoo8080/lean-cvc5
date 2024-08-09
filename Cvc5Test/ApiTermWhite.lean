@@ -30,5 +30,4 @@ def apiTermWhite : IO Unit := do
   assertEq fx.getOp (tm.mkOpOfIndices .APPLY_UF #[])
 
 /-- info: -/
-#guard_msgs in
-  #eval apiTermWhite
+#guard_msgs in #eval apiTermWhite
