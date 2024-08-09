@@ -2,8 +2,7 @@ import Cvc5Test.Init
 
 namespace cvc5.Test
 
-def mkTerms1 : IO Unit := do
-  let tm ← TermManager.new
+test! tm => do
 
   let boolKind := Kind.CONST_BOOLEAN
 
@@ -52,7 +51,3 @@ def mkTerms1 : IO Unit := do
     tm.mkTerm! Kind.ITE #[tru, eq1, fls]
   assertEq ite2.getKind Kind.ITE
   assertEq ite2.getSort.toString "Bool"
-
-/-- info: -/
-#guard_msgs in
-  #eval mkTerms1

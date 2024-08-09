@@ -91,6 +91,11 @@ def checkSat? : SolverT m (Option Bool) := do
   else
     return none
 
+def runWith! [Inhabited α] (tm : TermManager) (query : SolverM α) : IO α := do
+  match ← Solver.run tm query with
+  | .ok res => return res
+  | .error err => IO.throwServerError err.toString
+
 def run! [Inhabited α] (query : SolverM α) : IO α := do
   match ← Solver.run (← TermManager.new) query with
   | .ok res => return res
@@ -102,20 +107,26 @@ def SolverT.run! [Inhabited α] (query : SolverT IO α) := Solver.run! query
 
 
 namespace Test
-scoped syntax docComment ? "test! " ident " => " term : command
+scoped syntax docComment ? "test! " (ident " => ")? term : command
 
 macro_rules
 | `(command| $outputComment:docComment test! $tm:ident => $code:term) => `(
   $outputComment:docComment
-  #guard_msgs in #eval Solver.run! do
+  #guard_msgs in #eval IO.run do
     let $tm:ident ← TermManager.new
-    $code:term
+    Solver.runWith! $tm do
+      $code:term
 )
 | `(command| test! $tm:ident => $code:term) => `(
   /-- info: -/
-  #guard_msgs in #eval Solver.run! do
+  #guard_msgs in #eval IO.run do
     let $tm:ident ← TermManager.new
-    $code:term
+    Solver.runWith! $tm do
+      $code:term
+)
+| `(command| $[$outputComment]? test! $code:term) => `(
+  $[$outputComment]?
+  test! _tm => $code
 )
 end Test
 

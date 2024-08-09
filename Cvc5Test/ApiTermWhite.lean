@@ -7,9 +7,7 @@ namespace cvc5.Test
 - <https://github.com/cvc5/cvc5/blob/51aba8330d5766ff8c5440a87e7380901ef582f1/test/unit/api/cpp/api_term_white.cpp>
 -/
 
-/-- info: -/
-#guard_msgs in #eval IO.run do
-  let tm ← TermManager.new
+test! tm => do
 
   let intSort := tm.getIntegerSort
   let bvSort := tm.mkBitVectorSort 8;

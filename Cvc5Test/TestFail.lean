@@ -7,15 +7,13 @@ error: simp made no progress
 ---
 info:
 -/
-#guard_msgs in #eval IO.run do
-  let tm ← TermManager.new
+test! tm => do
   let mkBvSort (n : UInt32) :=
     tm.mkBitVectorSort n -- cannot prove `0 < n`
   let _ := mkBvSort 0
   let _ := mkBvSort 1
 
-/-- info: -/
-#guard_msgs in #eval Solver.run! do
+test! _tm =>  do
   Solver.setOption "produce-models" "true"
   |> assertOk
   Solver.setOption "produce-proofs" "true"

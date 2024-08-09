@@ -5,7 +5,7 @@ namespace cvc5.Test
 /-- info:
 confirmed sat result
 -/
-#guard_msgs in #eval Solver.run! do
+test! do
   Solver.parse "
 (set-logic QF_LIA)
 
@@ -22,12 +22,15 @@ confirmed sat result
   assertEq isSat? true
   println! "confirmed sat result"
 
+test! tm => do
+  Solver.setLogic "QF_LIA"
+
 /-- info:
 confirmed unsat result
 proof:
 - (let ((_let_1 (not b))) (let ((_let_2 (= n1 n2))) (not (and (=> b _let_2) (=> _let_1 (not _let_2)) _let_2 _let_1))))
 -/
-#guard_msgs in #eval Solver.run! do
+test! do
   Solver.parse "
 (set-option :produce-proofs true)
 
