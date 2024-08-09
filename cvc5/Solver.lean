@@ -802,7 +802,7 @@ See also `declareFreshSort`.
 -/
 @[extern "solver_declareSort"]
 opaque declareSort :
-  (symbol : String) → (arity: Nat) → (fresh : Bool) → SolverT m Sort
+  (symbol : String) → (arity: Nat) → (fresh : Bool) → SolverT m cvc5.Sort
 
 /-- Assert a formula.
 
