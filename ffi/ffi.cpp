@@ -292,7 +292,7 @@ extern "C" uint16_t term_getKind(lean_obj_arg t)
 
 extern "C" uint8_t term_hasOp(lean_obj_arg t)
 {
-  return op_box(new Op(term_unbox(t)->hasOp()));
+  return bool_box(term_unbox(t)->hasOp());
 }
 
 extern "C" lean_obj_arg term_getOp(lean_obj_arg t)

@@ -322,7 +322,18 @@ The symbol of the term is the string that was provided when constructing it *via
 `TermManager.mkConst` or `TermManager.mkVar`.
 -/
 @[extern "term_getSymbol"]
-opaque getSymbol : Term → String
+private opaque getSymbol! : Term → String
+
+@[inherit_doc getSymbol!]
+def getSymbol (term : Term) (_valid : term.hasSymbol) : String :=
+  term.getSymbol!
+
+/-- Get the symbol of this term, if any. -/
+def getSymbol? (term : Term) : Option String :=
+  if valid : term.hasSymbol then
+    term.getSymbol valid
+  else
+    none
 
 /-- Get the id of this term. -/
 @[extern "term_getId"]
@@ -341,7 +352,18 @@ opaque isSkolem : Term → Bool
 Requires `isSkolem`.
 -/
 @[extern "term_getSkolemId"]
-opaque getSkolemId : Term → SkolemId
+opaque getSkolemId! : Term → SkolemId
+
+@[inherit_doc getSkolemId!]
+def getSkolemId (term : Term) (_valid : term.isSkolem) : SkolemId :=
+  term.getSkolemId!
+
+/-- Get skolem identifier of this term, if any. -/
+def getSkolemId? (term : Term) : Option SkolemId :=
+  if valid : term.isSkolem then
+    term.getSkolemId valid
+  else
+    none
 
 /-- Get the skolem indices of this term.
 
@@ -351,7 +373,22 @@ Returns the skolem indices of this term. This is a list of terms that the skolem
 by. For example, the array diff skolem `SkolemId.ARRAY_DEQ_DIFF` is indexed by two arrays.
 -/
 @[extern "term_getSkolemIndices"]
-opaque getSkolemIndices : Term → Array Term
+private opaque getSkolemIndices! : Term → Array Term
+
+@[inherit_doc getSkolemIndices!]
+def getSkolemIndices (term : Term) (_valid : term.isSkolem) : Array Term :=
+  term.getSkolemIndices!
+
+/-- Get the skolem indices of this term, if any.
+
+Returns the skolem indices of this term. This is a list of terms that the skolem function is indexed
+by. For example, the array diff skolem `SkolemId.ARRAY_DEQ_DIFF` is indexed by two arrays.
+-/
+def getSkolemIndices? (term : Term) : Option (Array Term) :=
+  if valid : term.isSkolem then
+    term.getSkolemIndices valid
+  else
+    none
 
 /-- Get the child term of this term at a given index. -/
 @[extern "term_get"]

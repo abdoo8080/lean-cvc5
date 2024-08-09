@@ -22,9 +22,9 @@ test! tm => do
   -- let ext := tm.mkOpOfIndices .BITVECTOR_EXTRACT #[4, 0]
   -- let extb := tm.mkTermOfOp ext #[b]
 
-  assertEq ab.getOp (tm.mkOpOfIndices! .SELECT #[])
+  assertEq ab.getOp? (tm.mkOpOfIndices! .SELECT #[])
 
   let f := tm.mkConst funSort "f"
   let fx := tm.mkTerm! .APPLY_UF #[f, x]
 
-  assertEq fx.getOp (tm.mkOpOfIndices! .APPLY_UF #[])
+  assertEq fx.getOp? (tm.mkOpOfIndices! .APPLY_UF #[])
