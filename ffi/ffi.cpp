@@ -813,6 +813,48 @@ extern "C" lean_obj_res solver_setLogic(
   )
 }
 
+extern "C" lean_obj_res solver_declareFun(
+  lean_obj_arg inst,
+  lean_obj_arg symbol,
+  lean_obj_arg sorts,
+  lean_obj_arg sort,
+  lean_obj_arg fresh,
+  lean_obj_arg solver
+) {
+  CVC5_TRY_CATCH_SOLVER("solver_declareFun", inst, solver,
+    std::vector<Sort> sort_vec;
+    for (size_t i = 0, n = lean_array_size(sorts); i < n; ++i) {
+      sort_vec.push_back(*sort_unbox(
+        lean_array_get(sort_box(new Sort()), sorts, lean_usize_to_nat(i))
+      ));
+    }
+    Term f = solver_unbox(solver)->declareFun(
+      lean_string_cstr(symbol),
+      sort_vec,
+      *sort_unbox(sort),
+      bool_unbox(lean_unbox(fresh))
+    );
+    return solver_val(lean_box(0), inst, lean_box(0), term_box(new Term(f)), solver);
+  )
+}
+
+extern "C" lean_obj_res solver_declareSort(
+  lean_obj_arg inst,
+  lean_obj_arg symbol,
+  lean_obj_arg arity,
+  lean_obj_arg fresh,
+  lean_obj_arg solver
+) {
+  CVC5_TRY_CATCH_SOLVER("solver_declareSort", inst, solver,
+    Sort s = solver_unbox(solver)->declareSort(
+      lean_string_cstr(symbol),
+      lean_uint32_of_nat(arity),
+      bool_unbox(lean_unbox(fresh))
+    );
+    return solver_val(lean_box(0), inst, lean_box(0), sort_box(new Sort(s)), solver);
+  )
+}
+
 extern "C" lean_obj_res solver_assertFormula(lean_obj_arg inst,
                                              lean_object* term,
                                              lean_obj_arg solver)

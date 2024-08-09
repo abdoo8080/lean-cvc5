@@ -779,6 +779,31 @@ opaque setOption (option value : String) : SolverT m Unit
 @[extern "solver_setLogic"]
 opaque setLogic (logic : String) : SolverT m Unit
 
+/-- Declares a function symbol `symbol` with signature `in_sorts → out_sort`.
+
+If `fresh`, then a new (fresh) `Term` is always produced; otherwise, the `Term` will always be
+(physically) the same.
+
+See also `declareFreshFun`.
+-/
+@[extern "solver_declareFun"]
+opaque declareFun :
+  (symbol : String)
+  → (in_sorts : Array cvc5.Sort) → (out_sort : cvc5.Sort)
+  → (fresh : Bool)
+  → SolverT m Term
+
+/-- Declares a sort symbol `symbol` with arity `arity`.
+
+If `fresh`, then a new (fresh) `Sort` is always produced; otherwise, the `Sort` will always be
+(physically) the same.
+
+See also `declareFreshSort`.
+-/
+@[extern "solver_declareSort"]
+opaque declareSort :
+  (symbol : String) → (arity: Nat) → (fresh : Bool) → SolverT m Sort
+
 /-- Assert a formula.
 
 - `term`: The formula to assert.

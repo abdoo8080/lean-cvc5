@@ -22,8 +22,30 @@ test! do
   assertEq isSat? true
   println! "confirmed sat result"
 
+/-- info:
+confirmed sat result
+-/
 test! tm => do
   Solver.setLogic "QF_LIA"
+
+  let bool := tm.getBooleanSort
+  let int := tm.getIntegerSort
+
+  let n1 ← Solver.declareFun "n1" #[] int true
+  let n2 ← Solver.declareFun "n2" #[] int true
+
+  let b ← Solver.declareFun "b" #[] bool true
+
+  let n1_eq_n2 ← tm.mkTerm Kind.EQUAL #[n1, n2]
+  let n1_ne_n2 ← tm.mkTerm Kind.NOT #[n1_eq_n2]
+  let ite ← tm.mkTerm Kind.ITE #[b, n1_eq_n2, n1_ne_n2]
+
+  Solver.assertFormula ite
+  Solver.assertFormula n1_eq_n2
+
+  let isSat? ← Solver.checkSat?
+  assertEq isSat? true
+  println! "confirmed sat result"
 
 /-- info:
 confirmed unsat result
