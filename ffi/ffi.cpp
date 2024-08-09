@@ -797,6 +797,17 @@ extern "C" lean_obj_res solver_setOption(lean_obj_arg inst,
   )
 }
 
+extern "C" lean_obj_res solver_setLogic(
+  lean_obj_arg inst,
+  lean_object* logic,
+  lean_obj_arg solver
+) {
+  CVC5_TRY_CATCH_SOLVER("setLogic", inst, solver,
+    solver_unbox(solver)->setLogic(lean_string_cstr(logic));
+    return solver_val(lean_box(0), inst, lean_box(0), mk_unit_unit(), solver);
+  )
+}
+
 extern "C" lean_obj_res solver_assertFormula(lean_obj_arg inst,
                                              lean_object* term,
                                              lean_obj_arg solver)

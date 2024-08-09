@@ -595,6 +595,9 @@ opaque getVersion : SolverT m String
 @[extern "solver_setOption"]
 opaque setOption (option value : String) : SolverT m Unit
 
+@[extern "solver_setLogic"]
+opaque setLogic (logic : String) : SolverT m Unit
+
 @[extern "solver_assertFormula"]
 opaque assertFormula : Term → SolverT m Unit
 
