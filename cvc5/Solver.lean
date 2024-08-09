@@ -358,7 +358,7 @@ opaque mkArraySort : TermManager → (indexSort elemSort : cvc5.Sort) → cvc5.S
 - `size` The bit-width of the bit-vector sort.
 -/
 @[extern "termManager_mkBitVectorSort"]
-opaque mkBitVectorSort : TermManager → (size : Nat) → cvc5.Sort
+opaque mkBitVectorSort : TermManager → (size : UInt32) → cvc5.Sort
 
 /-- Create a floating-point sort.
 
@@ -366,7 +366,7 @@ opaque mkBitVectorSort : TermManager → (size : Nat) → cvc5.Sort
 - `sig` The bit-width of the significand of the floating-point sort.
 -/
 @[extern "termManager_mkFloatingPointSort"]
-opaque mkFloatingPointSort : TermManager → (exp sig : Nat) → cvc5.Sort
+opaque mkFloatingPointSort : TermManager → (exp sig : UInt32) → cvc5.Sort
 
 /-- Create function sort.
 
