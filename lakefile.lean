@@ -17,6 +17,11 @@ lean_lib cvc5 {
   moreLeanArgs := #[s!"--load-dynlib={libcpp}"]
 }
 
+@[test_driver]
+lean_lib cvc5Test {
+  globs := #[Glob.submodules `Cvc5Test]
+}
+
 def Lake.unzip (file : FilePath) (dir : FilePath) : LogIO PUnit := do
   IO.FS.createDirAll dir
   proc (quiet := true) {
@@ -66,7 +71,7 @@ def Lake.buildStaticLib'
 
 target ffiO pkg : FilePath := do
   let oFile := pkg.buildDir / "ffi" / "ffi.o"
-  let srcJob ← inputFile <| pkg.dir / "ffi" / "ffi.cpp"
+  let srcJob ← inputBinFile <| pkg.dir / "ffi" / "ffi.cpp"
   let flags := #[
     "-std=c++17",
     "-I", (← getLeanIncludeDir).toString,

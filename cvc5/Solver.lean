@@ -68,6 +68,16 @@ abbrev SolverT m := ExceptT Error (StateT Solver m)
 
 abbrev SolverM := SolverT IO
 
+namespace Error
+
+protected def toString : Error → String :=
+  toString ∘ repr
+
+instance : ToString Error :=
+  ⟨Error.toString⟩
+
+end Error
+
 namespace Result
 
 @[extern "result_isSat"]
@@ -91,7 +101,7 @@ namespace cvc5.Sort
 @[extern "sort_null"]
 opaque null : Unit → cvc5.Sort
 
-instance instInhabitedSort : Inhabited cvc5.Sort := ⟨null ()⟩
+instance : Inhabited cvc5.Sort := ⟨null ()⟩
 
 @[extern "sort_getKind"]
 opaque getKind : cvc5.Sort → SortKind
@@ -124,7 +134,8 @@ opaque getBitVectorSize : cvc5.Sort → UInt32
 @[extern "sort_toString"]
 protected opaque toString : cvc5.Sort → String
 
-instance instToStringSort : ToString cvc5.Sort := ⟨Sort.toString⟩
+instance : ToString cvc5.Sort := ⟨Sort.toString⟩
+instance : Repr cvc5.Sort := ⟨fun self _ => self.toString⟩
 
 end cvc5.Sort
 
@@ -134,6 +145,11 @@ namespace cvc5.Op
 opaque null : Unit → Op
 
 instance : Inhabited Op := ⟨null ()⟩
+
+@[extern "op_beq"]
+protected opaque beq : Op → Op → Bool
+
+instance : BEq Op := ⟨Op.beq⟩
 
 @[extern "op_getKind"]
 opaque getKind : Op → Kind
@@ -305,6 +321,61 @@ namespace TermManager
 @[extern "termManager_new"]
 opaque new : BaseIO TermManager
 
+/-- Get the Boolean sort. -/
+@[extern "termManager_getBooleanSort"]
+opaque getBooleanSort : TermManager → cvc5.Sort
+
+/-- Get the Integer sort. -/
+@[extern "termManager_getIntegerSort"]
+opaque getIntegerSort : TermManager → cvc5.Sort
+
+/-- Get the Real sort. -/
+@[extern "termManager_getRealSort"]
+opaque getRealSort : TermManager → cvc5.Sort
+
+/-- Get the regular expression sort. -/
+@[extern "termManager_getRegExpSort"]
+opaque getRegExpSort : TermManager → cvc5.Sort
+
+/-- Get the rounding mode sort. -/
+@[extern "termManager_getRoundingModeSort"]
+opaque getRoundingModeSort : TermManager → cvc5.Sort
+
+/-- Get the string sort. -/
+@[extern "termManager_getStringSort"]
+opaque getStringSort : TermManager → cvc5.Sort
+
+/-- Create an array sort.
+
+- `indexSort` The array index sort.
+- `elemSort` The array element sort.
+-/
+@[extern "termManager_mkArraySort"]
+opaque mkArraySort : TermManager → (indexSort elemSort : cvc5.Sort) → cvc5.Sort
+
+/-- Create a bit-vector sort.
+
+- `size` The bit-width of the bit-vector sort.
+-/
+@[extern "termManager_mkBitVectorSort"]
+opaque mkBitVectorSort : TermManager → (size : UInt32) → cvc5.Sort
+
+/-- Create a floating-point sort.
+
+- `exp` The bit-width of the exponent of the floating-point sort.
+- `sig` The bit-width of the significand of the floating-point sort.
+-/
+@[extern "termManager_mkFloatingPointSort"]
+opaque mkFloatingPointSort : TermManager → (exp sig : UInt32) → cvc5.Sort
+
+/-- Create function sort.
+
+- `sorts` The sort of the function arguments.
+- `codomain` The sort of the function return value.
+-/
+@[extern "termManager_mkFunctionSort"]
+opaque mkFunctionSort : TermManager → (sorts : Array cvc5.Sort) → (codomain : cvc5.Sort) → cvc5.Sort
+
 @[extern "termManager_mkBoolean"]
 opaque mkBoolean : TermManager → Bool → Term
 
@@ -314,8 +385,66 @@ private opaque mkIntegerFromString : TermManager → String → Term
 def mkInteger (tm : TermManager) : Int → Term :=
   (mkIntegerFromString tm) ∘ toString
 
+/-- Create operator of Kind:
+
+- `Kind.BITVECTOR_EXTRACT`
+- `Kind.BITVECTOR_REPEAT`
+- `Kind.BITVECTOR_ROTATE_LEFT`
+- `Kind.BITVECTOR_ROTATE_RIGHT`
+- `Kind.BITVECTOR_SIGN_EXTEND`
+- `Kind.BITVECTOR_ZERO_EXTEND`
+- `Kind.DIVISIBLE`
+- `Kind.FLOATINGPOINT_TO_FP_FROM_FP`
+- `Kind.FLOATINGPOINT_TO_FP_FROM_IEEE_BV`
+- `Kind.FLOATINGPOINT_TO_FP_FROM_REAL`
+- `Kind.FLOATINGPOINT_TO_FP_FROM_SBV`
+- `Kind.FLOATINGPOINT_TO_FP_FROM_UBV`
+- `Kind.FLOATINGPOINT_TO_SBV`
+- `Kind.FLOATINGPOINT_TO_UBV`
+- `Kind.INT_TO_BITVECTOR`
+- `Kind.TUPLE_PROJECT`
+
+See `cvc5.Kind` for a description of the parameters.
+
+- `kind` The kind of the operator.
+- `args` The arguments (indices) of the operator.
+
+If `args` is empty, the `Op` simply wraps the `cvc5.Kind`. The `Kind` can be used in `Solver.mkTerm`
+directly without creating an `Op` first.
+-/
+@[extern "termManager_mkOpOfIndices"]
+opaque mkOpOfIndices : TermManager → (kind : Kind) → (args : Array Nat) → Op
+
+/-- Create operator of kind:
+
+- `Kind.DIVISIBLE` (to support arbitrary precision integers)
+
+See `cvc5.Kind` for a description of the parameters.
+
+- `kind` The kind of the operator.
+- `arg` The string argument to this operator.
+
+-/
+@[extern "termManager_mkOpOfString"]
+opaque mkOpOfString : TermManager → (kind : Kind) → (arg : String) → Op
+
+/-- Create n-ary term of given kind.
+
+- `kind` The kind of the term.
+- `children` The children of the term.
+-/
 @[extern "termManager_mkTerm"]
-opaque mkTerm : TermManager → Kind → (children : Array Term := #[]) → Term
+opaque mkTerm : TermManager → (kind : Kind) → (children : Array Term := #[]) → Term
+
+/-- Create n-ary term of given kind from a given operator.
+
+Create operators with `mkOp`.
+
+- `op` The operator.
+- `children` The children of the term.
+-/
+@[extern "termManager_mkTermOfOp"]
+opaque mkTermOfOp : TermManager → (op : Op) → (children : Array Term := #[]) → Term
 
 end TermManager
 
