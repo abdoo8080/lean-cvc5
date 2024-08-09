@@ -26,38 +26,39 @@ def assertNe [ToString α] [BEq α] (lft rgt : α) (hint := "") : IO Unit := do
     fail "assertion failed"
 
 def assertOk
-  (result : Except Error α)
+  (code : SolverM α)
   (hint : String := "")
-: IO α := do
-  match result with
-  | .ok res => return res
-  | .error e =>
+: SolverM α := fun solver => do
+  match ← code solver with
+  | (.ok res, solver) => return (.ok res, solver)
+  | (.error e, _) =>
     IO.eprintln s!"{Test.pref hint}expected `.ok` result, got `{e}`"
     fail "assertion failed"
 
-def assertSolverOk [Inhabited α] (code : SolverM α) (hint := "") : SolverM α :=
-  fun solver => do
-    let (result, solver) ← code solver
-    let _ ← assertOk result hint
-    return (result, solver)
+def assertOkDiscard
+  (result : SolverM α)
+  (hint : String := "")
+: SolverM Unit := do
+  let _ ← assertOk result hint
+  return ()
 
 def assertError
   (expected : String)
-  (errorDo : Error → IO Unit)
-  (result : ExceptT Error IO α)
+  (errorDo : Error → SolverM Unit)
+  (result : SolverM α)
   (hint : String := "")
-: IO Unit := do
-  match ← result with
-  | .ok _ =>
+: SolverM Unit := fun solver => do
+  match ← result solver with
+  | (.ok _, _) =>
     IO.eprintln s!"{Test.pref hint}expected {expected}, got `.ok` result"
     fail "assertion failed"
-  | .error e => errorDo e
+  | (.error e, solver) => errorDo e solver
 
 def assertCvc5Error
   (expected : String)
-  (result : ExceptT Error IO α)
+  (result : SolverM α)
   (hint : String := "")
-: IO Unit :=
+: SolverM Unit :=
   assertError s!"cvc5 error `{expected}`"
     (fun
     | .cvc5Error err => do
@@ -74,13 +75,6 @@ def assertCvc5Error
         fail "assertion failed"
     )
     result hint
-
-def assertSolverCvc5Error
-  (expected : String) (code : SolverM α) (hint := "")
-: SolverM Unit := fun solver => do
-  let (result, solver) ← code solver
-  assertCvc5Error expected result hint
-  return (.ok (), solver)
 
 end Test
 
@@ -105,5 +99,18 @@ def run! [Inhabited α] (query : SolverM α) : IO α := do
 end Solver
 
 def SolverT.run! [Inhabited α] (query : SolverT IO α) := Solver.run! query
+
+
+namespace Test
+scoped syntax docComment "test! " ident " => " term : command
+
+macro_rules
+| `(command| $outputComment:docComment test! $tm:ident => $code:term) => `(
+  $outputComment:docComment
+  #guard_msgs in #eval Solver.run! do
+    let $tm:ident ← TermManager.new
+    $code:term
+)
+end Test
 
 end cvc5
