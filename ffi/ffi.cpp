@@ -578,6 +578,19 @@ extern "C" lean_obj_res termManager_mkFloatingPointSort(
   )
 }
 
+extern "C" lean_obj_res termManager_mkFiniteFieldSort(
+  lean_obj_arg tm,
+  lean_obj_arg size,
+  uint32_t base
+)
+{
+  CVC5_TRY_CATCH_TERM_MANAGER(
+    return termManager_val(lean_box(0),
+      sort_box(new Sort(mut_tm_unbox(tm)->mkFiniteFieldSort(lean_string_cstr(size), base)))
+    );
+  )
+}
+
 extern "C" lean_obj_res termManager_mkFunctionSort(
   lean_obj_arg tm,
   lean_obj_arg sorts,

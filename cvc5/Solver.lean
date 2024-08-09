@@ -400,6 +400,30 @@ def mkFloatingPointSort! tm exp sig :=
   mkFloatingPointSort tm exp sig
   |> Error.unwrap!
 
+/-- Create a finite-field sort from a given string of base n.
+
+- `size` The modulus of the field. Must be prime.
+- `base` The base of the string representation of `size`.
+-/
+@[extern "termManager_mkFiniteFieldSort"]
+opaque mkFiniteFieldSortOfString
+: TermManager → (size : String) → (base : UInt32) → Except Error cvc5.Sort
+
+/-- Create a finite-field sort from a given string of base n.
+
+- `size` The modulus of the field. Must be prime.
+- `base` The base of `size`.
+-/
+def mkFiniteFieldSort
+  (tm : TermManager) (size : Nat) (base : UInt32 := 10)
+: Except Error cvc5.Sort :=
+  tm.mkFiniteFieldSortOfString (toString size) base
+
+@[inherit_doc mkFiniteFieldSort]
+def mkFiniteFieldSort! tm size base :=
+  mkFloatingPointSort tm size base
+  |> Error.unwrap!
+
 /-- Create function sort.
 
 - `sorts` The sort of the function arguments.
