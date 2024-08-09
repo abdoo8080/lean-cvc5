@@ -102,11 +102,17 @@ def SolverT.run! [Inhabited α] (query : SolverT IO α) := Solver.run! query
 
 
 namespace Test
-scoped syntax docComment "test! " ident " => " term : command
+scoped syntax docComment ? "test! " ident " => " term : command
 
 macro_rules
 | `(command| $outputComment:docComment test! $tm:ident => $code:term) => `(
   $outputComment:docComment
+  #guard_msgs in #eval Solver.run! do
+    let $tm:ident ← TermManager.new
+    $code:term
+)
+| `(command| test! $tm:ident => $code:term) => `(
+  /-- info: -/
   #guard_msgs in #eval Solver.run! do
     let $tm:ident ← TermManager.new
     $code:term
