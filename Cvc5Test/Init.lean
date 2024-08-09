@@ -9,7 +9,6 @@ namespace Test
 def fail (s : String) : IO Unit :=
   IO.throwServerError s
 
-
 def assertEq [ToString α] [BEq α] (lft rgt : α) (hint := "") : IO Unit := do
   if lft != rgt then
     let pref := if hint.isEmpty then "" else s!"[{hint}] "
