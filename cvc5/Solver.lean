@@ -152,13 +152,17 @@ protected opaque hash : cvc5.Sort → UInt64
 
 instance : Hashable cvc5.Sort := ⟨Sort.hash⟩
 
+/-- Determine if this is a function sort. -/
+@[extern "sort_isFunction"]
+protected opaque isFunction : cvc5.Sort → Bool
+
 /-- The domain sorts of a function sort. -/
 @[extern "sort_getFunctionDomainSorts"]
-opaque getFunctionDomainSorts : cvc5.Sort → Array cvc5.Sort
+opaque getFunctionDomainSorts : cvc5.Sort → Except Error (Array cvc5.Sort)
 
 /-- The codomain sort of a function sort. -/
 @[extern "sort_getFunctionCodomainSort"]
-opaque getFunctionCodomainSort : cvc5.Sort → cvc5.Sort
+opaque getFunctionCodomainSort : cvc5.Sort → Except Error cvc5.Sort
 
 /-- Get the symbol of this sort.
 

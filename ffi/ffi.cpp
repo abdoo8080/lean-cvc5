@@ -4,6 +4,30 @@
 
 using namespace cvc5;
 
+extern "C" lean_obj_res termManager_val(
+  lean_obj_arg alpha,
+  lean_obj_arg val
+);
+
+extern "C" lean_obj_res termManager_err(
+  lean_obj_arg alpha,
+  lean_obj_arg msg
+);
+
+#define CVC5_TRY_CATCH_TERM_MANAGER(code) \
+  try { \
+    code \
+  } catch (CVC5ApiException& e) { \
+    return termManager_err(lean_box(0), lean_mk_string(e.what())); \
+  } catch (char const* e) { \
+    return termManager_err(lean_box(0), lean_mk_string(e)); \
+  } catch (...) { \
+    return termManager_err( \
+      lean_box(0), \
+      lean_mk_string("cvc5's term manager raised an unexpected exception") \
+    ); \
+  }
+
 inline lean_obj_res mk_unit_unit() { return lean_box(0); }
 
 inline uint8_t mk_bool_false() { return 0; }
@@ -129,20 +153,31 @@ extern "C" uint64_t sort_hash(lean_obj_arg s)
   return std::hash<Sort>()(*sort_unbox(s));
 }
 
+extern "C" uint8_t sort_isFunction(lean_obj_arg s)
+{
+  return bool_box(sort_unbox(s)->isFunction());
+}
+
 extern "C" lean_obj_res sort_getFunctionDomainSorts(lean_obj_arg s)
 {
-  std::vector<Sort> domains = sort_unbox(s)->getFunctionDomainSorts();
-  lean_object* ds = lean_mk_empty_array();
-  for (const Sort& domain : domains)
-  {
-    ds = lean_array_push(ds, sort_box(new Sort(domain)));
-  }
-  return ds;
+  CVC5_TRY_CATCH_TERM_MANAGER(
+    std::vector<Sort> domains = sort_unbox(s)->getFunctionDomainSorts();
+    lean_object* ds = lean_mk_empty_array();
+    for (const Sort& domain : domains)
+    {
+      ds = lean_array_push(ds, sort_box(new Sort(domain)));
+    }
+    return termManager_val(lean_box(0), ds);
+  )
 }
 
 extern "C" lean_obj_res sort_getFunctionCodomainSort(lean_obj_arg s)
 {
-  return sort_box(new Sort(sort_unbox(s)->getFunctionCodomainSort()));
+  CVC5_TRY_CATCH_TERM_MANAGER(
+    return termManager_val(lean_box(0),
+      sort_box(new Sort(sort_unbox(s)->getFunctionCodomainSort()))
+    );
+  )
 }
 
 extern "C" lean_obj_res sort_getSymbol(lean_obj_arg s)
@@ -497,30 +532,6 @@ extern "C" lean_obj_res termManager_new(lean_obj_arg unit)
 {
   return lean_io_result_mk_ok(tm_box(new TermManager()));
 }
-
-extern "C" lean_obj_res termManager_val(
-  lean_obj_arg alpha,
-  lean_obj_arg val
-);
-
-extern "C" lean_obj_res termManager_err(
-  lean_obj_arg alpha,
-  lean_obj_arg msg
-);
-
-#define CVC5_TRY_CATCH_TERM_MANAGER(code) \
-  try { \
-    code \
-  } catch (CVC5ApiException& e) { \
-    return termManager_err(lean_box(0), lean_mk_string(e.what())); \
-  } catch (char const* e) { \
-    return termManager_err(lean_box(0), lean_mk_string(e)); \
-  } catch (...) { \
-    return termManager_err( \
-      lean_box(0), \
-      lean_mk_string("cvc5's term manager raised an unexpected exception") \
-    ); \
-  }
 
 extern "C" lean_obj_arg termManager_getBooleanSort(lean_obj_arg tm)
 {
