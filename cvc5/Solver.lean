@@ -15,6 +15,7 @@ namespace cvc5
 
 private opaque ResultImpl : NonemptyType.{0}
 
+/-- Encapsulation of a three-valued solver result, with explanations. -/
 def Result : Type := ResultImpl.type
 
 instance Result.instNonemptyResult : Nonempty Result := ResultImpl.property
@@ -23,6 +24,7 @@ private opaque SortImpl : NonemptyType.{0}
 
 end cvc5
 
+/-- The sort of a cvc5 term. -/
 def cvc5.Sort : Type := cvc5.SortImpl.type
 
 namespace cvc5
@@ -31,28 +33,41 @@ instance Sort.instNonemptySort : Nonempty cvc5.Sort := SortImpl.property
 
 private opaque OpImpl : NonemptyType.{0}
 
+/-- A cvc5 operator.
+
+An operator is a term that represents certain operators, instantiated with its required parameters,
+*e.g.*, a `Term` of kind `Kind.BITVECTOR_EXTRACT`.
+-/
 def Op : Type := OpImpl.type
 
 instance Op.instNonemptyOp : Nonempty Op := OpImpl.property
 
 private opaque TermImpl : NonemptyType.{0}
 
+/-- A cvc5 term. -/
 def Term : Type := TermImpl.type
 
 instance Term.instNonemptyTerm : Nonempty Term := TermImpl.property
 
 private opaque ProofImpl : NonemptyType.{0}
 
+/-- A cvc5 proof.
+
+Proofs are trees and every proof object corresponds to the root step of a proof. The branches of the
+root step are the premises of the step.
+-/
 def Proof : Type := ProofImpl.type
 
 instance Proof.instNonemptyProof : Nonempty Proof := ProofImpl.property
 
 private opaque TermManagerImpl : NonemptyType.{0}
 
+/-- Manager for cvc5 terms. -/
 def TermManager : Type := TermManagerImpl.type
 
 instance TermManager.instNonemptyTermManager : Nonempty TermManager := TermManagerImpl.property
 
+/-- Error type. -/
 inductive Error where
   | missingValue
   | userError (msg : String)
@@ -61,22 +76,27 @@ deriving Repr
 
 private opaque SolverImpl : NonemptyType.{0}
 
+/-- A cvc5 solver. -/
 def Solver : Type := SolverImpl.type
 
 instance Solver.instNonemptySolver : Nonempty Solver := SolverImpl.property
 
+/-- Solver error/state-monad transformer. -/
 abbrev SolverT m := ExceptT Error (StateT Solver m)
 
+/-- Solver error/state-monad wrapped in `IO`. -/
 abbrev SolverM := SolverT IO
 
 namespace Error
 
+/-- Panics on errors, otherwise yields the `ok` result. -/
 def unwrap! [Inhabited α] : Except Error α → α
 | .ok a => a
 | .error (.userError e) => panic! s!"user error: {e}"
 | .error (.cvc5Error e) => panic! s!"cvc5 error: {e}"
 | .error .missingValue => panic! s!"missing value"
 
+/-- String representation of an error. -/
 protected def toString : Error → String :=
   toString ∘ repr
 
@@ -87,15 +107,21 @@ end Error
 
 namespace Result
 
+/-- True if this result is from a satisfiable `checkSat` or `checkSatAssuming` query. -/
 @[extern "result_isSat"]
 opaque isSat : Result → Bool
 
+/-- True if this result is from a unsatisfiable `checkSat` or `checkSatAssuming` query. -/
 @[extern "result_isUnsat"]
 opaque isUnsat : Result → Bool
 
+/-- True if this result is from a `checkSat` or `checkSatAssuming` query and cvc5 was not able to
+determine (un)satisfiability.
+-/
 @[extern "result_isUnknown"]
 opaque isUnknown : Result → Bool
 
+/-- A string representation of this result. -/
 @[extern "result_toString"]
 protected opaque toString : Result → String
 
@@ -110,34 +136,48 @@ opaque null : Unit → cvc5.Sort
 
 instance : Inhabited cvc5.Sort := ⟨null ()⟩
 
+/-- Get the kind of this sort. -/
 @[extern "sort_getKind"]
 opaque getKind : cvc5.Sort → SortKind
 
+/-- Comparison for structural equality. -/
 @[extern "sort_beq"]
 protected opaque beq : cvc5.Sort → cvc5.Sort → Bool
 
 instance : BEq cvc5.Sort := ⟨Sort.beq⟩
 
+/-- Hash function for cvc5 sorts. -/
 @[extern "sort_hash"]
 protected opaque hash : cvc5.Sort → UInt64
 
 instance : Hashable cvc5.Sort := ⟨Sort.hash⟩
 
+/-- The domain sorts of a function sort. -/
 @[extern "sort_getFunctionDomainSorts"]
 opaque getFunctionDomainSorts : cvc5.Sort → Array cvc5.Sort
 
+/-- The codomain sort of a function sort. -/
 @[extern "sort_getFunctionCodomainSort"]
 opaque getFunctionCodomainSort : cvc5.Sort → cvc5.Sort
 
+/-- Get the symbol of this sort.
+
+The symbol of this sort is the string that was provided when consrtucting it *via* one of
+`Solver.mkUninterpretedSort`, `Solver.mkUnresolvedSort`, or
+`Solver.mkUninterpretedSortConstructorSort`.
+-/
 @[extern "sort_getSymbol"]
 opaque getSymbol : cvc5.Sort → String
 
+/-- Determine if this is the integer sort (SMT-LIB: `Int`). -/
 @[extern "sort_isInteger"]
 opaque isInteger : cvc5.Sort → Bool
 
+/-- The bit-width of the bit-vector sort. -/
 @[extern "sort_getBitVectorSize"]
 opaque getBitVectorSize : cvc5.Sort → UInt32
 
+/-- A string representation of this sort. -/
 @[extern "sort_toString"]
 protected opaque toString : cvc5.Sort → String
 
@@ -153,29 +193,36 @@ opaque null : Unit → Op
 
 instance : Inhabited Op := ⟨null ()⟩
 
+/-- Syntactic equality operator. -/
 @[extern "op_beq"]
 protected opaque beq : Op → Op → Bool
 
 instance : BEq Op := ⟨Op.beq⟩
 
+/-- Get the kind of this operator. -/
 @[extern "op_getKind"]
 opaque getKind : Op → Kind
 
+/-- Determine if this operator is nullary. -/
 @[extern "op_isNull"]
 opaque isNull : Op → Bool
 
+/-- Determine if this operator is indexed. -/
 @[extern "op_isIndexed"]
 opaque isIndexed : Op → Bool
 
+/-- Get the number of indices of this operator. -/
 @[extern "op_getNumIndices"]
 opaque getNumIndices : Op → Nat
 
+/-- Get the index at position `i` of an indexed operator. -/
 @[extern "op_get"]
-protected opaque get : (op : Op) → Fin op.getNumIndices → Term
+protected opaque get : (op : Op) → (i : Fin op.getNumIndices) → Term
 
 instance : GetElem Op Nat Term fun op i => i < op.getNumIndices where
   getElem op i h := op.get ⟨i, h⟩
 
+/-- Get the string representation of this operator. -/
 @[extern "op_toString"]
 protected opaque toString : Op → String
 
@@ -190,67 +237,112 @@ opaque null : Unit → Term
 
 instance : Inhabited Term := ⟨null ()⟩
 
+/-- Determine if this term is nullary. -/
 @[extern "term_isNull"]
 opaque isNull : Term → Bool
 
+/-- Get the kind of this term. -/
 @[extern "term_getKind"]
 opaque getKind : Term → Kind
 
+/-- Get the operator of a term with an operator. -/
 @[extern "term_getOp"]
 opaque getOp : Term → Op
 
+/-- Get the sort of this term. -/
 @[extern "term_getSort"]
 opaque getSort : Term → cvc5.Sort
 
+/-- Syntactic equality operator. -/
 @[extern "term_beq"]
 protected opaque beq : Term → Term → Bool
 
 instance : BEq Term := ⟨Term.beq⟩
 
+/-- Hash function for terms. -/
 @[extern "term_hash"]
 protected opaque hash : Term → UInt64
 
 instance : Hashable Term := ⟨Term.hash⟩
 
-@[extern "term_getBooleanValue"]
-opaque getBooleanValue : Term → Bool
+/-- Get the value of a Boolean term as a native Boolean value.
 
+Requires `term` to have sort Bool.
+-/
+@[extern "term_getBooleanValue"]
+opaque getBooleanValue : (term : Term) → Bool
+
+/-- Get the string representation of a bit-vector value.
+
+Requires `term` to have a bit-vector sort.
+
+- `base`: `2` for binary, `10` for decimal, and `16` for hexadecimal.
+-/
 @[extern "term_getBitVectorValue"]
 opaque getBitVectorValue : Term → UInt32 → String
 
+/-- Get the native integral value of an integral value. -/
 @[extern "term_getIntegerValue"]
 opaque getIntegerValue : Term → Int
 
+/-- Get the native rational value of a real, rational-compatible value. -/
 @[extern "term_getRationalValue"]
 opaque getRationalValue : Term → Lean.Rat
 
+/-- Determine if this term has a symbol (a name).
+
+For example, free constants and variables have symbols.
+-/
 @[extern "term_hasSymbol"]
 opaque hasSymbol : Term → Bool
 
+/-- Get the symbol of this term.
+
+Requires that this term has a symbol (see `hasSymbol`).
+
+The symbol of the term is the string that was provided when constructing it *via*
+`TermManager.mkConst` or `TermManager.mkVar`.
+-/
 @[extern "term_getSymbol"]
 opaque getSymbol : Term → String
 
+/-- Get the id of this term. -/
 @[extern "term_getId"]
 opaque getId : Term → Nat
 
+/-- Get the number of children of this term. -/
 @[extern "term_getNumChildren"]
 opaque getNumChildren : Term → Nat
 
+/-- Is this term a skolem? -/
 @[extern "term_isSkolem"]
 opaque isSkolem : Term → Bool
 
+/-- Get skolem identifier of this term.
+
+Requires `isSkolem`.
+-/
 @[extern "term_getSkolemId"]
 opaque getSkolemId : Term → SkolemId
 
+/-- Get the skolem indices of this term.
+
+Requires `isSkolem`.
+
+Returns the skolem indices of this term. This is a list of terms that the skolem function is indexed
+by. For example, the array diff skolem `SkolemId.ARRAY_DEQ_DIFF` is indexed by two arrays.
+-/
 @[extern "term_getSkolemIndices"]
 opaque getSkolemIndices : Term → Array Term
 
+/-- Get the child term of this term at a given index. -/
 @[extern "term_get"]
 protected opaque get : (t : Term) → Fin t.getNumChildren → Term
 
 instance : GetElem Term Nat Term fun t i => i < t.getNumChildren where
   getElem t i h := t.get ⟨i, h⟩
 
+/-- Monadic for-loop as required by `ForIn`. -/
 protected def forIn {β : Type u} [Monad m] (t : Term) (b : β) (f : Term → β → m (ForInStep β)) : m β :=
   let rec loop (i : Nat) (h : i ≤ t.getNumChildren) (b : β) : m β := do
     match i, h with
@@ -267,21 +359,26 @@ protected def forIn {β : Type u} [Monad m] (t : Term) (b : β) (f : Term → β
 instance : ForIn m Term Term where
   forIn := Term.forIn
 
+/-- Get the children of a term. -/
 def getChildren (t : Term) : Array Term := Id.run do
   let mut cts := #[]
   for ct in t do
     cts := cts.push ct
   cts
 
+/-- Boolean negation. -/
 @[extern "term_not"]
 protected opaque not : Term → Term
 
+/-- Boolean and. -/
 @[extern "term_and"]
 protected opaque and : Term → Term → Term
 
+/-- Boolean or. -/
 @[extern "term_or"]
 protected opaque or : Term → Term → Term
 
+/-- A string representation of this term. -/
 @[extern "term_toString"]
 protected opaque toString : Term → String
 
@@ -296,26 +393,36 @@ opaque null : Unit → Proof
 
 instance : Inhabited Proof := ⟨null ()⟩
 
+/-- The proof rule used by the root step of the proof. -/
 @[extern "proof_getRule"]
 opaque getRule : Proof → ProofRule
 
+/-- The proof rewrite rule used by the root step of the proof. -/
 @[extern "proof_getRewriteRule"]
 opaque getRewriteRule : Proof → ProofRewriteRule
 
+/-- The conclusion of the root step of the proof. -/
 @[extern "proof_getResult"]
 opaque getResult : Proof → Term
 
+/-- The premises of the root step of the proof. -/
 @[extern "proof_getChildren"]
 opaque getChildren : Proof → Array Proof
 
+/-- The arguments of the root step of the proof as a vector of terms.
+
+Some of those terms might be strings.
+-/
 @[extern "proof_getArguments"]
 opaque getArguments : Proof → Array Term
 
+/-- Operator overloading for referential equality of two proofs. -/
 @[extern "proof_beq"]
 protected opaque beq : Proof → Proof → Bool
 
 instance : BEq Proof := ⟨Proof.beq⟩
 
+/-- Hash function for proofs. -/
 @[extern "proof_hash"]
 protected opaque hash : Proof → UInt64
 
@@ -364,8 +471,8 @@ opaque getStringSort : TermManager → cvc5.Sort
 
 /-- Create an array sort.
 
-- `indexSort` The array index sort.
-- `elemSort` The array element sort.
+- `indexSort`: The array index sort.
+- `elemSort`: The array element sort.
 -/
 @[extern "termManager_mkArraySort"]
 opaque mkArraySort : TermManager → (indexSort elemSort : cvc5.Sort) → Except Error cvc5.Sort
@@ -377,7 +484,7 @@ def mkArraySort! tm indexSort elemSort :=
 
 /-- Create a bit-vector sort.
 
-- `size` The bit-width of the bit-vector sort.
+- `size`: The bit-width of the bit-vector sort.
 -/
 @[extern "termManager_mkBitVectorSort"]
 private opaque mkBitVectorSortUnsafe : TermManager → (size : UInt32) → Except Error cvc5.Sort
@@ -389,11 +496,11 @@ def mkBitVectorSort (tm : TermManager) (size : UInt32) (_valid : 0 < size := by 
 
 /-- Create a floating-point sort.
 
-- `exp` The bit-width of the exponent of the floating-point sort.
-- `sig` The bit-width of the significand of the floating-point sort.
+- `exp`: The bit-width of the exponent of the floating-point sort.
+- `sig`: The bit-width of the significand of the floating-point sort.
 -/
 @[extern "termManager_mkFloatingPointSort"]
-opaque mkFloatingPointSortUnsafe : TermManager → (exp sig : UInt32) → Except Error cvc5.Sort
+private opaque mkFloatingPointSortUnsafe : TermManager → (exp sig : UInt32) → Except Error cvc5.Sort
 
 @[inherit_doc mkFloatingPointSortUnsafe]
 def mkFloatingPointSort
@@ -411,8 +518,8 @@ def mkFloatingPointSort! tm (exp sig : UInt32)
 
 /-- Create a finite-field sort from a given string of base n.
 
-- `size` The modulus of the field. Must be prime.
-- `base` The base of the string representation of `size`.
+- `size`: The modulus of the field. Must be prime.
+- `base`: The base of the string representation of `size`.
 -/
 @[extern "termManager_mkFiniteFieldSort"]
 opaque mkFiniteFieldSortOfString
@@ -425,8 +532,8 @@ def mkFiniteFieldSortOfString! tm size (base : UInt32 := 10) :=
 
 /-- Create a finite-field sort from a given string of base n.
 
-- `size` The modulus of the field. Must be prime.
-- `base` The base of `size`.
+- `size`: The modulus of the field. Must be prime.
+- `base`: The base of `size`.
 -/
 def mkFiniteFieldSort
   (tm : TermManager) (size : Nat) (base : UInt32 := 10)
@@ -440,8 +547,8 @@ def mkFiniteFieldSort! tm size base :=
 
 /-- Create function sort.
 
-- `sorts` The sort of the function arguments.
-- `codomain` The sort of the function return value.
+- `sorts`: The sort of the function arguments.
+- `codomain`: The sort of the function return value.
 -/
 @[extern "termManager_mkFunctionSort"]
 opaque mkFunctionSort
@@ -454,7 +561,7 @@ def mkFunctionSort! tm sorts codomain :=
 
 /-- Create a Boolean constant.
 
-- `b` The Boolean constant.
+- `b`: The Boolean constant.
 -/
 @[extern "termManager_mkBoolean"]
 opaque mkBoolean : TermManager → (b : Bool) → Except Error Term
@@ -469,7 +576,7 @@ private opaque mkIntegerFromString : TermManager → String → Except Error Ter
 
 /-- Create an integer constant.
 
-- `i` The integer constant.
+- `i`: The integer constant.
 -/
 def mkInteger (tm : TermManager) : (i : Int) → Except Error Term :=
   mkIntegerFromString tm ∘ toString
@@ -500,8 +607,8 @@ def mkInteger! tm i :=
 
 See `cvc5.Kind` for a description of the parameters.
 
-- `kind` The kind of the operator.
-- `args` The arguments (indices) of the operator.
+- `kind`: The kind of the operator.
+- `args`: The arguments (indices) of the operator.
 
 If `args` is empty, the `Op` simply wraps the `cvc5.Kind`. The `Kind` can be used in `Solver.mkTerm`
 directly without creating an `Op` first.
@@ -520,8 +627,8 @@ def mkOpOfIndices! tm kind args :=
 
 See `cvc5.Kind` for a description of the parameters.
 
-- `kind` The kind of the operator.
-- `arg` The string argument to this operator.
+- `kind`: The kind of the operator.
+- `arg`: The string argument to this operator.
 
 -/
 @[extern "termManager_mkOpOfString"]
@@ -534,8 +641,8 @@ def mkOpDivisible (tm : TermManager) (n : Nat) (_valid : 0 < n := by simp) : Op 
 
 /-- Create n-ary term of given kind.
 
-- `kind` The kind of the term.
-- `children` The children of the term.
+- `kind`: The kind of the term.
+- `children`: The children of the term.
 -/
 @[extern "termManager_mkTerm"]
 opaque mkTerm : TermManager → (kind : Kind) → (children : Array Term := #[]) → Except Error Term
@@ -549,8 +656,8 @@ def mkTerm! tm kind children :=
 
 Create operators with `mkOp`.
 
-- `op` The operator.
-- `children` The children of the term.
+- `op`: The operator.
+- `children`: The children of the term.
 -/
 @[extern "termManager_mkTermOfOp"]
 opaque mkTermOfOp : TermManager → (op : Op) → (children : Array Term := #[]) → Except Error Term
@@ -565,8 +672,8 @@ def mkTermOfOp! tm op children :=
 Note that the returned term is always fresh, even if the same arguments were provided on a previous
 call to `mkConst`.
 
-- `sort` The sort of the constant.
-- `symbol` The name of the constant.
+- `sort`: The sort of the constant.
+- `symbol`: The name of the constant.
 -/
 @[extern "termManager_mkConst"]
 opaque mkConst : TermManager → (sort : cvc5.Sort) → (symbol : String) → Term
@@ -577,42 +684,82 @@ namespace Solver
 
 variable [Monad m]
 
+/-- Only used by FFI to wrap *success* results. -/
 @[export solver_val]
 private def val (a : α) : SolverT m α := pure a
 
+/-- Only used by FFI to wrap errors. -/
 @[export solver_err]
 private def err (e : Error) : SolverT m α := throw e
 
+/-- Only used by FFI to wrap cvc5 errors. -/
 @[export solver_errOfString]
 private def cvc5ErrOfString (msg : String) : SolverT m α := throw (.cvc5Error msg)
 
-@[extern "solver_new"]
-private opaque new : TermManager → Solver
+/-- Constructor.
 
+Constructs solver instance from a given term manager instance.
+
+- `tm`: The associated term manager.
+-/
+@[extern "solver_new"]
+private opaque new : (tm : TermManager) → Solver
+
+/-- Get a string representation of the version of this solver. -/
 @[extern "solver_getVersion"]
 opaque getVersion : SolverT m String
 
+/-- Set option.
+
+- `option`: The option name.
+- `value`: The option value.
+-/
 @[extern "solver_setOption"]
 opaque setOption (option value : String) : SolverT m Unit
 
+/-- Set logic.
+
+- `logic`: The logic to set.
+-/
 @[extern "solver_setLogic"]
 opaque setLogic (logic : String) : SolverT m Unit
 
-@[extern "solver_assertFormula"]
-opaque assertFormula : Term → SolverT m Unit
+/-- Assert a formula.
 
+- `term`: The formula to assert.
+-/
+@[extern "solver_assertFormula"]
+opaque assertFormula : (term : Term) → SolverT m Unit
+
+/-- Check satisfiability. -/
 @[extern "solver_checkSat"]
 opaque checkSat : SolverT m Result
 
+/-- Get a proof associated with the most recent call to `checkSat`.
+
+Requires to enable option `produce-proofs`
+-/
 @[extern "solver_getProof"]
 opaque getProof : SolverT m (Array Proof)
 
-@[extern "solver_proofToString"]
-opaque proofToString : Proof → SolverT m String
+/-- Prints a proof as a string in a selected proof format mode.
 
+Other aspects of printing are taken from the solver options.
+
+- `proof`: A proof, usually obtained from `getProof`.
+-/
+@[extern "solver_proofToString"]
+opaque proofToString : (proof : Proof) → SolverT m String
+
+/-- Parse a string containing SMT-LIB commands.
+
+Commands that produce a result such as `(check-sat)`, `(get-model)`, ... are executed but the
+results are ignored.
+-/
 @[extern "solver_parse"]
 opaque parse : String → SolverT m Unit
 
+/-- Run a `query` given a term manager `tm`. -/
 def run (tm : TermManager) (query : SolverT m α) : m (Except Error α) :=
   return match ← ExceptT.run query (new tm) with
   | (.ok x, _) => .ok x
