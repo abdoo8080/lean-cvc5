@@ -380,7 +380,7 @@ def mkArraySort! tm indexSort elemSort :=
 - `size` The bit-width of the bit-vector sort.
 -/
 @[extern "termManager_mkBitVectorSort"]
-opaque mkBitVectorSort : TermManager → (size : Nat) → Except Error cvc5.Sort
+opaque mkBitVectorSort : TermManager → (size : UInt32) → Except Error cvc5.Sort
 
 @[inherit_doc mkBitVectorSort]
 def mkBitVectorSort! tm size :=
@@ -393,7 +393,7 @@ def mkBitVectorSort! tm size :=
 - `sig` The bit-width of the significand of the floating-point sort.
 -/
 @[extern "termManager_mkFloatingPointSort"]
-opaque mkFloatingPointSort : TermManager → (exp sig : Nat) → Except Error cvc5.Sort
+opaque mkFloatingPointSort : TermManager → (exp sig : UInt32) → Except Error cvc5.Sort
 
 @[inherit_doc mkFloatingPointSort]
 def mkFloatingPointSort! tm exp sig :=
@@ -487,12 +487,11 @@ See `cvc5.Kind` for a description of the parameters.
 
 -/
 @[extern "termManager_mkOpOfString"]
-opaque mkOpOfString : TermManager → (kind : Kind) → (arg : String) → Except Error Op
+private opaque mkOpOfString : TermManager → (kind : Kind) → (arg : String) → Except Error Op
 
-@[inherit_doc mkOpOfString]
-def mkOpOfString! tm kind args :=
-  mkOpOfString tm kind args
-  |> Error.unwrap!
+/-- Create divisibility-by operator, supports arbitrary precision. -/
+def mkOpDivisible (tm : TermManager) (n : Nat) (_valid : 0 < n := by simp) : Except Error Op :=
+  tm.mkOpOfString Kind.DIVISIBLE (toString n)
 
 /-- Create n-ary term of given kind.
 

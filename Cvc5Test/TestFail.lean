@@ -5,8 +5,7 @@ namespace cvc5.Test
 /-- info:
 bvSort = (_ BitVec 1)
 -/
-#guard_msgs in
-#eval IO.run do
+#guard_msgs in #eval IO.run do
   let tm ← TermManager.new
 
   let bvSort ←
