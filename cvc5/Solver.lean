@@ -426,7 +426,11 @@ See `cvc5.Kind` for a description of the parameters.
 
 -/
 @[extern "termManager_mkOpOfString"]
-opaque mkOpOfString : TermManager → (kind : Kind) → (arg : String) → Op
+private opaque mkOpOfString : TermManager → (kind : Kind) → (arg : String) → Op
+
+/-- Create divisibility-by operator, supports arbitrary precision. -/
+def mkOpDivisible (tm : TermManager) (n : Nat) (_valid : 0 < n := by simp) : Op :=
+  tm.mkOpOfString Kind.DIVISIBLE (toString n)
 
 /-- Create n-ary term of given kind.
 
