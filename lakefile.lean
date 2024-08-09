@@ -10,7 +10,6 @@ package cvc5 {
   precompileModules := true
   moreGlobalServerArgs := #[s!"--load-dynlib={libcpp}"]
   extraDepTargets := #[`libcvc5]
-  testDriver := "cvc5Test"
 }
 
 @[default_target]
@@ -18,12 +17,10 @@ lean_lib cvc5 {
   moreLeanArgs := #[s!"--load-dynlib={libcpp}"]
 }
 
+@[test_driver]
 lean_lib cvc5Test {
   globs := #[Glob.submodules `Cvc5Test]
 }
-
-lean_lib test where
-  roots := #[`Test.Init]
 
 def Lake.unzip (file : FilePath) (dir : FilePath) : LogIO PUnit := do
   IO.FS.createDirAll dir
