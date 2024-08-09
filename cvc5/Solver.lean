@@ -246,8 +246,26 @@ opaque isNull : Term → Bool
 opaque getKind : Term → Kind
 
 /-- Get the operator of a term with an operator. -/
+@[extern "term_hasOp"]
+opaque hasOp : Term → Bool
+
+/-- Get the operator of a term with an operator.
+
+Requires that this term has an operator (see `hasOp`).
+-/
 @[extern "term_getOp"]
-opaque getOp : Term → Op
+private opaque getOp! : Term → Op
+
+@[inherit_doc getOp!]
+def getOp (term : Term) (_valid : term.hasOp) : Op :=
+  term.getOp!
+
+/-- Get the operator of a term, if any. -/
+def getOp? (term : Term) : Option Op :=
+  if valid : term.hasOp then
+    term.getOp valid
+  else
+    none
 
 /-- Get the sort of this term. -/
 @[extern "term_getSort"]
