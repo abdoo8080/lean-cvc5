@@ -74,6 +74,16 @@ inductive Error where
   | cvc5Error (msg : String)
 deriving Repr
 
+/-- Only used by FFI to inject values. -/
+@[export except_ok]
+private def val {α : Type} : α → Except Error α :=
+  .ok
+
+/-- Only used by FFI to inject errors. -/
+@[export except_err]
+private def err {α : Type} : String → Except Error α :=
+  .error ∘ Error.cvc5Error
+
 private opaque SolverImpl : NonemptyType.{0}
 
 /-- A cvc5 solver. -/
@@ -490,16 +500,6 @@ instance : Hashable Proof := ⟨Proof.hash⟩
 end Proof
 
 namespace TermManager
-
-/-- Only used by FFI to inject values. -/
-@[export termManager_val]
-private def val {α : Type} : α → Except Error α :=
-  .ok
-
-/-- Only used by FFI to inject errors. -/
-@[export termManager_err]
-private def err {α : Type} : String → Except Error α :=
-  .error ∘ Error.cvc5Error
 
 @[extern "termManager_new"]
 opaque new : BaseIO TermManager

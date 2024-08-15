@@ -4,12 +4,12 @@
 
 using namespace cvc5;
 
-extern "C" lean_obj_res termManager_val(
+extern "C" lean_obj_res except_ok(
   lean_obj_arg alpha,
   lean_obj_arg val
 );
 
-extern "C" lean_obj_res termManager_err(
+extern "C" lean_obj_res except_err(
   lean_obj_arg alpha,
   lean_obj_arg msg
 );
@@ -18,11 +18,11 @@ extern "C" lean_obj_res termManager_err(
   try { \
     code \
   } catch (CVC5ApiException& e) { \
-    return termManager_err(lean_box(0), lean_mk_string(e.what())); \
+    return except_err(lean_box(0), lean_mk_string(e.what())); \
   } catch (char const* e) { \
-    return termManager_err(lean_box(0), lean_mk_string(e)); \
+    return except_err(lean_box(0), lean_mk_string(e)); \
   } catch (...) { \
-    return termManager_err( \
+    return except_err( \
       lean_box(0), \
       lean_mk_string("cvc5's term manager raised an unexpected exception") \
     ); \
@@ -167,14 +167,14 @@ extern "C" lean_obj_res sort_getFunctionDomainSorts(lean_obj_arg s)
     {
       ds = lean_array_push(ds, sort_box(new Sort(domain)));
     }
-    return termManager_val(lean_box(0), ds);
+    return except_ok(lean_box(0), ds);
   )
 }
 
 extern "C" lean_obj_res sort_getFunctionCodomainSort(lean_obj_arg s)
 {
   CVC5_TRY_CATCH_TERM_MANAGER(
-    return termManager_val(lean_box(0),
+    return except_ok(lean_box(0),
       sort_box(new Sort(sort_unbox(s)->getFunctionCodomainSort()))
     );
   )
@@ -566,7 +566,7 @@ extern "C" lean_obj_arg termManager_getStringSort(lean_obj_arg tm)
 extern "C" lean_obj_res termManager_mkArraySort(lean_obj_arg tm, lean_obj_arg idx, lean_obj_arg elm)
 {
   CVC5_TRY_CATCH_TERM_MANAGER(
-    return termManager_val(lean_box(0),
+    return except_ok(lean_box(0),
       sort_box(new Sort(mut_tm_unbox(tm)->mkArraySort(*sort_unbox(idx), *sort_unbox(elm))))
     );
   )
@@ -575,7 +575,7 @@ extern "C" lean_obj_res termManager_mkArraySort(lean_obj_arg tm, lean_obj_arg id
 extern "C" lean_obj_res termManager_mkBitVectorSort(lean_obj_arg tm, uint32_t size)
 {
   CVC5_TRY_CATCH_TERM_MANAGER(
-    return termManager_val(lean_box(0),
+    return except_ok(lean_box(0),
       sort_box(new Sort(mut_tm_unbox(tm)->mkBitVectorSort(size)))
     );
   )
@@ -588,7 +588,7 @@ extern "C" lean_obj_res termManager_mkFloatingPointSort(
 )
 {
   CVC5_TRY_CATCH_TERM_MANAGER(
-    return termManager_val(lean_box(0),
+    return except_ok(lean_box(0),
       sort_box(new Sort(mut_tm_unbox(tm)->mkFloatingPointSort(exp, sig)))
     );
   )
@@ -601,7 +601,7 @@ extern "C" lean_obj_res termManager_mkFiniteFieldSort(
 )
 {
   CVC5_TRY_CATCH_TERM_MANAGER(
-    return termManager_val(lean_box(0),
+    return except_ok(lean_box(0),
       sort_box(new Sort(mut_tm_unbox(tm)->mkFiniteFieldSort(lean_string_cstr(size), base)))
     );
   )
@@ -620,7 +620,7 @@ extern "C" lean_obj_res termManager_mkFunctionSort(
       cvc5Sorts.push_back(*sort_unbox(
           lean_array_get(sort_box(new Sort()), sorts, lean_usize_to_nat(i))));
     }
-    return termManager_val(lean_box(0),
+    return except_ok(lean_box(0),
       sort_box(new Sort(mut_tm_unbox(tm)->mkFunctionSort(cvc5Sorts, *sort_unbox(codomain))))
     );
   )
@@ -629,7 +629,7 @@ extern "C" lean_obj_res termManager_mkFunctionSort(
 extern "C" lean_obj_res termManager_mkBoolean(lean_obj_arg tm, uint8_t val)
 {
   CVC5_TRY_CATCH_TERM_MANAGER(
-    return termManager_val(lean_box(0),
+    return except_ok(lean_box(0),
       term_box(new Term(mut_tm_unbox(tm)->mkBoolean(bool_unbox(val))))
     );
   )
@@ -639,7 +639,7 @@ extern "C" lean_obj_res termManager_mkIntegerFromString(lean_obj_arg tm,
                                                         lean_obj_arg val)
 {
   CVC5_TRY_CATCH_TERM_MANAGER(
-    return termManager_val(lean_box(0),
+    return except_ok(lean_box(0),
       term_box(new Term(mut_tm_unbox(tm)->mkInteger(lean_string_cstr(val))))
     );
   )
@@ -657,7 +657,7 @@ extern "C" lean_obj_res termManager_mkTerm(lean_obj_arg tm,
       cs.push_back(*term_unbox(
           lean_array_get(term_box(new Term()), children, lean_usize_to_nat(i))));
     }
-    return termManager_val(lean_box(0),
+    return except_ok(lean_box(0),
       term_box(new Term(mut_tm_unbox(tm)->mkTerm(k, cs)))
     );
   )
@@ -676,7 +676,7 @@ extern "C" lean_obj_res termManager_mkTermOfOp(
       cs.push_back(*term_unbox(
           lean_array_get(term_box(new Term()), children, lean_usize_to_nat(i))));
     }
-    return termManager_val(lean_box(0),
+    return except_ok(lean_box(0),
       term_box(new Term(mut_tm_unbox(tm)->mkTerm(*op_unbox(op), cs)))
     );
   )
@@ -706,7 +706,7 @@ extern "C" lean_obj_res termManager_mkOpOfIndices(
         lean_uint32_of_nat(lean_array_get(0, args, lean_usize_to_nat(i)))
       );
     }
-    return termManager_val(lean_box(0),
+    return except_ok(lean_box(0),
       op_box(new Op(mut_tm_unbox(tm)->mkOp(k, indices)))
     );
   )
