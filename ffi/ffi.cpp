@@ -14,7 +14,7 @@ extern "C" lean_obj_res except_err(
   lean_obj_arg msg
 );
 
-#define CVC5_TRY_CATCH_TERM_MANAGER(code) \
+#define CVC5_TRY_CATCH_EXCEPT(code) \
   try { \
     code \
   } catch (CVC5ApiException& e) { \
@@ -160,7 +160,7 @@ extern "C" uint8_t sort_isFunction(lean_obj_arg s)
 
 extern "C" lean_obj_res sort_getFunctionDomainSorts(lean_obj_arg s)
 {
-  CVC5_TRY_CATCH_TERM_MANAGER(
+  CVC5_TRY_CATCH_EXCEPT(
     std::vector<Sort> domains = sort_unbox(s)->getFunctionDomainSorts();
     lean_object* ds = lean_mk_empty_array();
     for (const Sort& domain : domains)
@@ -173,7 +173,7 @@ extern "C" lean_obj_res sort_getFunctionDomainSorts(lean_obj_arg s)
 
 extern "C" lean_obj_res sort_getFunctionCodomainSort(lean_obj_arg s)
 {
-  CVC5_TRY_CATCH_TERM_MANAGER(
+  CVC5_TRY_CATCH_EXCEPT(
     return except_ok(lean_box(0),
       sort_box(new Sort(sort_unbox(s)->getFunctionCodomainSort()))
     );
@@ -182,7 +182,7 @@ extern "C" lean_obj_res sort_getFunctionCodomainSort(lean_obj_arg s)
 
 extern "C" lean_obj_res sort_getSymbol(lean_obj_arg s)
 {
-  CVC5_TRY_CATCH_TERM_MANAGER(
+  CVC5_TRY_CATCH_EXCEPT(
     return except_ok(lean_box(0),
       lean_mk_string(sort_unbox(s)->getSymbol().c_str())
     );
@@ -196,7 +196,7 @@ extern "C" uint8_t sort_isInteger(lean_obj_arg s)
 
 extern "C" lean_obj_res sort_getBitVectorSize(lean_obj_arg s)
 {
-  CVC5_TRY_CATCH_TERM_MANAGER(
+  CVC5_TRY_CATCH_EXCEPT(
     return except_ok(lean_box(0),
       lean_box_uint32(sort_unbox(s)->getBitVectorSize())
     );
@@ -573,7 +573,7 @@ extern "C" lean_obj_arg termManager_getStringSort(lean_obj_arg tm)
 
 extern "C" lean_obj_res termManager_mkArraySort(lean_obj_arg tm, lean_obj_arg idx, lean_obj_arg elm)
 {
-  CVC5_TRY_CATCH_TERM_MANAGER(
+  CVC5_TRY_CATCH_EXCEPT(
     return except_ok(lean_box(0),
       sort_box(new Sort(mut_tm_unbox(tm)->mkArraySort(*sort_unbox(idx), *sort_unbox(elm))))
     );
@@ -582,7 +582,7 @@ extern "C" lean_obj_res termManager_mkArraySort(lean_obj_arg tm, lean_obj_arg id
 
 extern "C" lean_obj_res termManager_mkBitVectorSort(lean_obj_arg tm, uint32_t size)
 {
-  CVC5_TRY_CATCH_TERM_MANAGER(
+  CVC5_TRY_CATCH_EXCEPT(
     return except_ok(lean_box(0),
       sort_box(new Sort(mut_tm_unbox(tm)->mkBitVectorSort(size)))
     );
@@ -595,7 +595,7 @@ extern "C" lean_obj_res termManager_mkFloatingPointSort(
   uint32_t sig
 )
 {
-  CVC5_TRY_CATCH_TERM_MANAGER(
+  CVC5_TRY_CATCH_EXCEPT(
     return except_ok(lean_box(0),
       sort_box(new Sort(mut_tm_unbox(tm)->mkFloatingPointSort(exp, sig)))
     );
@@ -608,7 +608,7 @@ extern "C" lean_obj_res termManager_mkFiniteFieldSort(
   uint32_t base
 )
 {
-  CVC5_TRY_CATCH_TERM_MANAGER(
+  CVC5_TRY_CATCH_EXCEPT(
     return except_ok(lean_box(0),
       sort_box(new Sort(mut_tm_unbox(tm)->mkFiniteFieldSort(lean_string_cstr(size), base)))
     );
@@ -621,7 +621,7 @@ extern "C" lean_obj_res termManager_mkFunctionSort(
   lean_obj_arg codomain
 )
 {
-  CVC5_TRY_CATCH_TERM_MANAGER(
+  CVC5_TRY_CATCH_EXCEPT(
     std::vector<Sort> cvc5Sorts;
     for (size_t i = 0, n = lean_array_size(sorts); i < n; ++i)
     {
@@ -636,7 +636,7 @@ extern "C" lean_obj_res termManager_mkFunctionSort(
 
 extern "C" lean_obj_res termManager_mkBoolean(lean_obj_arg tm, uint8_t val)
 {
-  CVC5_TRY_CATCH_TERM_MANAGER(
+  CVC5_TRY_CATCH_EXCEPT(
     return except_ok(lean_box(0),
       term_box(new Term(mut_tm_unbox(tm)->mkBoolean(bool_unbox(val))))
     );
@@ -646,7 +646,7 @@ extern "C" lean_obj_res termManager_mkBoolean(lean_obj_arg tm, uint8_t val)
 extern "C" lean_obj_res termManager_mkIntegerFromString(lean_obj_arg tm,
                                                         lean_obj_arg val)
 {
-  CVC5_TRY_CATCH_TERM_MANAGER(
+  CVC5_TRY_CATCH_EXCEPT(
     return except_ok(lean_box(0),
       term_box(new Term(mut_tm_unbox(tm)->mkInteger(lean_string_cstr(val))))
     );
@@ -657,7 +657,7 @@ extern "C" lean_obj_res termManager_mkTerm(lean_obj_arg tm,
                                            uint16_t kind,
                                            lean_obj_arg children)
 {
-  CVC5_TRY_CATCH_TERM_MANAGER(
+  CVC5_TRY_CATCH_EXCEPT(
     Kind k = static_cast<Kind>(static_cast<int32_t>(kind) - 2);
     std::vector<Term> cs;
     for (size_t i = 0, n = lean_array_size(children); i < n; ++i)
@@ -677,7 +677,7 @@ extern "C" lean_obj_res termManager_mkTermOfOp(
   lean_obj_arg children
 )
 {
-  CVC5_TRY_CATCH_TERM_MANAGER(
+  CVC5_TRY_CATCH_EXCEPT(
     std::vector<Term> cs;
     for (size_t i = 0, n = lean_array_size(children); i < n; ++i)
     {
@@ -705,7 +705,7 @@ extern "C" lean_obj_res termManager_mkOpOfIndices(
   lean_obj_arg args
 )
 {
-  CVC5_TRY_CATCH_TERM_MANAGER(
+  CVC5_TRY_CATCH_EXCEPT(
     Kind k = static_cast<Kind>(static_cast<int32_t>(kind) - 2);
     std::vector<uint32_t> indices;
     for (size_t i = 0, n = lean_array_size(args); i < n; ++i)
