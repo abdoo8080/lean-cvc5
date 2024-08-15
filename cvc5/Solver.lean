@@ -181,7 +181,7 @@ The symbol of this sort is the string that was provided when consrtucting it *vi
 `Solver.mkUninterpretedSortConstructorSort`.
 -/
 @[extern "sort_getSymbol"]
-opaque getSymbol : cvc5.Sort → String
+opaque getSymbol : cvc5.Sort → Except Error String
 
 /-- Determine if this is the integer sort (SMT-LIB: `Int`). -/
 @[extern "sort_isInteger"]
@@ -189,7 +189,7 @@ opaque isInteger : cvc5.Sort → Bool
 
 /-- The bit-width of the bit-vector sort. -/
 @[extern "sort_getBitVectorSize"]
-opaque getBitVectorSize : cvc5.Sort → UInt32
+opaque getBitVectorSize : cvc5.Sort → Except Error UInt32
 
 /-- A string representation of this sort. -/
 @[extern "sort_toString"]

@@ -33,6 +33,11 @@ test! tm => do
   let realSort := tm.getRealSort
   let bvSort := tm.mkBitVectorSort 32
 
+  let size ←
+    bvSort.getBitVectorSize
+    |> assertOk
+  assertEq size 32
+
   tm.mkArraySort boolSort boolSort
   |> assertOkDiscard
   tm.mkArraySort intSort intSort

@@ -182,7 +182,11 @@ extern "C" lean_obj_res sort_getFunctionCodomainSort(lean_obj_arg s)
 
 extern "C" lean_obj_res sort_getSymbol(lean_obj_arg s)
 {
-  return lean_mk_string(sort_unbox(s)->getSymbol().c_str());
+  CVC5_TRY_CATCH_TERM_MANAGER(
+    return except_ok(lean_box(0),
+      lean_mk_string(sort_unbox(s)->getSymbol().c_str())
+    );
+  )
 }
 
 extern "C" uint8_t sort_isInteger(lean_obj_arg s)
@@ -190,9 +194,13 @@ extern "C" uint8_t sort_isInteger(lean_obj_arg s)
   return bool_box(sort_unbox(s)->isInteger());
 }
 
-extern "C" uint32_t sort_getBitVectorSize(lean_obj_arg s)
+extern "C" lean_obj_res sort_getBitVectorSize(lean_obj_arg s)
 {
-  return static_cast<int32_t>(sort_unbox(s)->getBitVectorSize());
+  CVC5_TRY_CATCH_TERM_MANAGER(
+    return except_ok(lean_box(0),
+      lean_box_uint32(sort_unbox(s)->getBitVectorSize())
+    );
+  )
 }
 
 extern "C" lean_obj_res sort_toString(lean_obj_arg s)
