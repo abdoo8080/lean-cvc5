@@ -24,8 +24,11 @@ test! do
 
 /-- info:
 confirmed sat result
+[getValue] n1 = 0, n2 = 0, b = true
+[getValues] n1 = 0, n2 = 0, b = true
 -/
 test! tm => do
+  Solver.setOption "produce-models" "true"
   Solver.setLogic "QF_LIA"
 
   let bool := tm.getBooleanSort
@@ -46,6 +49,17 @@ test! tm => do
   let isSat? ← Solver.checkSat?
   assertEq isSat? true
   println! "confirmed sat result"
+
+  let n1Val ← Solver.getValue n1
+  let n2Val ← Solver.getValue n2
+  let bVal ← Solver.getValue b
+
+  println! "[getValue] n1 = {n1Val}, n2 = {n2Val}, b = {bVal}"
+
+  let terms := #[n1, n2, b]
+  let values ← Solver.getValues terms
+
+  println! "[getValues] n1 = {values.get! 0}, n2 = {values.get! 1}, b = {values.get! 2}"
 
 /-- info:
 confirmed unsat result

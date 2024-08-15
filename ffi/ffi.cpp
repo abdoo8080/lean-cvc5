@@ -887,6 +887,43 @@ extern "C" lean_obj_res solver_checkSat(lean_obj_arg inst, lean_obj_arg solver)
   )
 }
 
+extern "C" lean_obj_res solver_getValue(
+  lean_obj_arg inst,
+  lean_object * term,
+  lean_obj_arg solver
+)
+{
+  CVC5_TRY_CATCH_SOLVER("getValue", inst, solver,
+    Term val = solver_unbox(solver)->getValue(*term_unbox(term));
+    return solver_val(lean_box(0), inst, lean_box(0), term_box(new Term(val)), solver);
+  )
+}
+
+extern "C" lean_obj_res solver_getValues(
+  lean_obj_arg inst,
+  lean_obj_arg terms,
+  lean_obj_arg solver
+)
+{
+  CVC5_TRY_CATCH_SOLVER("getValues", inst, solver,
+    std::vector<Term> ts;
+    for (size_t i = 0, n = lean_array_size(terms); i < n; ++i)
+    {
+      ts.push_back(
+        *term_unbox(
+          lean_array_get(term_box(new Term()), terms, lean_usize_to_nat(i))
+        )
+      );
+    }
+    std::vector<Term> vals = solver_unbox(solver)->getValue(ts);
+    lean_object* values = lean_mk_empty_array();
+    for (const Term& value : vals) {
+      values = lean_array_push(values, term_box(new Term(value)));
+    }
+    return solver_val(lean_box(0), inst, lean_box(0), values, solver);
+  )
+}
+
 extern "C" lean_obj_res solver_getProof(lean_obj_arg inst, lean_obj_arg solver)
 {
   CVC5_TRY_CATCH_SOLVER("getProof", inst, solver,

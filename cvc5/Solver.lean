@@ -826,6 +826,20 @@ Requires to enable option `produce-proofs`
 @[extern "solver_getProof"]
 opaque getProof : SolverT m (Array Proof)
 
+/-- Get the value of the given term in the current model.
+
+- `term`: The term for which the value is queried.
+-/
+@[extern "solver_getValue"]
+opaque getValue : (term : Term) → SolverT m Term
+
+/-- Get the values of the given terms in the current model.
+
+- `term`: The terms for which the value is queried.
+-/
+@[extern "solver_getValues"]
+opaque getValues : (term : Array Term) → SolverT m (Array Term)
+
 /-- Prints a proof as a string in a selected proof format mode.
 
 Other aspects of printing are taken from the solver options.
