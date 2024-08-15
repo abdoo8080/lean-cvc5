@@ -15,6 +15,16 @@ test! tm => do
   assertEq fls.getKind boolKind
   assertEq fls.getSort.toString "Bool"
 
+  let b ← tru.getBooleanValue |> assertOk
+  assertEq b true
+  let b ← fls.getBooleanValue |> assertOk
+  assertEq b false
+  fls.getIntegerValue
+  |> assertCvc5Error "\
+invalid argument 'false' for '*d_node', \
+expected Term to be an integer value when calling getIntegerValue()\
+  "
+
   let intKind := Kind.CONST_INTEGER
 
   let (one, three, seven, eleven) := (
@@ -31,6 +41,21 @@ test! tm => do
   assertEq seven.getSort.toString "Int"
   assertEq eleven.getKind intKind
   assertEq eleven.getSort.toString "Int"
+
+  let val ← one.getIntegerValue |> assertOk
+  assertEq val 1
+  let val ← eleven.getIntegerValue |> assertOk
+  assertEq val 11
+  eleven.getBooleanValue
+  |> assertCvc5Error "\
+invalid argument '11' for '*d_node', \
+expected Term to be a Boolean value when calling getBooleanValue()\
+  "
+  eleven.getBitVectorValue
+  |> assertCvc5Error "\
+invalid argument '11' for '*d_node', \
+expected Term to be a bit-vector value when calling getBitVectorValue()\
+  "
 
   let ite1 :=
     tm.mkTerm! Kind.ITE #[fls, three, seven]

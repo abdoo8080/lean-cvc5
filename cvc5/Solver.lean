@@ -76,12 +76,17 @@ deriving Repr
 
 /-- Only used by FFI to inject values. -/
 @[export except_ok]
-private def val {α : Type} : α → Except Error α :=
+private def mkExceptOk {α : Type} : α → Except Error α :=
+  .ok
+
+/-- Only used by FFI to inject values. -/
+@[export except_ok_bool]
+private def mkExceptOkBool : Bool → Except Error Bool :=
   .ok
 
 /-- Only used by FFI to inject errors. -/
 @[export except_err]
-private def err {α : Type} : String → Except Error α :=
+private def mkExceptErr {α : Type} : String → Except Error α :=
   .error ∘ Error.cvc5Error
 
 private opaque SolverImpl : NonemptyType.{0}
@@ -302,7 +307,7 @@ instance : Hashable Term := ⟨Term.hash⟩
 Requires `term` to have sort Bool.
 -/
 @[extern "term_getBooleanValue"]
-opaque getBooleanValue : (term : Term) → Bool
+opaque getBooleanValue : (term : Term) → Except Error Bool
 
 /-- Get the string representation of a bit-vector value.
 
@@ -311,15 +316,15 @@ Requires `term` to have a bit-vector sort.
 - `base`: `2` for binary, `10` for decimal, and `16` for hexadecimal.
 -/
 @[extern "term_getBitVectorValue"]
-opaque getBitVectorValue : Term → UInt32 → String
+opaque getBitVectorValue : Term → (base : UInt32 := 2) → Except Error String
 
 /-- Get the native integral value of an integral value. -/
 @[extern "term_getIntegerValue"]
-opaque getIntegerValue : Term → Int
+opaque getIntegerValue : Term → Except Error Int
 
 /-- Get the native rational value of a real, rational-compatible value. -/
 @[extern "term_getRationalValue"]
-opaque getRationalValue : Term → Lean.Rat
+opaque getRationalValue : Term → Except Error Lean.Rat
 
 /-- Determine if this term has a symbol (a name).
 

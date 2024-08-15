@@ -9,6 +9,10 @@ extern "C" lean_obj_res except_ok(
   lean_obj_arg val
 );
 
+extern "C" lean_obj_res except_ok_bool(
+  uint8_t val
+);
+
 extern "C" lean_obj_res except_err(
   lean_obj_arg alpha,
   lean_obj_arg msg
@@ -358,29 +362,46 @@ extern "C" uint64_t term_hash(lean_obj_arg t)
   return std::hash<Term>()(*term_unbox(t));
 }
 
-extern "C" uint8_t term_getBooleanValue(lean_obj_arg t)
+extern "C" lean_obj_res term_getBooleanValue(lean_obj_arg t)
 {
-  return bool_box(term_unbox(t)->getBooleanValue());
+  CVC5_TRY_CATCH_EXCEPT(
+    return except_ok_bool(
+      bool_box(term_unbox(t)->getBooleanValue())
+    );
+  )
 }
 
 extern "C" lean_obj_res term_getBitVectorValue(lean_obj_arg t, uint32_t base)
 {
-  return lean_mk_string(term_unbox(t)->getBitVectorValue(base).c_str());
+  CVC5_TRY_CATCH_EXCEPT(
+    return except_ok(lean_box(0),
+      lean_mk_string(term_unbox(t)->getBitVectorValue(base).c_str())
+    );
+  )
 }
 
 extern "C" lean_obj_res term_getIntegerValue(lean_obj_arg t)
 {
-  return lean_cstr_to_int(term_unbox(t)->getIntegerValue().c_str());
+  CVC5_TRY_CATCH_EXCEPT(
+    return except_ok(lean_box(0),
+      lean_cstr_to_int(term_unbox(t)->getIntegerValue().c_str())
+    );
+  )
 }
 
 extern "C" lean_obj_res l_Lean_mkRat(lean_obj_arg num, lean_obj_arg den);
 
 extern "C" lean_obj_res term_getRationalValue(lean_obj_arg t)
 {
-  std::string r = term_unbox(t)->getRealValue();
-  size_t i = r.find('/');
-  return l_Lean_mkRat(lean_cstr_to_int(r.substr(0, i).c_str()),
-                      lean_cstr_to_nat(r.substr(i + 1).c_str()));
+  CVC5_TRY_CATCH_EXCEPT(
+    std::string r = term_unbox(t)->getRealValue();
+    size_t i = r.find('/');
+    return except_ok(lean_box(0),
+      l_Lean_mkRat(
+        lean_cstr_to_int(r.substr(0, i).c_str()), lean_cstr_to_nat(r.substr(i + 1).c_str())
+      )
+    );
+  )
 }
 
 extern "C" uint8_t term_hasSymbol(lean_obj_arg t)
