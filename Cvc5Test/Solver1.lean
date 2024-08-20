@@ -92,3 +92,41 @@ test! do
   println! "proof:"
   for p in proofs do
     println! "- {p.getResult}"
+
+/-- info:
+φ = (=> (not (and p q)) (and (not r) q))
+ψ = (or (=> s p) (=> s (not r)))
+interpolant: (or p (not r))
+-/
+test! tm => do
+  Solver.setLogic "QF_LIA"
+  Solver.setOption "produce-interpolants" "true"
+
+  -- from <https://en.wikipedia.org/wiki/Craig_interpolation#Example>
+
+  let bool := tm.getBooleanSort
+
+  let p ← Solver.declareFun (m := IO) "p" #[] bool false
+  let q ← Solver.declareFun (m := IO) "q" #[] bool false
+  let r ← Solver.declareFun (m := IO) "r" #[] bool false
+  let s ← Solver.declareFun (m := IO) "s" #[] bool false
+
+  let p_and_q ← tm.mkTerm .AND #[p, q]
+  let p_nand_q ← tm.mkTerm .NOT #[p_and_q]
+  let nr ← tm.mkTerm .NOT #[r]
+  let nr_and_q ← tm.mkTerm .AND #[nr, q]
+  let φ ←
+    tm.mkTerm .IMPLIES #[p_nand_q, nr_and_q]
+  println! "φ = {φ}"
+
+  Solver.assertFormula φ
+
+  let s_to_p ← tm.mkTerm .IMPLIES #[s, p]
+  let s_to_nr ← tm.mkTerm .IMPLIES #[s, nr]
+  let ψ ←
+    tm.mkTerm .OR #[s_to_p, s_to_nr]
+  println! "ψ = {ψ}"
+
+  let i ← Solver.getInterpolant ψ
+
+  println! "interpolant: {i}"

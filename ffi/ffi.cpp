@@ -853,6 +853,17 @@ extern "C" lean_obj_res solver_setLogic(
   )
 }
 
+extern "C" lean_obj_res solver_getInterpolant(
+  lean_obj_arg inst,
+  lean_obj_arg term,
+  lean_obj_arg solver
+) {
+  CVC5_TRY_CATCH_SOLVER("solver_getInterpolant", inst, solver,
+    Term value = solver_unbox(solver)->getInterpolant(*term_unbox(term));
+    return solver_val(lean_box(0), inst, lean_box(0), term_box(new Term(value)), solver);
+  )
+}
+
 extern "C" lean_obj_res solver_declareFun(
   lean_obj_arg inst,
   lean_obj_arg symbol,

@@ -762,6 +762,17 @@ private opaque new : (tm : TermManager) → Solver
 @[extern "solver_getVersion"]
 opaque getVersion : SolverT m String
 
+/-- Produces an interpolant `I` for the conjunction of the current set of assumptions `A` and the
+input term `B`.
+
+Requires option `produce-interpolants` to be set to a mode different from `none`.
+
+`I` is such that `A → I` and `I → B` are valid, and `I` only mentions symbols that appear both in
+`A` and `B`.
+-/
+@[extern "solver_getInterpolant"]
+opaque getInterpolant : (term : Term) → SolverT m Term
+
 /-- Set option.
 
 - `option`: The option name.
