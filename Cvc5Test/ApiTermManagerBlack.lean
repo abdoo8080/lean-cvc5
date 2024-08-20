@@ -204,3 +204,28 @@ test! tm => do
   |> assertOkDiscard
   tm.mkFunctionSort #[tm.getBooleanSort, tm.getIntegerSort] tm.getIntegerSort
   |> assertOkDiscard
+
+test! tm => do
+  tm.mkParamSort "T"
+  |> assertOkDiscard
+  tm.mkParamSort ""
+  |> assertOkDiscard
+
+test! tm => do
+  tm.mkPredicateSort #[tm.getIntegerSort]
+  |> assertOkDiscard
+  tm.mkPredicateSort #[]
+  |> assertCvc5Error
+    "invalid size of argument 'sorts', expected at least one parameter sort for predicate sort"
+  -- function as arguments are allowed
+  let funSort ← tm.mkFunctionSort #[← tm.mkUninterpretedSort "u"] tm.getIntegerSort
+  tm.mkPredicateSort #[tm.getIntegerSort, funSort]
+  |> assertOkDiscard
+  tm.mkPredicateSort #[tm.getIntegerSort]
+  |> assertOkDiscard
+
+  -- At this point the original test creates a new `TermManager` and checks that some constructors
+  -- fail because the manager is not a singleton anymore. But we don't have that problem.
+  let tm ← TermManager.new
+  tm.mkPredicateSort #[tm.getIntegerSort]
+  |> assertOkDiscard
