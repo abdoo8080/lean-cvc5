@@ -132,6 +132,7 @@ info:
 test! tm => do
   tm.mkFloatingPointSort 4 8
   |> assertOkDiscard
+
   tm.mkFloatingPointSort 0 8
   |> assertCvc5Error "invalid argument '0' for 'exp', expected exponent size > 1"
   tm.mkFloatingPointSort 4 0
@@ -140,3 +141,66 @@ test! tm => do
   |> assertCvc5Error "invalid argument '1' for 'exp', expected exponent size > 1"
   tm.mkFloatingPointSort 4 1
   |> assertCvc5Error "invalid argument '1' for 'sig', expected significand size > 1"
+
+
+
+/-! # TODO
+
+Datatype-related tests
+
+- <https://github.com/cvc5/cvc5/blob/0b00421403d4493cc01c1dd4b69269a139cb0bc2/test/unit/api/cpp/api_term_manager_black.cpp#L118-L232>
+-/
+
+
+test! tm => do
+  let uf ←
+    tm.mkUninterpretedSort "u"
+    |> assertOk
+  let int := tm.getIntegerSort
+  let funSort ←
+    tm.mkFunctionSort #[uf] int
+    |> assertOk
+
+  -- function arguments are allowed
+  tm.mkFunctionSort #[funSort] int
+  |> assertOkDiscard
+  -- non-first-class arguments are not allowed
+  let reSort := tm.getRegExpSort
+  tm.mkFunctionSort #[reSort] int
+  |> assertCvc5Error
+    "invalid domain sort in 'sorts' at index 0, expected first-class sort as domain sort"
+  --
+  tm.mkFunctionSort #[int] funSort
+  |> assertCvc5Error
+    "invalid argument '(-> u Int)' for 'codomain', expected non-function sort as codomain sort"
+  --
+  tm.mkFunctionSort #[uf, int] int
+  |> assertOkDiscard
+
+  let funSort2 ←
+    tm.mkFunctionSort #[← tm.mkUninterpretedSort "u"] tm.getBooleanSort
+    |> assertOk
+  --
+  tm.mkFunctionSort #[funSort2, uf] int
+  |> assertOkDiscard
+  --
+  tm.mkFunctionSort #[int, uf] funSort2
+  |> assertCvc5Error
+    "invalid argument '(-> u Bool)' for 'codomain', expected non-function sort as codomain sort"
+
+  let bool := tm.getBooleanSort
+  let sorts1 := #[bool, int, int]
+  let sorts2 := #[bool, int]
+
+  tm.mkFunctionSort sorts2 int
+  |> assertOkDiscard
+  tm.mkFunctionSort sorts1 int
+  |> assertOkDiscard
+
+  -- At this point the original test creates a new `TermManager` and checks that some constructors
+  -- fail because the manager is not a singleton anymore. But we don't have that problem.
+  let tm ← TermManager.new
+  tm.mkFunctionSort sorts2 int
+  |> assertOkDiscard
+  tm.mkFunctionSort #[tm.getBooleanSort, tm.getIntegerSort] tm.getIntegerSort
+  |> assertOkDiscard
