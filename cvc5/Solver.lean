@@ -623,6 +623,14 @@ def mkFunctionSort! tm sorts codomain :=
   mkFunctionSort tm sorts codomain
   |> Error.unwrap!
 
+/-- Create an uninterpreted sort.
+
+- `symbol`: The name of the sort.
+-/
+@[extern "termManager_mkUninterpretedSort"]
+opaque mkUninterpretedSort
+: TermManager → (symbol : String) → Except Error cvc5.Sort
+
 /-- Create a Boolean constant.
 
 - `b`: The Boolean constant.

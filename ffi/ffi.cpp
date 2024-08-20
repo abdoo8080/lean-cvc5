@@ -655,6 +655,18 @@ extern "C" lean_obj_res termManager_mkFunctionSort(
   )
 }
 
+extern "C" lean_obj_res termManager_mkUninterpretedSort(
+  lean_obj_arg tm,
+  lean_obj_arg name
+)
+{
+  CVC5_TRY_CATCH_EXCEPT(
+    return except_ok(lean_box(0),
+      sort_box(new Sort(mut_tm_unbox(tm)->mkUninterpretedSort(lean_string_cstr(name))))
+    );
+  )
+}
+
 extern "C" lean_obj_res termManager_mkBoolean(lean_obj_arg tm, uint8_t val)
 {
   CVC5_TRY_CATCH_EXCEPT(
