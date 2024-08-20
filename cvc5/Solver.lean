@@ -623,12 +623,30 @@ def mkFunctionSort! tm sorts codomain :=
   mkFunctionSort tm sorts codomain
   |> Error.unwrap!
 
+/-- Create a predicate sort.
+
+This is equivalent to calling `mkFunctionSort` with the Boolean sort as the codomain.
+
+- `sorts`: The list of sorts of the predicate.
+-/
+@[extern "termManager_mkPredicateSort"]
+opaque mkPredicateSort
+: TermManager → (sorts : Array cvc5.Sort) → Except Error cvc5.Sort
+
 /-- Create an uninterpreted sort.
 
 - `symbol`: The name of the sort.
 -/
 @[extern "termManager_mkUninterpretedSort"]
 opaque mkUninterpretedSort
+: TermManager → (symbol : String) → Except Error cvc5.Sort
+
+/-- Create a sort parameter.
+
+- `symbol`: The name of the sort.
+-/
+@[extern "termManager_mkParamSort"]
+opaque mkParamSort
 : TermManager → (symbol : String) → Except Error cvc5.Sort
 
 /-- Create a Boolean constant.

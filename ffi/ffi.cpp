@@ -655,14 +655,44 @@ extern "C" lean_obj_res termManager_mkFunctionSort(
   )
 }
 
+extern "C" lean_obj_res termManager_mkPredicateSort(
+  lean_obj_arg tm,
+  lean_obj_arg sorts
+)
+{
+  CVC5_TRY_CATCH_EXCEPT(
+    std::vector<Sort> cvc5Sorts;
+    for (size_t i = 0, n = lean_array_size(sorts); i < n; ++i)
+    {
+      cvc5Sorts.push_back(*sort_unbox(
+          lean_array_get(sort_box(new Sort()), sorts, lean_usize_to_nat(i))));
+    }
+    return except_ok(lean_box(0),
+      sort_box(new Sort(mut_tm_unbox(tm)->mkPredicateSort(cvc5Sorts)))
+    );
+  )
+}
+
 extern "C" lean_obj_res termManager_mkUninterpretedSort(
   lean_obj_arg tm,
-  lean_obj_arg name
+  lean_obj_arg symbol
 )
 {
   CVC5_TRY_CATCH_EXCEPT(
     return except_ok(lean_box(0),
-      sort_box(new Sort(mut_tm_unbox(tm)->mkUninterpretedSort(lean_string_cstr(name))))
+      sort_box(new Sort(mut_tm_unbox(tm)->mkUninterpretedSort(lean_string_cstr(symbol))))
+    );
+  )
+}
+
+extern "C" lean_obj_res termManager_mkParamSort(
+  lean_obj_arg tm,
+  lean_obj_arg symbol
+)
+{
+  CVC5_TRY_CATCH_EXCEPT(
+    return except_ok(lean_box(0),
+      sort_box(new Sort(mut_tm_unbox(tm)->mkParamSort(lean_string_cstr(symbol))))
     );
   )
 }
