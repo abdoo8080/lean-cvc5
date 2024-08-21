@@ -70,8 +70,10 @@ instance TermManager.instNonemptyTermManager : Nonempty TermManager := TermManag
 /-- Error type. -/
 inductive Error where
   | missingValue
-  | userError (msg : String)
-  | cvc5Error (msg : String)
+  | error (msg : String)
+  | recoverable (msg : String)
+  | unsupported (msg : String)
+  | option (msg : String)
 deriving Repr
 
 /-- Only used by FFI to inject values. -/
@@ -87,7 +89,7 @@ private def mkExceptOkBool : Bool → Except Error Bool :=
 /-- Only used by FFI to inject errors. -/
 @[export except_err]
 private def mkExceptErr {α : Type} : String → Except Error α :=
-  .error ∘ Error.cvc5Error
+  .error ∘ Error.error
 
 private opaque SolverImpl : NonemptyType.{0}
 
@@ -107,8 +109,10 @@ namespace Error
 /-- Panics on errors, otherwise yields the `ok` result. -/
 def unwrap! [Inhabited α] : Except Error α → α
 | .ok a => a
-| .error (.userError e) => panic! s!"user error: {e}"
-| .error (.cvc5Error e) => panic! s!"cvc5 error: {e}"
+| .error (.error e) => panic! s!"error: {e}"
+| .error (.recoverable e) => panic! s!"recoverable error: {e}"
+| .error (.unsupported e) => panic! s!"unsupported: {e}"
+| .error (.option e) => panic! s!"option error: {e}"
 | .error .missingValue => panic! s!"missing value"
 
 /-- String representation of an error. -/
@@ -773,7 +777,7 @@ private def err (e : Error) : SolverT m α := throw e
 
 /-- Only used by FFI to wrap cvc5 errors. -/
 @[export solver_errOfString]
-private def cvc5ErrOfString (msg : String) : SolverT m α := throw (.cvc5Error msg)
+private def errorOfString (msg : String) : SolverT m α := throw (.error msg)
 
 /-- Constructor.
 

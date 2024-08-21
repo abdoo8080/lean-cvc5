@@ -20,7 +20,7 @@ test! tm => do
   let b ← fls.getBooleanValue |> assertOk
   assertEq b false
   fls.getIntegerValue
-  |> assertCvc5Error "\
+  |> assertError "\
 invalid argument 'false' for '*d_node', \
 expected Term to be an integer value when calling getIntegerValue()\
   "
@@ -47,12 +47,12 @@ expected Term to be an integer value when calling getIntegerValue()\
   let val ← eleven.getIntegerValue |> assertOk
   assertEq val 11
   eleven.getBooleanValue
-  |> assertCvc5Error "\
+  |> assertError "\
 invalid argument '11' for '*d_node', \
 expected Term to be a Boolean value when calling getBooleanValue()\
   "
   eleven.getBitVectorValue
-  |> assertCvc5Error "\
+  |> assertError "\
 invalid argument '11' for '*d_node', \
 expected Term to be a bit-vector value when calling getBitVectorValue()\
   "

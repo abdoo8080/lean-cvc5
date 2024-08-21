@@ -42,7 +42,7 @@ def assertOkDiscard
   let _ ← assertOk result hint
   return ()
 
-def assertError
+def assertAnyError
   (expected : String)
   (errorDo : Error → SolverM Unit)
   (result : SolverM α)
@@ -54,21 +54,27 @@ def assertError
     fail "assertion failed"
   | (.error e, solver) => errorDo e solver
 
-def assertCvc5Error
+def assertError
   (expected : String)
   (result : SolverM α)
   (hint : String := "")
 : SolverM Unit :=
-  assertError s!"cvc5 error `{expected}`"
+  assertAnyError s!"cvc5 error `{expected}`"
     (fun
-    | .cvc5Error err => do
+    | .error err => do
       if err = expected then
         return ()
       else
         IO.eprintln s!"{Test.pref hint}expected cvc5 error `{expected}`, got cvc5 error `{err}`"
         fail "assertion failed"
-    | .userError err => do
-        IO.eprintln s!"{Test.pref hint}expected cvc5 error `{expected}`, got user error `{err}`"
+    | .recoverable err => do
+        IO.eprintln s!"{Test.pref hint}expected error `{expected}`, got recoverable error `{err}`"
+        fail "assertion failed"
+    | .unsupported err => do
+        IO.eprintln s!"{Test.pref hint}expected error `{expected}`, got unsupported error `{err}`"
+        fail "assertion failed"
+    | .option err => do
+        IO.eprintln s!"{Test.pref hint}expected error `{expected}`, got option error `{err}`"
         fail "assertion failed"
     | .missingValue => do
         IO.eprintln s!"{Test.pref hint}expected cvc5 error `{expected}`, got missing value error"

@@ -78,7 +78,7 @@ test! tm => do
   tm.mkFiniteFieldSort 31
   |> assertOkDiscard
   tm.mkFiniteFieldSort 6
-  |> assertCvc5Error "invalid argument '6' for 'modulus', expected modulus is prime"
+  |> assertError "invalid argument '6' for 'modulus', expected modulus is prime"
 
   tm.mkFiniteFieldSort 1100101 2
   |> assertOkDiscard
@@ -94,17 +94,17 @@ test! tm => do
   |> assertOkDiscard
 
   tm.mkFiniteFieldSort 1100100 2
-  |> assertCvc5Error "invalid argument '1100100' for 'modulus', expected modulus is prime"
+  |> assertError "invalid argument '1100100' for 'modulus', expected modulus is prime"
   tm.mkFiniteFieldSort 10201 3
-  |> assertCvc5Error "invalid argument '10201' for 'modulus', expected modulus is prime"
+  |> assertError "invalid argument '10201' for 'modulus', expected modulus is prime"
   tm.mkFiniteFieldSort 400 5
-  |> assertCvc5Error "invalid argument '400' for 'modulus', expected modulus is prime"
+  |> assertError "invalid argument '400' for 'modulus', expected modulus is prime"
   tm.mkFiniteFieldSort 7919 11
-  |> assertCvc5Error "invalid argument '7919' for 'modulus', expected modulus is prime"
+  |> assertError "invalid argument '7919' for 'modulus', expected modulus is prime"
   tm.mkFiniteFieldSortOfString "970e" 16
-  |> assertCvc5Error "invalid argument '970e' for 'modulus', expected modulus is prime"
+  |> assertError "invalid argument '970e' for 'modulus', expected modulus is prime"
   tm.mkFiniteFieldSortOfString "8CC4" 16
-  |> assertCvc5Error "invalid argument '8CC4' for 'modulus', expected modulus is prime"
+  |> assertError "invalid argument '8CC4' for 'modulus', expected modulus is prime"
 
 /--
 error: unsolved goals
@@ -134,13 +134,13 @@ test! tm => do
   |> assertOkDiscard
 
   tm.mkFloatingPointSort 0 8
-  |> assertCvc5Error "invalid argument '0' for 'exp', expected exponent size > 1"
+  |> assertError "invalid argument '0' for 'exp', expected exponent size > 1"
   tm.mkFloatingPointSort 4 0
-  |> assertCvc5Error "invalid argument '0' for 'sig', expected significand size > 1"
+  |> assertError "invalid argument '0' for 'sig', expected significand size > 1"
   tm.mkFloatingPointSort 1 8
-  |> assertCvc5Error "invalid argument '1' for 'exp', expected exponent size > 1"
+  |> assertError "invalid argument '1' for 'exp', expected exponent size > 1"
   tm.mkFloatingPointSort 4 1
-  |> assertCvc5Error "invalid argument '1' for 'sig', expected significand size > 1"
+  |> assertError "invalid argument '1' for 'sig', expected significand size > 1"
 
 
 
@@ -167,11 +167,11 @@ test! tm => do
   -- non-first-class arguments are not allowed
   let reSort := tm.getRegExpSort
   tm.mkFunctionSort #[reSort] int
-  |> assertCvc5Error
+  |> assertError
     "invalid domain sort in 'sorts' at index 0, expected first-class sort as domain sort"
   --
   tm.mkFunctionSort #[int] funSort
-  |> assertCvc5Error
+  |> assertError
     "invalid argument '(-> u Int)' for 'codomain', expected non-function sort as codomain sort"
   --
   tm.mkFunctionSort #[uf, int] int
@@ -185,7 +185,7 @@ test! tm => do
   |> assertOkDiscard
   --
   tm.mkFunctionSort #[int, uf] funSort2
-  |> assertCvc5Error
+  |> assertError
     "invalid argument '(-> u Bool)' for 'codomain', expected non-function sort as codomain sort"
 
   let bool := tm.getBooleanSort
@@ -215,7 +215,7 @@ test! tm => do
   tm.mkPredicateSort #[tm.getIntegerSort]
   |> assertOkDiscard
   tm.mkPredicateSort #[]
-  |> assertCvc5Error
+  |> assertError
     "invalid size of argument 'sorts', expected at least one parameter sort for predicate sort"
   -- function as arguments are allowed
   let funSort ← tm.mkFunctionSort #[← tm.mkUninterpretedSort "u"] tm.getIntegerSort

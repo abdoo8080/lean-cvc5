@@ -13,7 +13,7 @@ test! tm => do
   let _ := mkBvSort 0
   let _ := mkBvSort 1
 
-test! _tm =>  do
+test! do
   Solver.setOption "produce-models" "true"
   |> assertOk
   Solver.setOption "produce-proofs" "true"
@@ -21,25 +21,25 @@ test! _tm =>  do
 
   -- bad option
   Solver.setOption "does-not-exist" "true"
-  |> assertCvc5Error "unrecognized option: does-not-exist."
+  |> assertError "unrecognized option: does-not-exist."
   -- bad value
   Solver.setOption "produce-models" "7"
-  |> assertCvc5Error "
+  |> assertError "
 Error in option parsing: Argument '7' for bool option produce-models is not a bool constant
   ".trim
 
   Solver.getProof
-  |> assertCvc5Error "cannot get proof unless in unsat mode."
+  |> assertError "cannot get proof unless in unsat mode."
 
   let isSat? ← Solver.checkSat?
   assertEq isSat? true "checkSat should be sat"
 
   -- illegal `setOption`
   Solver.setOption "produce-proofs" "true"
-  |> assertCvc5Error "
+  |> assertError "
 invalid call to 'setOption' for option 'produce-proofs', solver is already fully initialized
   ".trim
 
   -- `getProof` illegal in sat mode
   Solver.getProof
-  |> assertCvc5Error "cannot get proof unless in unsat mode."
+  |> assertError "cannot get proof unless in unsat mode."
