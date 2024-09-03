@@ -150,7 +150,7 @@ extern! "prefix"
   - `b`: The Boolean constant.
 
   Will create an opaque definition with `[@extern extStr]` where
-  `extStr = "prefix" ++ _ ++ "myFunction"`.
+  `extStr = "prefix" ++ "_" ++ "myFunction"`.
   -/
   def myFunction : Term → Except Error Op
   with
@@ -165,15 +165,16 @@ extern! "prefix"
 ```
 
 - `with ...`: takes a sequence of identifiers, each generate a function that
-  - unwraps the result if `!`-ended;
-  - turns a result into an option if `?`-ended;
+  - unwraps the result if `!`-ended, which generates code similar to `myOtherFunction` above;
+  - turns a result into an option if `?`-ended, which generates code similar to `yetAnotherFunction`
+    above;
   - fails otherwise.
 
   The `with ...` syntax is currently only compatible with external functions that produce `Except
   Error α` values.
 
-- supports `declModifiers` on the main (`def`) function `myFunction` such as `private`.
-- accepts a list of external (`def`) functions, each with its `with` and/or `where` clauses.
+- Supports `declModifiers` on the main (`def`) function `myFunction` such as `private`.
+- Accepts a list of external (`def`) functions, each with its `with` and/or `where` clauses.
 -/
 scoped syntax (name := multidefs)
   withPosition("extern! " str ppLine group(colGt defsItem)+)
