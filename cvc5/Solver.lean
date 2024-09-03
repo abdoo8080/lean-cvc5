@@ -7,6 +7,7 @@ Authors: Abdalrhman Mohamed
 
 import Lean.Data.Rat
 
+import cvc5.Init
 import cvc5.Kind
 import cvc5.ProofRule
 import cvc5.SkolemId
@@ -70,6 +71,11 @@ abbrev SolverM := SolverT IO
 
 namespace Error
 
+def unwrap! [Inhabited α] : Except Error α → α
+| .ok a => a
+| .error .missingValue => panic! "missing value"
+| .error (.user_error s) => panic! s!"user error: {s}"
+
 protected def toString : Error → String :=
   toString ∘ repr
 
@@ -80,17 +86,11 @@ end Error
 
 namespace Result
 
-@[extern "result_isSat"]
-opaque isSat : Result → Bool
-
-@[extern "result_isUnsat"]
-opaque isUnsat : Result → Bool
-
-@[extern "result_isUnknown"]
-opaque isUnknown : Result → Bool
-
-@[extern "result_toString"]
-protected opaque toString : Result → String
+extern! "result"
+  def isSat : Result → Bool
+  def isUnsat : Result → Bool
+  def isUnknown : Result → Bool
+  protected def toString : Result → String
 
 instance : ToString Result := ⟨Result.toString⟩
 
@@ -98,41 +98,29 @@ end cvc5.Result
 
 namespace cvc5.Sort
 
-@[extern "sort_null"]
-opaque null : Unit → cvc5.Sort
+extern! "sort"
+  def null : Unit → cvc5.Sort
 
 instance : Inhabited cvc5.Sort := ⟨null ()⟩
 
-@[extern "sort_getKind"]
-opaque getKind : cvc5.Sort → SortKind
-
-@[extern "sort_beq"]
-protected opaque beq : cvc5.Sort → cvc5.Sort → Bool
+extern! "sort"
+  protected def beq : cvc5.Sort → cvc5.Sort → Bool
 
 instance : BEq cvc5.Sort := ⟨Sort.beq⟩
 
-@[extern "sort_hash"]
-protected opaque hash : cvc5.Sort → UInt64
+extern! "sort"
+  protected def hash : cvc5.Sort → UInt64
 
 instance : Hashable cvc5.Sort := ⟨Sort.hash⟩
 
-@[extern "sort_getFunctionDomainSorts"]
-opaque getFunctionDomainSorts : cvc5.Sort → Array cvc5.Sort
-
-@[extern "sort_getFunctionCodomainSort"]
-opaque getFunctionCodomainSort : cvc5.Sort → cvc5.Sort
-
-@[extern "sort_getSymbol"]
-opaque getSymbol : cvc5.Sort → String
-
-@[extern "sort_isInteger"]
-opaque isInteger : cvc5.Sort → Bool
-
-@[extern "sort_getBitVectorSize"]
-opaque getBitVectorSize : cvc5.Sort → UInt32
-
-@[extern "sort_toString"]
-protected opaque toString : cvc5.Sort → String
+extern! "sort"
+  def getKind : cvc5.Sort → SortKind
+  def getFunctionDomainSorts : cvc5.Sort → Array cvc5.Sort
+  def getFunctionCodomainSort : cvc5.Sort → cvc5.Sort
+  def getSymbol : cvc5.Sort → String
+  def isInteger : cvc5.Sort → Bool
+  def getBitVectorSize : cvc5.Sort → UInt32
+  protected def toString : cvc5.Sort → String
 
 instance : ToString cvc5.Sort := ⟨Sort.toString⟩
 instance : Repr cvc5.Sort := ⟨fun self _ => self.toString⟩
@@ -141,36 +129,26 @@ end cvc5.Sort
 
 namespace cvc5.Op
 
-@[extern "op_null"]
-opaque null : Unit → Op
+extern! "op"
+  def null : Unit → Op
 
 instance : Inhabited Op := ⟨null ()⟩
 
-@[extern "op_beq"]
-protected opaque beq : Op → Op → Bool
+extern! "op"
+  protected def beq : Op → Op → Bool
 
 instance : BEq Op := ⟨Op.beq⟩
 
-@[extern "op_getKind"]
-opaque getKind : Op → Kind
-
-@[extern "op_isNull"]
-opaque isNull : Op → Bool
-
-@[extern "op_isIndexed"]
-opaque isIndexed : Op → Bool
-
-@[extern "op_getNumIndices"]
-opaque getNumIndices : Op → Nat
-
-@[extern "op_get"]
-protected opaque get : (op : Op) → Fin op.getNumIndices → Term
+extern! "op"
+  def getKind : Op → Kind
+  def isNull : Op → Bool
+  def isIndexed : Op → Bool
+  def getNumIndices : Op → Nat
+  protected def get : (op : Op) → Fin op.getNumIndices → Term
+  protected def toString : Op → String
 
 instance : GetElem Op Nat Term fun op i => i < op.getNumIndices where
   getElem op i h := op.get ⟨i, h⟩
-
-@[extern "op_toString"]
-protected opaque toString : Op → String
 
 instance : ToString Op := ⟨Op.toString⟩
 
@@ -178,68 +156,38 @@ end Op
 
 namespace Term
 
-@[extern "term_null"]
-opaque null : Unit → Term
+extern! "term"
+  def null : Unit → Term
 
 instance : Inhabited Term := ⟨null ()⟩
 
-@[extern "term_isNull"]
-opaque isNull : Term → Bool
-
-@[extern "term_getKind"]
-opaque getKind : Term → Kind
-
-@[extern "term_getOp"]
-opaque getOp : Term → Op
-
-@[extern "term_getSort"]
-opaque getSort : Term → cvc5.Sort
-
-@[extern "term_beq"]
-protected opaque beq : Term → Term → Bool
+extern! "term"
+  protected def beq : Term → Term → Bool
 
 instance : BEq Term := ⟨Term.beq⟩
 
-@[extern "term_hash"]
-protected opaque hash : Term → UInt64
+extern! "hash"
+  protected def hash : Term → UInt64
 
 instance : Hashable Term := ⟨Term.hash⟩
 
-@[extern "term_getBooleanValue"]
-opaque getBooleanValue : Term → Bool
-
-@[extern "term_getBitVectorValue"]
-opaque getBitVectorValue : Term → UInt32 → String
-
-@[extern "term_getIntegerValue"]
-opaque getIntegerValue : Term → Int
-
-@[extern "term_getRationalValue"]
-opaque getRationalValue : Term → Lean.Rat
-
-@[extern "term_hasSymbol"]
-opaque hasSymbol : Term → Bool
-
-@[extern "term_getSymbol"]
-opaque getSymbol : Term → String
-
-@[extern "term_getId"]
-opaque getId : Term → Nat
-
-@[extern "term_getNumChildren"]
-opaque getNumChildren : Term → Nat
-
-@[extern "term_isSkolem"]
-opaque isSkolem : Term → Bool
-
-@[extern "term_getSkolemId"]
-opaque getSkolemId : Term → SkolemId
-
-@[extern "term_getSkolemIndices"]
-opaque getSkolemIndices : Term → Array Term
-
-@[extern "term_get"]
-protected opaque get : (t : Term) → Fin t.getNumChildren → Term
+extern! "term"
+  def isNull : Term → Bool
+  def getKind : Term → Kind
+  def getSort : Term → cvc5.Sort
+  def getOp : Term → Op
+  def getBooleanValue : Term → Bool
+  def getBitVectorValue : Term → UInt32 → String
+  def getIntegerValue : Term → Int
+  def getRationalValue : Term → Lean.Rat
+  def hasSymbol : Term → Bool
+  def getSymbol : Term → String
+  def getId : Term → Nat
+  def getNumChildren : Term → Nat
+  def isSkolem : Term → Bool
+  def getSkolemId : Term → SkolemId
+  def getSkolemIndices : Term → Array Term
+  protected def get : (t : Term) → Fin t.getNumChildren → Term
 
 instance : GetElem Term Nat Term fun t i => i < t.getNumChildren where
   getElem t i h := t.get ⟨i, h⟩
@@ -266,17 +214,11 @@ def getChildren (t : Term) : Array Term := Id.run do
     cts := cts.push ct
   cts
 
-@[extern "term_not"]
-protected opaque not : Term → Term
-
-@[extern "term_and"]
-protected opaque and : Term → Term → Term
-
-@[extern "term_or"]
-protected opaque or : Term → Term → Term
-
-@[extern "term_toString"]
-protected opaque toString : Term → String
+extern! "term"
+  protected def not : Term → Term
+  protected def and : Term → Term → Term
+  protected def or : Term → Term → Term
+  protected def toString : Term → String
 
 instance : ToString Term := ⟨Term.toString⟩
 
@@ -284,33 +226,23 @@ end Term
 
 namespace Proof
 
-@[extern "proof_null"]
-opaque null : Unit → Proof
+extern! "proof"
+  def null : Unit → Proof
 
 instance : Inhabited Proof := ⟨null ()⟩
 
-@[extern "proof_getRule"]
-opaque getRule : Proof → ProofRule
-
-@[extern "proof_getRewriteRule"]
-opaque getRewriteRule : Proof → ProofRewriteRule
-
-@[extern "proof_getResult"]
-opaque getResult : Proof → Term
-
-@[extern "proof_getChildren"]
-opaque getChildren : Proof → Array Proof
-
-@[extern "proof_getArguments"]
-opaque getArguments : Proof → Array Term
-
-@[extern "proof_beq"]
-protected opaque beq : Proof → Proof → Bool
+extern! "proof"
+  def getRule : Proof → ProofRule
+  def getRewriteRule : Proof → ProofRewriteRule
+  def getResult : Proof → Term
+  def getChildren : Proof → Array Proof
+  def getArguments : Proof → Array Term
+  protected def beq : Proof → Proof → Bool
 
 instance : BEq Proof := ⟨Proof.beq⟩
 
-@[extern "proof_hash"]
-protected opaque hash : Proof → UInt64
+extern! "proof"
+  protected def hash : Proof → UInt64
 
 instance : Hashable Proof := ⟨Proof.hash⟩
 
@@ -318,133 +250,112 @@ end Proof
 
 namespace TermManager
 
-@[extern "termManager_new"]
-opaque new : BaseIO TermManager
+extern! "termManager"
+  def new : BaseIO TermManager
 
-/-- Get the Boolean sort. -/
-@[extern "termManager_getBooleanSort"]
-opaque getBooleanSort : TermManager → cvc5.Sort
+  /-- Get the Boolean sort. -/
+  def getBooleanSort : TermManager → cvc5.Sort
+  /-- Get the Integer sort. -/
+  def getIntegerSort : TermManager → cvc5.Sort
+  /-- Get the Real sort. -/
+  def getRealSort : TermManager → cvc5.Sort
+  /-- Get the regular expression sort. -/
+  def getRegExpSort : TermManager → cvc5.Sort
+  /-- Get the rounding mode sort. -/
+  def getRoundingModeSort : TermManager → cvc5.Sort
+  /-- Get the string sort. -/
+  def getStringSort : TermManager → cvc5.Sort
 
-/-- Get the Integer sort. -/
-@[extern "termManager_getIntegerSort"]
-opaque getIntegerSort : TermManager → cvc5.Sort
+  /-- Create an array sort.
 
-/-- Get the Real sort. -/
-@[extern "termManager_getRealSort"]
-opaque getRealSort : TermManager → cvc5.Sort
+  - `indexSort` The array index sort.
+  - `elemSort` The array element sort.
+  -/
+  def mkArraySort : TermManager → (indexSort elemSort : cvc5.Sort) → cvc5.Sort
+  /-- Create a bit-vector sort.
 
-/-- Get the regular expression sort. -/
-@[extern "termManager_getRegExpSort"]
-opaque getRegExpSort : TermManager → cvc5.Sort
+  - `size` The bit-width of the bit-vector sort.
+  -/
+  def mkBitVectorSort : TermManager → (size : UInt32) → cvc5.Sort
 
-/-- Get the rounding mode sort. -/
-@[extern "termManager_getRoundingModeSort"]
-opaque getRoundingModeSort : TermManager → cvc5.Sort
+  /-- Create a floating-point sort.
 
-/-- Get the string sort. -/
-@[extern "termManager_getStringSort"]
-opaque getStringSort : TermManager → cvc5.Sort
+  - `exp` The bit-width of the exponent of the floating-point sort.
+  - `sig` The bit-width of the significand of the floating-point sort.
+  -/
+  def mkFloatingPointSort : TermManager → (exp sig : UInt32) → cvc5.Sort
 
-/-- Create an array sort.
+  /-- Create function sort.
 
-- `indexSort` The array index sort.
-- `elemSort` The array element sort.
--/
-@[extern "termManager_mkArraySort"]
-opaque mkArraySort : TermManager → (indexSort elemSort : cvc5.Sort) → cvc5.Sort
+  - `sorts` The sort of the function arguments.
+  - `codomain` The sort of the function return value.
+  -/
+  def mkFunctionSort : TermManager → (sorts : Array cvc5.Sort) → (codomain : cvc5.Sort) → cvc5.Sort
 
-/-- Create a bit-vector sort.
+  def mkBoolean : TermManager → Bool → Term
 
-- `size` The bit-width of the bit-vector sort.
--/
-@[extern "termManager_mkBitVectorSort"]
-opaque mkBitVectorSort : TermManager → (size : UInt32) → cvc5.Sort
+  /-- Create an integer-value term. -/
+  private def mkIntegerFromString : TermManager → String → Term
+  where
+    mkInteger (tm : TermManager) : Int → Term :=
+      (mkIntegerFromString tm) ∘ toString
 
-/-- Create a floating-point sort.
+  /-- Create operator of Kind:
 
-- `exp` The bit-width of the exponent of the floating-point sort.
-- `sig` The bit-width of the significand of the floating-point sort.
--/
-@[extern "termManager_mkFloatingPointSort"]
-opaque mkFloatingPointSort : TermManager → (exp sig : UInt32) → cvc5.Sort
+  - `Kind.BITVECTOR_EXTRACT`
+  - `Kind.BITVECTOR_REPEAT`
+  - `Kind.BITVECTOR_ROTATE_LEFT`
+  - `Kind.BITVECTOR_ROTATE_RIGHT`
+  - `Kind.BITVECTOR_SIGN_EXTEND`
+  - `Kind.BITVECTOR_ZERO_EXTEND`
+  - `Kind.DIVISIBLE`
+  - `Kind.FLOATINGPOINT_TO_FP_FROM_FP`
+  - `Kind.FLOATINGPOINT_TO_FP_FROM_IEEE_BV`
+  - `Kind.FLOATINGPOINT_TO_FP_FROM_REAL`
+  - `Kind.FLOATINGPOINT_TO_FP_FROM_SBV`
+  - `Kind.FLOATINGPOINT_TO_FP_FROM_UBV`
+  - `Kind.FLOATINGPOINT_TO_SBV`
+  - `Kind.FLOATINGPOINT_TO_UBV`
+  - `Kind.INT_TO_BITVECTOR`
+  - `Kind.TUPLE_PROJECT`
 
-/-- Create function sort.
+  See `cvc5.Kind` for a description of the parameters.
 
-- `sorts` The sort of the function arguments.
-- `codomain` The sort of the function return value.
--/
-@[extern "termManager_mkFunctionSort"]
-opaque mkFunctionSort : TermManager → (sorts : Array cvc5.Sort) → (codomain : cvc5.Sort) → cvc5.Sort
+  - `kind` The kind of the operator.
+  - `args` The arguments (indices) of the operator.
 
-@[extern "termManager_mkBoolean"]
-opaque mkBoolean : TermManager → Bool → Term
+  If `args` is empty, the `Op` simply wraps the `cvc5.Kind`. The `Kind` can be used in
+  `Solver.mkTerm` directly without creating an `Op` first.
+  -/
+  def mkOpOfIndices : TermManager → (kind : Kind) → (args : Array Nat) → Op
 
-@[extern "termManager_mkIntegerFromString"]
-private opaque mkIntegerFromString : TermManager → String → Term
+  /-- Create operator of kind:
 
-def mkInteger (tm : TermManager) : Int → Term :=
-  (mkIntegerFromString tm) ∘ toString
+  - `Kind.DIVISIBLE` (to support arbitrary precision integers)
 
-/-- Create operator of Kind:
+  See `cvc5.Kind` for a description of the parameters.
 
-- `Kind.BITVECTOR_EXTRACT`
-- `Kind.BITVECTOR_REPEAT`
-- `Kind.BITVECTOR_ROTATE_LEFT`
-- `Kind.BITVECTOR_ROTATE_RIGHT`
-- `Kind.BITVECTOR_SIGN_EXTEND`
-- `Kind.BITVECTOR_ZERO_EXTEND`
-- `Kind.DIVISIBLE`
-- `Kind.FLOATINGPOINT_TO_FP_FROM_FP`
-- `Kind.FLOATINGPOINT_TO_FP_FROM_IEEE_BV`
-- `Kind.FLOATINGPOINT_TO_FP_FROM_REAL`
-- `Kind.FLOATINGPOINT_TO_FP_FROM_SBV`
-- `Kind.FLOATINGPOINT_TO_FP_FROM_UBV`
-- `Kind.FLOATINGPOINT_TO_SBV`
-- `Kind.FLOATINGPOINT_TO_UBV`
-- `Kind.INT_TO_BITVECTOR`
-- `Kind.TUPLE_PROJECT`
+  - `kind` The kind of the operator.
+  - `arg` The string argument to this operator.
 
-See `cvc5.Kind` for a description of the parameters.
+  -/
+  def mkOpOfString : TermManager → (kind : Kind) → (arg : String) → Op
 
-- `kind` The kind of the operator.
-- `args` The arguments (indices) of the operator.
+  /-- Create n-ary term of given kind.
 
-If `args` is empty, the `Op` simply wraps the `cvc5.Kind`. The `Kind` can be used in `Solver.mkTerm`
-directly without creating an `Op` first.
--/
-@[extern "termManager_mkOpOfIndices"]
-opaque mkOpOfIndices : TermManager → (kind : Kind) → (args : Array Nat) → Op
+  - `kind` The kind of the term.
+  - `children` The children of the term.
+  -/
+  def mkTerm : TermManager → (kind : Kind) → (children : Array Term := #[]) → Term
 
-/-- Create operator of kind:
+  /-- Create n-ary term of given kind from a given operator.
 
-- `Kind.DIVISIBLE` (to support arbitrary precision integers)
+  Create operators with `mkOp`.
 
-See `cvc5.Kind` for a description of the parameters.
-
-- `kind` The kind of the operator.
-- `arg` The string argument to this operator.
-
--/
-@[extern "termManager_mkOpOfString"]
-opaque mkOpOfString : TermManager → (kind : Kind) → (arg : String) → Op
-
-/-- Create n-ary term of given kind.
-
-- `kind` The kind of the term.
-- `children` The children of the term.
--/
-@[extern "termManager_mkTerm"]
-opaque mkTerm : TermManager → (kind : Kind) → (children : Array Term := #[]) → Term
-
-/-- Create n-ary term of given kind from a given operator.
-
-Create operators with `mkOp`.
-
-- `op` The operator.
-- `children` The children of the term.
--/
-@[extern "termManager_mkTermOfOp"]
-opaque mkTermOfOp : TermManager → (op : Op) → (children : Array Term := #[]) → Term
+  - `op` The operator.
+  - `children` The children of the term.
+  -/
+  def mkTermOfOp : TermManager → (op : Op) → (children : Array Term := #[]) → Term
 
 end TermManager
 
@@ -458,29 +369,15 @@ private def val (a : α) : SolverT m α := pure a
 @[export solver_err]
 private def err (e : Error) : SolverT m α := throw e
 
-@[extern "solver_new"]
-private opaque new : TermManager → Solver
-
-@[extern "solver_getVersion"]
-opaque getVersion : SolverT m String
-
-@[extern "solver_setOption"]
-opaque setOption (option value : String) : SolverT m Unit
-
-@[extern "solver_assertFormula"]
-opaque assertFormula : Term → SolverT m Unit
-
-@[extern "solver_checkSat"]
-opaque checkSat : SolverT m Result
-
-@[extern "solver_getProof"]
-opaque getProof : SolverT m (Array Proof)
-
-@[extern "solver_proofToString"]
-opaque proofToString : Proof → SolverT m String
-
-@[extern "solver_parse"]
-opaque parse : String → SolverT m Unit
+extern! "solver"
+  private def new : TermManager → Solver
+  def getVersion : SolverT m String
+  def setOption (option value : String) : SolverT m Unit
+  def assertFormula : Term → SolverT m Unit
+  def checkSat : SolverT m Result
+  def getProof : SolverT m (Array Proof)
+  def proofToString : Proof → SolverT m String
+  def parse : String → SolverT m Unit
 
 def run (tm : TermManager) (query : SolverT m α) : m (Except Error α) :=
   return match ← ExceptT.run query (new tm) with
