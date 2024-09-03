@@ -144,7 +144,7 @@ def elabDefsItem (pref : String) : CommandElab
 /-- Defines similar functions realized by `extern`.
 
 ```
-defs "prefix"
+extern! "prefix"
   /-- Create a Boolean constant.
 
   - `b`: The Boolean constant.
@@ -169,8 +169,11 @@ defs "prefix"
   - turns a result into an option if `?`-ended;
   - fails otherwise.
 
-- supports `declModifiers` on the main (`def`) function `myFunction` such as `private`...
-- accepts a list of main (`def`) functions, each with `with` and/or `where` clauses.
+  The `with ...` syntax is currently only compatible with external functions that produce `Except
+  Error α` values.
+
+- supports `declModifiers` on the main (`def`) function `myFunction` such as `private`.
+- accepts a list of external (`def`) functions, each with its `with` and/or `where` clauses.
 -/
 scoped syntax (name := multidefs)
   withPosition("extern! " str ppLine group(colGt defsItem)+)
