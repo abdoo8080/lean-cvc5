@@ -296,7 +296,7 @@ extern! "termManager"
 
   /-- Create an integer-value term. -/
   private def mkIntegerFromString : TermManager → String → Term
-  where
+  with
     mkInteger (tm : TermManager) : Int → Term :=
       (mkIntegerFromString tm) ∘ toString
 

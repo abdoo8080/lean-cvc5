@@ -16,7 +16,7 @@ open Lean
 open Elab
 open Command (CommandElab CommandElabM)
 
-declare_syntax_cat defsItem
+declare_syntax_cat defsItem (behavior := symbol)
 
 /-- Arity of an expression.
 
@@ -33,14 +33,14 @@ scoped syntax (name := defsItemStx)
   declModifiers
   ("@[" "force" str "]")?
   "def " ident declSig
-  withPosition(ppLine "with "
+  withPosition(ppLine "with!? "
     group(
       colGt
       docComment ?
       ident
     )*
   )?
-  withPosition(ppLine "where "
+  withPosition(ppLine "with "
     group(
       colGt
       docComment ?
@@ -54,11 +54,11 @@ def elabDefsItem (pref : String) : CommandElab
     $mods:declModifiers
     $[ @[ force $forcedName ] ]?
     def $ident:ident $identSig:declSig
-    $[ with $[
+    $[ with!? $[
         $[$autoDoc]?
         $autoId
     ]* ]?
-    $[ where $[
+    $[ with $[
         $[$subDoc]?
         $subId $subSig := $subDef
     ]* ]?
@@ -188,6 +188,103 @@ def multidefsImpl : CommandElab
   let pref := pref.getString
   for defsItem in defsItems do
     elabDefsItem pref defsItem
+| _ => throwUnsupportedSyntax
+
+/-- Generate an external `def` with an optional-result associated function.
+
+```
+extern_def? "term"
+  myFunction : Term → Except Error Op
+```
+
+Generate
+- `myFunction` with given signature, must return an `Except`-value;
+- `myFunction?`, same as `myFunction` but produces `none` on errors.
+-/
+scoped syntax (name := externDefOption)
+  "extern_def?" str ident declSig
+: command
+
+@[inherit_doc externDefOption, command_elab externDefOption]
+def externDefOptionImpl : CommandElab
+| `(command| extern_def? $pref $ident $sig) => do
+  let name := ident.getId
+  let identOpt := name.appendAfter "?" |> Lean.mkIdent
+  let command ← `(command|
+    extern! $pref
+      def $ident $sig
+      with!?
+        $identOpt:ident
+  )
+  Command.elabCommand command
+| _ => throwUnsupportedSyntax
+
+/-- Generate an external `def` with a panic-on-error associated function.
+
+```
+extern_def! "term"
+  myFunction : Term → Except Error Op
+```
+
+Generate
+- `myFunction` with given signature, must return an `Except`-value;
+- `myFunction!`, same as `myFunction` but panics on errors.
+-/
+scoped syntax (name := externDefPanic)
+  "extern_def!" str ident declSig
+: command
+
+@[inherit_doc externDefPanic, command_elab externDefPanic]
+def externDefPanicImpl : CommandElab
+| `(command| extern_def! $pref $ident $sig) => do
+  let name := ident.getId
+  let identPanic := name.appendAfter "!" |> Lean.mkIdent
+  let command ← `(command|
+    extern! $pref
+      def $ident $sig
+      with!?
+        $identPanic:ident
+  )
+  Command.elabCommand command
+| _ => throwUnsupportedSyntax
+
+/-- Generate an external `def` with optional-result and panic-on-error associated functions.
+
+```
+extern_def!? "term"
+  myFunction : Term → Except Error Op
+-- or
+extern_def?! "term"
+  myFunction : Term → Except Error Op
+```
+
+Generate
+- `myFunction` with given signature, must return an `Except`-value;
+- `myFunction?`, same as `myFunction` but return `none` on errors;
+- `myFunction!`, same as `myFunction` but panics on errors.
+-/
+scoped syntax (name := externDefOptionPanic)
+  ("extern_def!?" <|> "extern_def?!") str ident declSig
+: command
+
+macro_rules
+| `(command| extern_def?! $pref $ident $sig) =>
+  `(command| extern_def!? $pref $ident $sig)
+
+@[inherit_doc externDefOptionPanic, command_elab externDefOptionPanic]
+def externDefOptionPanicImpl : CommandElab
+| `(command| extern_def!? $pref $ident $sig) => do
+  let name := ident.getId
+  let identOpt := name.appendAfter "?" |> Lean.mkIdent
+  let identPanic := name.appendAfter "!" |> Lean.mkIdent
+  let command ← `(command|
+    extern! $pref
+      def $ident $sig
+      with!?
+        $identOpt:ident
+        $identPanic:ident
+  )
+  Command.elabCommand command
 | _ => throwUnsupportedSyntax
 
 end defsMacro
