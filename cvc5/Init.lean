@@ -264,21 +264,22 @@ Generate
 - `myFunction!`, same as `myFunction` but panics on errors.
 -/
 scoped syntax (name := externDefOptionPanic)
-  ("extern_def!?" <|> "extern_def?!") str ident declSig
+  docComment ? ("extern_def!?" <|> "extern_def?!") str ident declSig
 : command
 
 macro_rules
-| `(command| extern_def?! $pref $ident $sig) =>
-  `(command| extern_def!? $pref $ident $sig)
+| `(command| $[ $doc:docComment ]? extern_def?! $pref $ident $sig) =>
+  `(command| $[$doc]? extern_def!? $pref $ident $sig)
 
 @[inherit_doc externDefOptionPanic, command_elab externDefOptionPanic]
 def externDefOptionPanicImpl : CommandElab
-| `(command| extern_def!? $pref $ident $sig) => do
+| `(command| $[ $doc:docComment ]? extern_def!? $pref $ident $sig) => do
   let name := ident.getId
   let identOpt := name.appendAfter "?" |> Lean.mkIdent
   let identPanic := name.appendAfter "!" |> Lean.mkIdent
   let command ← `(command|
     extern! $pref
+      $[$doc]?
       def $ident $sig
       with!?
         $identOpt:ident
