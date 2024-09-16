@@ -56,7 +56,10 @@ instance TermManager.instNonemptyTermManager : Nonempty TermManager := TermManag
 
 inductive Error where
   | missingValue
-  | user_error (msg : String)
+  | error (msg : String)
+  | recoverable (msg : String)
+  | unsupported (msg : String)
+  | option (msg : String)
 deriving Repr
 
 private opaque SolverImpl : NonemptyType.{0}
@@ -71,13 +74,12 @@ abbrev SolverM := SolverT IO
 
 namespace Error
 
-def unwrap! [Inhabited α] : Except Error α → α
-| .ok a => a
-| .error .missingValue => panic! "missing value"
-| .error (.user_error s) => panic! s!"user error: {s}"
-
 protected def toString : Error → String :=
   toString ∘ repr
+
+def unwrap! [Inhabited α] : Except Error α → α
+| .ok a => a
+| .error e => panic! e.toString
 
 instance : ToString Error :=
   ⟨Error.toString⟩
