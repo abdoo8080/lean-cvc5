@@ -461,11 +461,17 @@ namespace Solver
 
 variable [Monad m]
 
+/-- Only used by FFI to wrap *success* results. -/
 @[export solver_val]
 private def val (a : α) : SolverT m α := pure a
 
+/-- Only used by FFI to wrap errors. -/
 @[export solver_err]
 private def err (e : Error) : SolverT m α := throw e
+
+/-- Only used by FFI to wrap cvc5 errors. -/
+@[export solver_errOfString]
+private def errorOfString (msg : String) : SolverT m α := throw (.error msg)
 
 extern! "solver"
   private def new : TermManager → Solver

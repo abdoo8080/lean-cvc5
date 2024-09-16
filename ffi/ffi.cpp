@@ -4,7 +4,7 @@
 
 using namespace cvc5;
 
-// ## `Extern Error α` constructors
+// ## `Except Error α` constructors
 
 extern "C" lean_obj_res except_ok(
   lean_obj_arg alpha,
@@ -26,7 +26,7 @@ extern "C" lean_obj_res except_ok_u8(
 extern "C" lean_obj_res except_err(
   lean_obj_arg alpha,
   lean_obj_arg msg
-);
+); 
 
 // ## Exception-catching macro for `Except`
 //
@@ -45,6 +45,32 @@ extern "C" lean_obj_res except_err(
       lean_mk_string("cvc5's term manager raised an unexpected exception") \
     ); \
   }
+
+// ## `SolverT` constructors
+
+extern "C" lean_obj_res solver_val(
+  lean_obj_arg m,
+  lean_obj_arg inst,
+  lean_obj_arg alpha,
+  lean_obj_arg a,
+  lean_obj_arg solver
+);
+
+extern "C" lean_obj_res solver_err(
+  lean_obj_arg m,
+  lean_obj_arg inst,
+  lean_obj_arg alpha,
+  lean_obj_arg e,
+  lean_obj_arg solver
+);
+
+extern "C" lean_obj_res solver_errOfString(
+  lean_obj_arg m,
+  lean_obj_arg inst,
+  lean_obj_arg alpha,
+  lean_obj_arg msg,
+  lean_obj_arg solver
+);
 
 // ## Exception-catching macro for `SolverT`
 //
@@ -799,18 +825,6 @@ static inline Solver* solver_unbox(b_lean_obj_arg s)
   return static_cast<Solver*>(lean_get_external_data(s));
 }
 
-extern "C" lean_obj_res solver_val(lean_obj_arg m,
-                                   lean_obj_arg inst,
-                                   lean_obj_arg alpha,
-                                   lean_obj_arg a,
-                                   lean_obj_arg solver);
-
-extern "C" lean_obj_res solver_err(lean_obj_arg m,
-                                   lean_obj_arg inst,
-                                   lean_obj_arg alpha,
-                                   lean_obj_arg e,
-                                   lean_obj_arg solver);
-
 extern "C" lean_obj_res solver_new(lean_obj_arg tm)
 {
   return solver_box(new Solver(*mut_tm_unbox(tm)));
@@ -819,11 +833,13 @@ extern "C" lean_obj_res solver_new(lean_obj_arg tm)
 extern "C" lean_obj_res solver_getVersion(lean_obj_arg inst,
                                           lean_obj_arg solver)
 {
-  return solver_val(lean_box(0),
-                    inst,
-                    lean_box(0),
-                    lean_mk_string(solver_unbox(solver)->getVersion().c_str()),
-                    solver);
+  CVC5_TRY_CATCH_SOLVER(inst, solver,
+    return solver_val(
+      lean_box(0), inst, lean_box(0),
+      lean_mk_string(solver_unbox(solver)->getVersion().c_str()),
+      solver
+    );
+  )
 }
 
 extern "C" lean_obj_res solver_setOption(lean_obj_arg inst,
@@ -831,76 +847,86 @@ extern "C" lean_obj_res solver_setOption(lean_obj_arg inst,
                                          lean_object* value,
                                          lean_obj_arg solver)
 {
-  solver_unbox(solver)->setOption(lean_string_cstr(option),
-                                  lean_string_cstr(value));
-  return solver_val(lean_box(0), inst, lean_box(0), mk_unit_unit(), solver);
+  CVC5_TRY_CATCH_SOLVER(inst, solver,
+    solver_unbox(solver)->setOption(lean_string_cstr(option),
+                                    lean_string_cstr(value));
+    return solver_val(lean_box(0), inst, lean_box(0), mk_unit_unit(), solver);
+  )
 }
 
 extern "C" lean_obj_res solver_assertFormula(lean_obj_arg inst,
                                              lean_object* term,
                                              lean_obj_arg solver)
 {
-  solver_unbox(solver)->assertFormula(*term_unbox(term));
-  return solver_val(lean_box(0), inst, lean_box(0), mk_unit_unit(), solver);
+  CVC5_TRY_CATCH_SOLVER(inst, solver,
+    solver_unbox(solver)->assertFormula(*term_unbox(term));
+    return solver_val(lean_box(0), inst, lean_box(0), mk_unit_unit(), solver);
+  )
 }
 
 extern "C" lean_obj_res solver_checkSat(lean_obj_arg inst, lean_obj_arg solver)
 {
-  return solver_val(lean_box(0),
-                    inst,
-                    lean_box(0),
-                    result_box(new Result(solver_unbox(solver)->checkSat())),
-                    solver);
+  CVC5_TRY_CATCH_SOLVER(inst, solver,
+    return solver_val(
+      lean_box(0), inst, lean_box(0),
+      result_box(new Result(solver_unbox(solver)->checkSat())),
+      solver
+    );
+  )
 }
 
 extern "C" lean_obj_res solver_getProof(lean_obj_arg inst, lean_obj_arg solver)
 {
-  std::vector<Proof> proofs = solver_unbox(solver)->getProof();
-  lean_object* ps = lean_mk_empty_array();
-  for (const Proof& proof : proofs)
-  {
-    ps = lean_array_push(ps, proof_box(new Proof(proof)));
-  }
-  return solver_val(lean_box(0), inst, lean_box(0), ps, solver);
+  CVC5_TRY_CATCH_SOLVER(inst, solver,
+    std::vector<Proof> proofs = solver_unbox(solver)->getProof();
+    lean_object* ps = lean_mk_empty_array();
+    for (const Proof& proof : proofs)
+    {
+      ps = lean_array_push(ps, proof_box(new Proof(proof)));
+    }
+    return solver_val(lean_box(0), inst, lean_box(0), ps, solver);
+  )
 }
 
 extern "C" lean_obj_res solver_proofToString(lean_obj_arg inst,
                                              lean_obj_arg proof,
                                              lean_obj_arg solver)
 {
-  return solver_val(
-      lean_box(0),
-      inst,
-      lean_box(0),
-      lean_mk_string(
-          solver_unbox(solver)->proofToString(*proof_unbox(proof)).c_str()),
-      solver);
+  CVC5_TRY_CATCH_SOLVER(inst, solver,
+    return solver_val(
+      lean_box(0), inst, lean_box(0),
+      lean_mk_string(solver_unbox(solver)->proofToString(*proof_unbox(proof)).c_str()),
+      solver
+    );
+  )
 }
 
 extern "C" lean_obj_res solver_parse(lean_obj_arg inst,
                                      lean_obj_arg query,
                                      lean_obj_arg solver)
 {
-  Solver* slv = solver_unbox(solver);
-  // construct an input parser associated the solver above
-  parser::InputParser parser(slv);
-  // get the symbol manager of the parser, used when invoking commands below
-  parser::SymbolManager* sm = parser.getSymbolManager();
-  parser.setStringInput(
-      modes::InputLanguage::SMT_LIB_2_6, lean_string_cstr(query), "lean-smt");
-  // parse commands until finished
-  std::stringstream out;
-  parser::Command cmd;
-  while (true)
-  {
-    cmd = parser.nextCommand();
-    if (cmd.isNull())
+  CVC5_TRY_CATCH_SOLVER(inst, solver,
+    Solver* slv = solver_unbox(solver);
+    // construct an input parser associated the solver above
+    parser::InputParser parser(slv);
+    // get the symbol manager of the parser, used when invoking commands below
+    parser::SymbolManager* sm = parser.getSymbolManager();
+    parser.setStringInput(
+        modes::InputLanguage::SMT_LIB_2_6, lean_string_cstr(query), "lean-smt");
+    // parse commands until finished
+    std::stringstream out;
+    parser::Command cmd;
+    while (true)
     {
-      break;
+      cmd = parser.nextCommand();
+      if (cmd.isNull())
+      {
+        break;
+      }
+      // invoke the command on the solver and the symbol manager, print the result
+      // to out
+      cmd.invoke(slv, sm, out);
     }
-    // invoke the command on the solver and the symbol manager, print the result
-    // to out
-    cmd.invoke(slv, sm, out);
-  }
-  return solver_val(lean_box(0), inst, lean_box(0), mk_unit_unit(), solver);
+    return solver_val(lean_box(0), inst, lean_box(0), mk_unit_unit(), solver);
+  )
 }
