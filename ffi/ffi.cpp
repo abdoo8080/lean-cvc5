@@ -223,6 +223,11 @@ extern "C" uint64_t sort_hash(lean_obj_arg s)
   return std::hash<Sort>()(*sort_unbox(s));
 }
 
+extern "C" uint8_t sort_isFunction(lean_obj_arg s)
+{
+  return bool_box(sort_unbox(s)->isFunction());
+}
+
 extern "C" lean_obj_res sort_getFunctionDomainSorts(lean_obj_arg s)
 {
   CVC5_TRY_CATCH_EXCEPT(
@@ -404,9 +409,16 @@ extern "C" uint16_t term_getKind(lean_obj_arg t)
   return static_cast<int32_t>(term_unbox(t)->getKind()) + 2;
 }
 
+extern "C" uint8_t term_hasOp(lean_obj_arg t)
+{
+  return bool_box(term_unbox(t)->hasOp());
+}
+
 extern "C" lean_obj_arg term_getOp(lean_obj_arg t)
 {
-  return op_box(new Op(term_unbox(t)->getOp()));
+  CVC5_TRY_CATCH_EXCEPT(
+    return except_ok(lean_box(0), op_box(new Op(term_unbox(t)->getOp())));
+  )
 }
 
 extern "C" lean_obj_arg term_getSort(lean_obj_arg t)

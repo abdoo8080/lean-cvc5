@@ -16,6 +16,7 @@ namespace cvc5
 
 private opaque ResultImpl : NonemptyType.{0}
 
+/-- Encapsulation of a three-valued solver result, with explanations. -/
 def Result : Type := ResultImpl.type
 
 instance Result.instNonemptyResult : Nonempty Result := ResultImpl.property
@@ -24,6 +25,7 @@ private opaque SortImpl : NonemptyType.{0}
 
 end cvc5
 
+/-- The sort of a cvc5 term. -/
 def cvc5.Sort : Type := cvc5.SortImpl.type
 
 namespace cvc5
@@ -32,28 +34,41 @@ instance Sort.instNonemptySort : Nonempty cvc5.Sort := SortImpl.property
 
 private opaque OpImpl : NonemptyType.{0}
 
+/-- A cvc5 operator.
+
+An operator is a term that represents certain operators, instantiated with its required parameters,
+*e.g.*, a `Term` of kind `Kind.BITVECTOR_EXTRACT`.
+-/
 def Op : Type := OpImpl.type
 
 instance Op.instNonemptyOp : Nonempty Op := OpImpl.property
 
 private opaque TermImpl : NonemptyType.{0}
 
+/-- A cvc5 term. -/
 def Term : Type := TermImpl.type
 
 instance Term.instNonemptyTerm : Nonempty Term := TermImpl.property
 
 private opaque ProofImpl : NonemptyType.{0}
 
+/-- A cvc5 proof.
+
+Proofs are trees and every proof object corresponds to the root step of a proof. The branches of the
+root step are the premises of the step.
+-/
 def Proof : Type := ProofImpl.type
 
 instance Proof.instNonemptyProof : Nonempty Proof := ProofImpl.property
 
 private opaque TermManagerImpl : NonemptyType.{0}
 
+/-- Manager for cvc5 terms. -/
 def TermManager : Type := TermManagerImpl.type
 
 instance TermManager.instNonemptyTermManager : Nonempty TermManager := TermManagerImpl.property
 
+/-- Error type. -/
 inductive Error where
   | missingValue
   | error (msg : String)
@@ -64,19 +79,24 @@ deriving Repr
 
 private opaque SolverImpl : NonemptyType.{0}
 
+/-- A cvc5 solver. -/
 def Solver : Type := SolverImpl.type
 
 instance Solver.instNonemptySolver : Nonempty Solver := SolverImpl.property
 
+/-- Solver error/state-monad transformer. -/
 abbrev SolverT m := ExceptT Error (StateT Solver m)
 
+/-- Solver error/state-monad wrapped in `IO`. -/
 abbrev SolverM := SolverT IO
 
 namespace Error
 
+/-- String representation of an error. -/
 protected def toString : Error → String :=
   toString ∘ repr
 
+/-- Panics on errors, otherwise yields the `ok` result. -/
 def unwrap! [Inhabited α] : Except Error α → α
 | .ok a => a
 | .error e => panic! e.toString
@@ -89,9 +109,19 @@ end Error
 namespace Result
 
 extern! "result"
+
+  /-- True if this result is from a satisfiable `checkSat` or `checkSatAssuming` query. -/
   def isSat : Result → Bool
+
+  /-- True if this result is from a unsatisfiable `checkSat` or `checkSatAssuming` query. -/
   def isUnsat : Result → Bool
+
+  /-- True if this result is from a `checkSat` or `checkSatAssuming` query and cvc5 was not able to
+  determine (un)satisfiability.
+  -/
   def isUnknown : Result → Bool
+
+  /-- A string representation of this result. -/
   protected def toString : Result → String
 
 instance : ToString Result := ⟨Result.toString⟩
@@ -135,21 +165,37 @@ extern! "sort"
 instance : Inhabited cvc5.Sort := ⟨null ()⟩
 
 extern! "sort"
+  /-- Comparison for structural equality. -/
   protected def beq : cvc5.Sort → cvc5.Sort → Bool
 
 instance : BEq cvc5.Sort := ⟨Sort.beq⟩
 
 extern! "sort"
+  /-- Hash function for cvc5 sorts. -/
   protected def hash : cvc5.Sort → UInt64
 
 instance : Hashable cvc5.Sort := ⟨Sort.hash⟩
 
 extern! "sort"
+
+  /-- Get the kind of this sort. -/
   def getKind : cvc5.Sort → SortKind
+
+  /-- Determine if this is the integer sort (SMT-LIB: `Int`). -/
   def isInteger : cvc5.Sort → Bool
+
+  /-- Determine if this is a function sort. -/
+  protected def isFunction : cvc5.Sort → Bool
+
+  /-- A string representation of this sort. -/
   protected def toString : cvc5.Sort → String
 
-/-- The domain sorts of a function sort. -/
+/-- Get the symbol of this sort.
+
+The symbol of this sort is the string that was provided when consrtucting it *via* one of
+`Solver.mkUninterpretedSort`, `Solver.mkUnresolvedSort`, or
+`Solver.mkUninterpretedSortConstructorSort`.
+-/
 extern_def!? "sort"
   getSymbol : cvc5.Sort → Except Error String
 
@@ -161,7 +207,7 @@ extern_def!? "sort"
 extern_def!? "sort"
   getFunctionCodomainSort : cvc5.Sort → Except Error cvc5.Sort
 
-/-- The codomain sort of a function sort. -/
+/-- The bit-width of the bit-vector sort. -/
 extern_def!? "sort"
   getBitVectorSize : cvc5.Sort → Except Error UInt32
 
@@ -178,16 +224,29 @@ extern! "op"
 instance : Inhabited Op := ⟨null ()⟩
 
 extern! "op"
+  /-- Syntactic equality operator. -/
   protected def beq : Op → Op → Bool
 
 instance : BEq Op := ⟨Op.beq⟩
 
 extern! "op"
+
+  /-- Get the kind of this operator. -/
   def getKind : Op → Kind
+
+  /-- Determine if this operator is nullary. -/
   def isNull : Op → Bool
+
+  /-- Determine if this operator is indexed. -/
   def isIndexed : Op → Bool
+
+  /-- Get the number of indices of this operator. -/
   def getNumIndices : Op → Nat
+
+  /-- Get the index at position `i` of an indexed operator. -/
   protected def get : (op : Op) → Fin op.getNumIndices → Term
+
+  /-- Get the string representation of this operator. -/
   protected def toString : Op → String
 
 instance : GetElem Op Nat Term fun op i => i < op.getNumIndices where
@@ -205,25 +264,54 @@ extern! "term"
 instance : Inhabited Term := ⟨null ()⟩
 
 extern! "term"
+  /-- Syntactic equality operator. -/
   protected def beq : Term → Term → Bool
 
 instance : BEq Term := ⟨Term.beq⟩
 
 extern! "hash"
+  /-- Hash function for terms. -/
   protected def hash : Term → UInt64
 
 instance : Hashable Term := ⟨Term.hash⟩
 
 extern! "term"
+
+  /-- Determine if this term is nullary. -/
   def isNull : Term → Bool
+
+  /-- Get the kind of this term. -/
   def getKind : Term → Kind
+
+  /-- Get the sort of this term. -/
   def getSort : Term → cvc5.Sort
-  def getOp : Term → Op
+
+  /-- Determine if this term has an operator. -/
+  def hasOp : Term → Bool
+
+  /-- Determine if this term has a symbol (a name).
+
+  For example, free constants and variables have symbols.
+  -/
   def hasSymbol : Term → Bool
+
+  /-- Get the id of this term. -/
   def getId : Term → Nat
+
+  /-- Get the number of children of this term. -/
   def getNumChildren : Term → Nat
+
+  /-- Is this term a skolem? -/
   def isSkolem : Term → Bool
+
+  /-- Get the child term of this term at a given index. -/
   protected def get : (t : Term) → Fin t.getNumChildren → Term
+
+/-- Get the operator of a term with an operator.
+
+Requires that this term has an operator (see `hasOp`).
+-/
+extern_def!? "term" getOp : Term → Except Error Op
 
 /-- Get the value of a Boolean term as a native Boolean value.
 
@@ -288,6 +376,7 @@ protected def forIn {β : Type u} [Monad m] (t : Term) (b : β) (f : Term → β
 instance : ForIn m Term Term where
   forIn := Term.forIn
 
+/-- Get the children of a term. -/
 def getChildren (t : Term) : Array Term := Id.run do
   let mut cts := #[]
   for ct in t do
@@ -304,6 +393,7 @@ protected extern_def!? "term" and : Term → Term → Except Error Term
 protected extern_def!? "term" or : Term → Term → Except Error Term
 
 extern! "term"
+  /-- A string representation of this term. -/
   protected def toString : Term → String
 
 instance : ToString Term := ⟨Term.toString⟩
@@ -318,16 +408,31 @@ extern! "proof"
 instance : Inhabited Proof := ⟨null ()⟩
 
 extern! "proof"
+  /-- The proof rule used by the root step of the proof. -/
   def getRule : Proof → ProofRule
+
+  /-- The proof rewrite rule used by the root step of the proof. -/
   def getRewriteRule : Proof → ProofRewriteRule
+
+  /-- The conclusion of the root step of the proof. -/
   def getResult : Proof → Term
+
+  /-- The premises of the root step of the proof. -/
   def getChildren : Proof → Array Proof
+
+  /-- The arguments of the root step of the proof as a vector of terms.
+
+  Some of those terms might be strings.
+  -/
   def getArguments : Proof → Array Term
+
+  /-- Operator overloading for referential equality of two proofs. -/
   protected def beq : Proof → Proof → Bool
 
 instance : BEq Proof := ⟨Proof.beq⟩
 
 extern! "proof"
+  /-- Hash function for proofs. -/
   protected def hash : Proof → UInt64
 
 instance : Hashable Proof := ⟨Proof.hash⟩
@@ -337,18 +442,24 @@ end Proof
 namespace TermManager
 
 extern! "termManager"
+  /-- Constructor. -/
   def new : BaseIO TermManager
 
   /-- Get the Boolean sort. -/
   def getBooleanSort : TermManager → cvc5.Sort
+
   /-- Get the Integer sort. -/
   def getIntegerSort : TermManager → cvc5.Sort
+
   /-- Get the Real sort. -/
   def getRealSort : TermManager → cvc5.Sort
+
   /-- Get the regular expression sort. -/
   def getRegExpSort : TermManager → cvc5.Sort
+
   /-- Get the rounding mode sort. -/
   def getRoundingModeSort : TermManager → cvc5.Sort
+
   /-- Get the string sort. -/
   def getStringSort : TermManager → cvc5.Sort
 
@@ -385,6 +496,10 @@ extern_def!? "termManager"
   : TermManager → (sorts : Array cvc5.Sort) → (codomain : cvc5.Sort) → Except Error cvc5.Sort
 
 extern! "termManager"
+  /-- Create a Boolean constant.
+
+  - `b`: The Boolean constant.
+  -/
   def mkBoolean : TermManager → Bool → Term
 
   /-- Create an integer-value term. -/
@@ -474,15 +589,56 @@ private def err (e : Error) : SolverT m α := throw e
 private def errorOfString (msg : String) : SolverT m α := throw (.error msg)
 
 extern! "solver"
+
+  /-- Constructor.
+
+  Constructs solver instance from a given term manager instance.
+
+  - `tm`: The associated term manager.
+  -/
   private def new : TermManager → Solver
+
+  /-- Get a string representation of the version of this solver. -/
   def getVersion : SolverT m String
+
+  /-- Set option.
+
+  - `option`: The option name.
+  - `value`: The option value.
+  -/
   def setOption (option value : String) : SolverT m Unit
+
+  /-- Assert a formula.
+
+  - `term`: The formula to assert.
+  -/
   def assertFormula : Term → SolverT m Unit
+
+  /-- Check satisfiability. -/
   def checkSat : SolverT m Result
+
+  /-- Get a proof associated with the most recent call to `checkSat`.
+
+  Requires to enable option `produce-proofs`.
+  -/
   def getProof : SolverT m (Array Proof)
+
+  /-- Prints a proof as a string in a selected proof format mode.
+
+  Other aspects of printing are taken from the solver options.
+
+  - `proof`: A proof, usually obtained from `getProof`.
+  -/
   def proofToString : Proof → SolverT m String
+
+  /-- Parse a string containing SMT-LIB commands.
+
+  Commands that produce a result such as `(check-sat)`, `(get-model)`, ... are executed but the
+  results are ignored.
+  -/
   def parse : String → SolverT m Unit
 
+/-- Run a `query` given a term manager `tm`. -/
 def run (tm : TermManager) (query : SolverT m α) : m (Except Error α) :=
   return match ← ExceptT.run query (new tm) with
   | (.ok x, _) => .ok x
