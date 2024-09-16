@@ -88,6 +88,11 @@ def elabDefsItem (pref : String) : CommandElab
   )
   Command.elabCommand mainDef
 
+  let fullName :=
+    Lean.Name.mkSimple ident.getId.toString
+    |> (← Elab.liftMacroM Macro.getCurrNamespace).append
+  let fullIdent := Lean.mkIdent fullName
+
   let define doc? id sig? (body : Syntax.Term) : CommandElabM _ := do
     if let some doc := doc? then
       `(command|
@@ -96,18 +101,14 @@ def elabDefsItem (pref : String) : CommandElab
       )
     else
       `(command|
-        @[inherit_doc $ident]
+        @[inherit_doc $fullIdent]
         def $id:declId $sig?:optDeclSig := $body
       )
 
   if let (some autoDoc?, some autoId) := (autoDoc, autoId) then
     let env ← getEnv
-    let id := ident.getId.toString
-    let name := Lean.Name.mkSimple id
-    let ns ← Elab.liftMacroM Macro.getCurrNamespace
-    let name := ns.append name
     let arity ←
-      if let some (.opaqueInfo i) := env.find? name then
+      if let some (.opaqueInfo i) := env.find? fullName then
         pure (forallArity i.type)
       else
         throwError s!"failed to retrieve arity of (opaque) function `{ident}`"
@@ -116,7 +117,7 @@ def elabDefsItem (pref : String) : CommandElab
     for i in [0:arity] do
       let arg := Lean.Name.mkSimple s!"v{i}" |> Lean.mkIdent
       args := args.push arg
-    let funCall : TSyntax `term ← `(term| ($ident $[ $args ]* ))
+    let funCall : TSyntax `term ← `(term| ( $fullIdent $[ $args ]* ))
 
     for (autoDoc?, autoId) in autoDoc?.zip autoId do
       let id : String := autoId.getId.toString
@@ -128,8 +129,8 @@ def elabDefsItem (pref : String) : CommandElab
           `(fun $[$args]* => $funCall |> Except.toOption)
         else
           throwError s!"unexpected auto function name `{id}`: expected `<ident>!` or `<ident>?`"
-      Command.elabCommand
-        (← define autoDoc? autoId (← `(optDeclSig|)) body)
+      let cmd ← define autoDoc? autoId (← `(optDeclSig|)) body
+      Command.elabCommand cmd
 
   if let
     (some subDoc?, some subId, some subSig, some subDef)
@@ -153,10 +154,10 @@ extern! "prefix"
   `extStr = "prefix" ++ "_" ++ "myFunction"`.
   -/
   def myFunction : Term → Except Error Op
-  with
+  with!?
     endsWithBang!
     endWithQuestion?
-  where
+  with
     myOtherFunction : Term → Op :=
       Error.unwrap! ∘ myFunction
     /-- Optional function docstring: if none, inherit from the main function. -/
@@ -174,7 +175,7 @@ extern! "prefix"
   Error α` values.
 
 - Supports `declModifiers` on the main (`def`) function `myFunction` such as `private`.
-- Accepts a list of external (`def`) functions, each with its `with` and/or `where` clauses.
+- Accepts a list of external (`def`) functions, each with its `with` clauses.
 -/
 scoped syntax (name := multidefs)
   withPosition("extern! " str ppLine group(colGt defsItem)+)
@@ -202,16 +203,18 @@ Generate
 - `myFunction?`, same as `myFunction` but produces `none` on errors.
 -/
 scoped syntax (name := externDefOption)
+  declModifiers
   "extern_def?" str ident declSig
 : command
 
 @[inherit_doc externDefOption, command_elab externDefOption]
 def externDefOptionImpl : CommandElab
-| `(command| extern_def? $pref $ident $sig) => do
+| `(command| $mods:declModifiers extern_def? $pref $ident $sig) => do
   let name := ident.getId
   let identOpt := name.appendAfter "?" |> Lean.mkIdent
   let command ← `(command|
     extern! $pref
+      $mods:declModifiers
       def $ident $sig
       with!?
         $identOpt:ident
@@ -231,16 +234,17 @@ Generate
 - `myFunction!`, same as `myFunction` but panics on errors.
 -/
 scoped syntax (name := externDefPanic)
-  "extern_def!" str ident declSig
+  declModifiers "extern_def!" str ident declSig
 : command
 
 @[inherit_doc externDefPanic, command_elab externDefPanic]
 def externDefPanicImpl : CommandElab
-| `(command| extern_def! $pref $ident $sig) => do
+| `(command| $mods:declModifiers extern_def! $pref $ident $sig) => do
   let name := ident.getId
   let identPanic := name.appendAfter "!" |> Lean.mkIdent
   let command ← `(command|
     extern! $pref
+      $mods:declModifiers
       def $ident $sig
       with!?
         $identPanic:ident
@@ -264,22 +268,22 @@ Generate
 - `myFunction!`, same as `myFunction` but panics on errors.
 -/
 scoped syntax (name := externDefOptionPanic)
-  docComment ? ("extern_def!?" <|> "extern_def?!") str ident declSig
+  declModifiers ("extern_def!?" <|> "extern_def?!") str ident declSig
 : command
 
 macro_rules
-| `(command| $[ $doc:docComment ]? extern_def?! $pref $ident $sig) =>
-  `(command| $[$doc]? extern_def!? $pref $ident $sig)
+| `(command| $mods:declModifiers extern_def?! $pref $ident $sig) =>
+  `(command| $mods:declModifiers extern_def!? $pref $ident $sig)
 
 @[inherit_doc externDefOptionPanic, command_elab externDefOptionPanic]
 def externDefOptionPanicImpl : CommandElab
-| `(command| $[ $doc:docComment ]? extern_def!? $pref $ident $sig) => do
+| `(command| $mods:declModifiers extern_def!? $pref $ident $sig) => do
   let name := ident.getId
   let identOpt := name.appendAfter "?" |> Lean.mkIdent
   let identPanic := name.appendAfter "!" |> Lean.mkIdent
   let command ← `(command|
     extern! $pref
-      $[$doc]?
+      $mods:declModifiers
       def $ident $sig
       with!?
         $identOpt:ident
