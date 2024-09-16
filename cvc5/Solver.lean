@@ -190,26 +190,22 @@ extern! "sort"
   /-- A string representation of this sort. -/
   protected def toString : cvc5.Sort → String
 
-/-- Get the symbol of this sort.
+  /-- Get the symbol of this sort.
 
-The symbol of this sort is the string that was provided when consrtucting it *via* one of
-`Solver.mkUninterpretedSort`, `Solver.mkUnresolvedSort`, or
-`Solver.mkUninterpretedSortConstructorSort`.
--/
-extern_def!? "sort"
-  getSymbol : cvc5.Sort → Except Error String
+  The symbol of this sort is the string that was provided when consrtucting it *via* one of
+  `Solver.mkUninterpretedSort`, `Solver.mkUnresolvedSort`, or
+  `Solver.mkUninterpretedSortConstructorSort`.
+  -/
+  def !? getSymbol : cvc5.Sort → Except Error String
 
-/-- The domain sorts of a function sort. -/
-extern_def!? "sort"
-  getFunctionDomainSorts : cvc5.Sort → Except Error (Array cvc5.Sort)
+  /-- The domain sorts of a function sort. -/
+  def !? getFunctionDomainSorts : cvc5.Sort → Except Error (Array cvc5.Sort)
 
-/-- The codomain sort of a function sort. -/
-extern_def!? "sort"
-  getFunctionCodomainSort : cvc5.Sort → Except Error cvc5.Sort
+  /-- The codomain sort of a function sort. -/
+  def !? getFunctionCodomainSort : cvc5.Sort → Except Error cvc5.Sort
 
-/-- The bit-width of the bit-vector sort. -/
-extern_def!? "sort"
-  getBitVectorSize : cvc5.Sort → Except Error UInt32
+  /-- The bit-width of the bit-vector sort. -/
+  def !? getBitVectorSize : cvc5.Sort → Except Error UInt32
 
 instance : ToString cvc5.Sort := ⟨Sort.toString⟩
 instance : Repr cvc5.Sort := ⟨fun self _ => self.toString⟩
@@ -307,55 +303,55 @@ extern! "term"
   /-- Get the child term of this term at a given index. -/
   protected def get : (t : Term) → Fin t.getNumChildren → Term
 
-/-- Get the operator of a term with an operator.
+  /-- Get the operator of a term with an operator.
 
-Requires that this term has an operator (see `hasOp`).
--/
-extern_def!? "term" getOp : Term → Except Error Op
+  Requires that this term has an operator (see `hasOp`).
+  -/
+  def !? getOp : Term → Except Error Op
 
-/-- Get the value of a Boolean term as a native Boolean value.
+  /-- Get the value of a Boolean term as a native Boolean value.
 
-Requires `term` to have sort Bool.
--/
-extern_def!? "term" getBooleanValue : Term → Except Error Bool
+  Requires `term` to have sort Bool.
+  -/
+  def !? getBooleanValue : Term → Except Error Bool
 
-/-- Get the string representation of a bit-vector value.
+  /-- Get the string representation of a bit-vector value.
 
-Requires `term` to have a bit-vector sort.
+  Requires `term` to have a bit-vector sort.
 
-- `base`: `2` for binary, `10` for decimal, and `16` for hexadecimal.
--/
-extern_def!? "term" getBitVectorValue : Term → UInt32 → Except Error String
+  - `base`: `2` for binary, `10` for decimal, and `16` for hexadecimal.
+  -/
+  def !? getBitVectorValue : Term → UInt32 → Except Error String
 
-/-- Get the native integral value of an integral value. -/
-extern_def!? "term" getIntegerValue : Term → Except Error Int
+  /-- Get the native integral value of an integral value. -/
+  def !? getIntegerValue : Term → Except Error Int
 
-/-- Get the native rational value of a real, rational-compatible value. -/
-extern_def!? "term" getRationalValue : Term → Except Error Lean.Rat
+  /-- Get the native rational value of a real, rational-compatible value. -/
+  def !? getRationalValue : Term → Except Error Lean.Rat
 
-/-- Get the symbol of this term.
+  /-- Get the symbol of this term.
 
-Requires that this term has a symbol (see `hasSymbol`).
+  Requires that this term has a symbol (see `hasSymbol`).
 
-The symbol of the term is the string that was provided when constructing it *via*
-`TermManager.mkConst` or `TermManager.mkVar`.
--/
-extern_def!? "term" getSymbol : Term → Except Error String
+  The symbol of the term is the string that was provided when constructing it *via*
+  `TermManager.mkConst` or `TermManager.mkVar`.
+  -/
+  def !? getSymbol : Term → Except Error String
 
-/-- Get skolem identifier of this term.
+  /-- Get skolem identifier of this term.
 
-Requires `isSkolem`.
--/
-extern_def!? "term" getSkolemId : Term → Except Error SkolemId
+  Requires `isSkolem`.
+  -/
+  def !? getSkolemId : Term → Except Error SkolemId
 
-/-- Get the skolem indices of this term.
+  /-- Get the skolem indices of this term.
 
-Requires `isSkolem`.
+  Requires `isSkolem`.
 
-Returns the skolem indices of this term. This is a list of terms that the skolem function is
-indexed by. For example, the array diff skolem `SkolemId.ARRAY_DEQ_DIFF` is indexed by two arrays.
--/
-extern_def!? "term" getSkolemIndices : Term → Except Error (Array Term)
+  Returns the skolem indices of this term. This is a list of terms that the skolem function is
+  indexed by. For example, the array diff skolem `SkolemId.ARRAY_DEQ_DIFF` is indexed by two arrays.
+  -/
+  def !? getSkolemIndices : Term → Except Error (Array Term)
 
 instance : GetElem Term Nat Term fun t i => i < t.getNumChildren where
   getElem t i h := t.get ⟨i, h⟩
@@ -383,16 +379,16 @@ def getChildren (t : Term) : Array Term := Id.run do
     cts := cts.push ct
   cts
 
-/-- Boolean negation. -/
-protected extern_def!? "term" not : Term → Except Error Term
-
-/-- Boolean and. -/
-protected extern_def!? "term" and : Term → Term → Except Error Term
-
-/-- Boolean or. -/
-protected extern_def!? "term" or : Term → Term → Except Error Term
-
 extern! "term"
+  /-- Boolean negation. -/
+  protected def !? not : Term → Except Error Term
+
+  /-- Boolean and. -/
+  protected def !? and : Term → Term → Except Error Term
+
+  /-- Boolean or. -/
+  protected def !? or : Term → Term → Except Error Term
+
   /-- A string representation of this term. -/
   protected def toString : Term → String
 
@@ -463,39 +459,34 @@ extern! "termManager"
   /-- Get the string sort. -/
   def getStringSort : TermManager → cvc5.Sort
 
-/-- Create an array sort.
+  /-- Create an array sort.
 
-- `indexSort` The array index sort.
-- `elemSort` The array element sort.
--/
-extern_def!? "termManager"
-  mkArraySort : TermManager → (indexSort elemSort : cvc5.Sort) → Except Error cvc5.Sort
+  - `indexSort` The array index sort.
+  - `elemSort` The array element sort.
+  -/
+  def !? mkArraySort : TermManager → (indexSort elemSort : cvc5.Sort) → Except Error cvc5.Sort
 
-/-- Create a bit-vector sort.
+  /-- Create a bit-vector sort.
 
-- `size` The bit-width of the bit-vector sort.
--/
-extern_def!? "termManager"
-  mkBitVectorSort : TermManager → (size : UInt32) → Except Error cvc5.Sort
+  - `size` The bit-width of the bit-vector sort.
+  -/
+  def !? mkBitVectorSort : TermManager → (size : UInt32) → Except Error cvc5.Sort
 
-/-- Create a floating-point sort.
+  /-- Create a floating-point sort.
 
-- `exp` The bit-width of the exponent of the floating-point sort.
-- `sig` The bit-width of the significand of the floating-point sort.
--/
-extern_def!? "termManager"
-  mkFloatingPointSort : TermManager → (exp sig : UInt32) → Except Error cvc5.Sort
+  - `exp` The bit-width of the exponent of the floating-point sort.
+  - `sig` The bit-width of the significand of the floating-point sort.
+  -/
+  def !? mkFloatingPointSort : TermManager → (exp sig : UInt32) → Except Error cvc5.Sort
 
-/-- Create function sort.
+  /-- Create function sort.
 
-- `sorts` The sort of the function arguments.
-- `codomain` The sort of the function return value.
--/
-extern_def!? "termManager"
-  mkFunctionSort
+  - `sorts` The sort of the function arguments.
+  - `codomain` The sort of the function return value.
+  -/
+  def !? mkFunctionSort
   : TermManager → (sorts : Array cvc5.Sort) → (codomain : cvc5.Sort) → Except Error cvc5.Sort
 
-extern! "termManager"
   /-- Create a Boolean constant.
 
   - `b`: The Boolean constant.
@@ -510,65 +501,61 @@ extern! "termManager"
     mkInteger? := (mkInteger · · |> Except.toOption)
     mkInteger! := (mkInteger · · |> Error.unwrap!)
 
-/-- Create operator of Kind:
+  /-- Create operator of Kind:
 
-- `Kind.BITVECTOR_EXTRACT`
-- `Kind.BITVECTOR_REPEAT`
-- `Kind.BITVECTOR_ROTATE_LEFT`
-- `Kind.BITVECTOR_ROTATE_RIGHT`
-- `Kind.BITVECTOR_SIGN_EXTEND`
-- `Kind.BITVECTOR_ZERO_EXTEND`
-- `Kind.DIVISIBLE`
-- `Kind.FLOATINGPOINT_TO_FP_FROM_FP`
-- `Kind.FLOATINGPOINT_TO_FP_FROM_IEEE_BV`
-- `Kind.FLOATINGPOINT_TO_FP_FROM_REAL`
-- `Kind.FLOATINGPOINT_TO_FP_FROM_SBV`
-- `Kind.FLOATINGPOINT_TO_FP_FROM_UBV`
-- `Kind.FLOATINGPOINT_TO_SBV`
-- `Kind.FLOATINGPOINT_TO_UBV`
-- `Kind.INT_TO_BITVECTOR`
-- `Kind.TUPLE_PROJECT`
+  - `Kind.BITVECTOR_EXTRACT`
+  - `Kind.BITVECTOR_REPEAT`
+  - `Kind.BITVECTOR_ROTATE_LEFT`
+  - `Kind.BITVECTOR_ROTATE_RIGHT`
+  - `Kind.BITVECTOR_SIGN_EXTEND`
+  - `Kind.BITVECTOR_ZERO_EXTEND`
+  - `Kind.DIVISIBLE`
+  - `Kind.FLOATINGPOINT_TO_FP_FROM_FP`
+  - `Kind.FLOATINGPOINT_TO_FP_FROM_IEEE_BV`
+  - `Kind.FLOATINGPOINT_TO_FP_FROM_REAL`
+  - `Kind.FLOATINGPOINT_TO_FP_FROM_SBV`
+  - `Kind.FLOATINGPOINT_TO_FP_FROM_UBV`
+  - `Kind.FLOATINGPOINT_TO_SBV`
+  - `Kind.FLOATINGPOINT_TO_UBV`
+  - `Kind.INT_TO_BITVECTOR`
+  - `Kind.TUPLE_PROJECT`
 
-See `cvc5.Kind` for a description of the parameters.
+  See `cvc5.Kind` for a description of the parameters.
 
-- `kind` The kind of the operator.
-- `args` The arguments (indices) of the operator.
+  - `kind` The kind of the operator.
+  - `args` The arguments (indices) of the operator.
 
-If `args` is empty, the `Op` simply wraps the `cvc5.Kind`. The `Kind` can be used in
-`Solver.mkTerm` directly without creating an `Op` first.
--/
-extern_def!? "termManager"
-  mkOpOfIndices : TermManager → (kind : Kind) → (args : Array Nat) → Except Error Op
+  If `args` is empty, the `Op` simply wraps the `cvc5.Kind`. The `Kind` can be used in
+  `Solver.mkTerm` directly without creating an `Op` first.
+  -/
+  def !? mkOpOfIndices : TermManager → (kind : Kind) → (args : Array Nat) → Except Error Op
 
-/-- Create operator of kind:
+  /-- Create operator of kind:
 
-- `Kind.DIVISIBLE` (to support arbitrary precision integers)
+  - `Kind.DIVISIBLE` (to support arbitrary precision integers)
 
-See `cvc5.Kind` for a description of the parameters.
+  See `cvc5.Kind` for a description of the parameters.
 
-- `kind` The kind of the operator.
-- `arg` The string argument to this operator.
--/
-extern_def!? "termManager"
-  mkOpOfString : TermManager → (kind : Kind) → (arg : String) → Except Error Op
+  - `kind` The kind of the operator.
+  - `arg` The string argument to this operator.
+  -/
+  def !? mkOpOfString : TermManager → (kind : Kind) → (arg : String) → Except Error Op
 
-/-- Create n-ary term of given kind.
+  /-- Create n-ary term of given kind.
 
-- `kind` The kind of the term.
-- `children` The children of the term.
--/
-extern_def!? "termManager"
-  mkTerm : TermManager → (kind : Kind) → (children : Array Term := #[]) → Except Error Term
+  - `kind` The kind of the term.
+  - `children` The children of the term.
+  -/
+  def !? mkTerm : TermManager → (kind : Kind) → (children : Array Term := #[]) → Except Error Term
 
-/-- Create n-ary term of given kind from a given operator.
+  /-- Create n-ary term of given kind from a given operator.
 
-Create operators with `mkOp`.
+  Create operators with `mkOp`.
 
-- `op` The operator.
-- `children` The children of the term.
--/
-extern_def!? "termManager"
-  mkTermOfOp : TermManager → (op : Op) → (children : Array Term := #[]) → Except Error Term
+  - `op` The operator.
+  - `children` The children of the term.
+  -/
+  def !? mkTermOfOp : TermManager → (op : Op) → (children : Array Term := #[]) → Except Error Term
 
 end TermManager
 
