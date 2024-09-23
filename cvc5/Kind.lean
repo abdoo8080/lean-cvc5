@@ -581,6 +581,7 @@ inductive Kind where
   \rst
   .. warning:: This kind is experimental and may be changed or removed in
                future versions.
+  \endrst
   -/
   | DIVISION_TOTAL
   /--
@@ -619,6 +620,7 @@ inductive Kind where
   \rst
   .. warning:: This kind is experimental and may be changed or removed in
                future versions.
+  \endrst
   -/
   | INTS_DIVISION_TOTAL
   /--
@@ -640,7 +642,7 @@ inductive Kind where
   -/
   | INTS_MODULUS
   /--
-  Integer modulus, modulus by 0 defined to be 0.
+  Integer modulus, t modulus by 0 defined to be t.
 
   - Arity: ``2``
 
@@ -659,6 +661,7 @@ inductive Kind where
   \rst
   .. warning:: This kind is experimental and may be changed or removed in
                future versions.
+  \endrst
   -/
   | INTS_MODULUS_TOTAL
   /--
@@ -5588,7 +5591,6 @@ inductive Kind where
 
     - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
 
-  \rst
   .. warning:: This kind is experimental and may be changed or removed in
                future versions.
 
