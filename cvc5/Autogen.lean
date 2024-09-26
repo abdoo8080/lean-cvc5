@@ -152,8 +152,6 @@ end ParserT
 namespace Parser
 export ParserT (runSub run)
 
-variable [Monad m] [MonadExcept String m]
-
 @[inline]
 def rest : Parser Substring :=
   fun s => (s, s)
