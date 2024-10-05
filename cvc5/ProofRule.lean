@@ -306,18 +306,6 @@ inductive ProofRule where
   | THEORY_REWRITE
   /--
   \verbatim embed:rst:leading-asterisk
-  **Builtin theory -- Annotation**
-
-  .. math::
-    \inferrule{F \mid a_1 \dots a_n}{F}
-
-  The terms :math:`a_1 \dots a_n` can be anything used to annotate the proof
-  node, one example is where :math:`a_1` is a theory::InferenceId.
-  \endverbatim
-  -/
-  | ANNOTATION
-  /--
-  \verbatim embed:rst:leading-asterisk
   **Processing rules -- If-then-else equivalence**
 
   .. math::
@@ -467,8 +455,7 @@ inductive ProofRule where
     \inferrule{C_1 \mid C_2}{C_2}
 
   where
-  the set representations of :math:`C_1` and :math:`C_2` are the same and the
-  number of literals in :math:`C_2` is the same of that of :math:`C_1`.
+  the multiset representations of :math:`C_1` and :math:`C_2` are the same.
   \endverbatim
   -/
   | REORDERING
@@ -1354,6 +1341,29 @@ inductive ProofRule where
   | SETS_EXT
   /--
   \verbatim embed:rst:leading-asterisk
+  **Sets -- Sets filter up**
+
+  .. math::
+
+    \inferrule{\mathit{set.member}(x,a)\mid P}
+    {\mathit{set.member}(x, \mathit{set.filter}(P, a)) = P(x)}
+
+  \endverbatim
+  -/
+  | SETS_FILTER_UP
+  /--
+  \verbatim embed:rst:leading-asterisk
+  **Sets -- Sets filter down**
+
+  .. math::
+
+    \inferrule{\mathit{set.member}(x,\mathit{set.filter}(P, a))\mid -}
+    {\mathit{set.member}(x,a) \wedge P(x)}
+  \endverbatim
+  -/
+  | SETS_FILTER_DOWN
+  /--
+  \verbatim embed:rst:leading-asterisk
   **Strings -- Core rules -- Concatenation equality**
 
   .. math::
@@ -1860,7 +1870,7 @@ inductive ProofRule where
 
   .. math::
    \inferrule{c_x \cdot (x_1 - x_2) = c_y \cdot (y_1 - y_2) \mid \diamond}
-           {(x_1 \diamond x_2) = (y_1 \diamond y_2)}
+             {(x_1 \diamond x_2) = (y_1 \diamond y_2)}
 
   where :math:`\diamond \in \{<, \leq, =, \geq, >\}` for arithmetic and
   :math:`\diamond \in \{=\}` for bitvectors. :math:`c_x` and :math:c_y` are
@@ -3363,8 +3373,6 @@ inductive ProofRewriteRule where
   | RE_INTER_CSTRING
   /-- Auto-generated from RARE rule re-inter-cstring-neg -/
   | RE_INTER_CSTRING_NEG
-  /-- Auto-generated from RARE rule str-nth-elim-code -/
-  | STR_NTH_ELIM_CODE
   /-- Auto-generated from RARE rule str-substr-len-include -/
   | STR_SUBSTR_LEN_INCLUDE
   /-- Auto-generated from RARE rule str-substr-len-include-pre -/

@@ -29,9 +29,9 @@ def Lake.unzip (file : FilePath) (dir : FilePath) : LogIO PUnit := do
     args := #["-d", dir.toString, file.toString]
   }
 
-def cvc5.url := "https://github.com/cvc5/cvc5/releases/download"
+def cvc5.url := "https://github.com/abdoo8080/cvc5/releases/download"
 
-def cvc5.version := "cvc5-1.2.0"
+def cvc5.version := "cvc5-1.2.1"
 
 def cvc5.os :=
   if System.Platform.isWindows then "Win64"
