@@ -267,8 +267,7 @@ extern! "term"
 
 instance : BEq Term := ⟨Term.beq⟩
 
-extern! "hash"
-  /-- Hash function for terms. -/
+extern! "term"
   protected def hash : Term → UInt64
 
 instance : Hashable Term := ⟨Term.hash⟩
