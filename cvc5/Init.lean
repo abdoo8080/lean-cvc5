@@ -16,7 +16,12 @@ open Lean
 open Elab
 open Command (CommandElab CommandElabM)
 
+declare_syntax_cat externKw
+
 declare_syntax_cat defsItem
+declare_syntax_cat defsItemHead
+declare_syntax_cat defsItemTail!?
+declare_syntax_cat defsItemTail
 
 declare_syntax_cat defsMod
 
@@ -36,27 +41,42 @@ syntax "!" : defsMod
 syntax "!?" : defsMod
 syntax "?!" : defsMod
 
-scoped syntax (name := defsItemStx)
+scoped syntax (name := defsItemStxHead)
   declModifiers
   ("@[" "force" str "]")?
-  "def " defsMod ? ident declSig
+  "def " defsMod ? ident
+: defsItemHead
+
+scoped syntax (name := defsItemStxTail!?)
   withPosition(ppLine "with!? "
     group(
       colGt
       docComment ?
       ident
     )*
-  )?
+  )
+: defsItemTail!?
+
+scoped syntax (name := defsItemStxTail)
   withPosition(ppLine "with "
     group(
       colGt
       docComment ?
       declId optDeclSig ":= " withPosition(group(colGe term))
     )*
-  )?
+  )
+: defsItemTail
+
+scoped syntax (name := defsItemStx)
+  defsItemHead
+  declSig
+  (defsItemTail!?)?
+  (defsItemTail)?
 : defsItem
 
-unsafe def elabDefsItem (pref : String) : CommandElab
+unsafe def elabDefsItem
+  (pref : String) (forceMods : Option (TSyntax `defsMod))
+: CommandElab
 | `(defsItem|
     $mods:declModifiers
     $[ @[ force $forcedName ] ]?
@@ -70,6 +90,22 @@ unsafe def elabDefsItem (pref : String) : CommandElab
         $subId $subSig := $subDef
     ]* ]?
 ) => do
+  if let some defMods := forceMods then
+    let stx ← `(defsItem|
+$mods:declModifiers
+$[ @[ force $forcedName ] ]?
+def $defMods $ident:ident $identSig:declSig
+$[ with!? $[
+    $[$autoDoc]?
+    $autoId
+]* ]?
+$[ with $[
+    $[$subDoc]?
+    $subId $subSig := $subDef
+]* ]?
+    )
+    return ← elabDefsItem pref none stx
+
   let externName :=
     let id :=
       if let some forcedName := forcedName then
@@ -176,13 +212,13 @@ unsafe def elabDefsItem (pref : String) : CommandElab
         $subId:declId $subSig:optDeclSig := $subDef:term
     ]* ]?
   )
-  elabDefsItem pref stx
+  elabDefsItem pref none stx
 | _ => throwUnsupportedSyntax
 
 /-- Defines similar functions realized by `extern`.
 
 ```
-extern! "prefix"
+extern! in "prefix"
   /-- Create a Boolean constant.
 
   - `b`: The Boolean constant.
@@ -201,6 +237,10 @@ extern! "prefix"
     yetAnotherFunction : Term → Option Op :=
       Except.toOption ∘ myFunction
 ```
+
+- `in "prefix"` is optional; if none, then the prefix will be the (last component of the) name of
+  the current namespace with the first letter lowercased. Fails if the current namespace has no
+  components.
 
 - `with ...`: takes a sequence of identifiers, each generate a function that
   - unwraps the result if `!`-ended, which generates code similar to `myOtherFunction` above;
@@ -245,17 +285,93 @@ Besides `!?`, the following are also supported:
 - `?`: only generate the `Option` unwrapper.
 -/
 scoped syntax (name := multidefs)
-  withPosition("extern! " str ppLine group(colGt defsItem)+)
+  withPosition("external! " ("in " str)? ppLine group(colGt defsItem)+)
 : command
 
 @[inherit_doc multidefs, command_elab multidefs]
 unsafe def multidefsImpl : CommandElab
 | `(command|
-  extern! $pref:str $[$defsItems]*
+  external! $[in $pref:str]? $[$defsItems]*
 ) => do
-  let pref := pref.getString
+  let ns ← getCurrNamespace
+  let pref ←
+    if let some pref := pref then
+      pure pref.getString
+    else
+      -- println! "componentsRev for {ns.toString}"
+      -- for c in ns.componentsRev do
+      --   println! "- {c.toString}"
+      if let super::_ := ns.componentsRev then
+        let mut super := super.toString
+        if 0 < super.length then
+          super := super.get 0 |>.toLower |> super.set 0
+        -- println! "-> `{super}`"
+        pure super
+      else
+        throwError "failed to retrieve current workspace, please provide an explicit prefix"
   for defsItem in defsItems do
-    elabDefsItem pref defsItem
+    elabDefsItem pref none defsItem
+| _ => throwUnsupportedSyntax
+
+scoped syntax (name := externkw)
+  ("extern_def " <|> "extern_def! " <|> "extern_def? " <|> "extern_def!? " <|> "extern_def?! ")
+: externKw
+
+/-- Defines an external, opaque function with optional helpers.
+
+```
+/-- Some documentation. -/
+extern_def!? in "prefix" myFunction : Term → Except Error Op
+```
+
+Generates an opaque definition
+
+```
+/-- Some documentation. -/
+@[extern "prefix_myFunction"]
+def myFunction : Term → Except Error Op
+```
+
+- `in "prefix"` is optional, uses the current namespace with first letter lowercased if none.
+
+- `extern_def!?` also defines `myFunction! : Term → Op` and `myFunction? : Term → Option Op` in
+  terms of `myFunction`.
+
+  Other variants exist:
+  - `extern_def?!`: same as `extern_def!?`;
+  - `extern_def?`: only defines `myFunction?`;
+  - `extern_def!`: only defines `myFunction!`;
+  - `extern_def`: defines nothing besides `myFunction`.
+-/
+scoped syntax (name := externdef)
+  declModifiers
+  withPosition(
+    externKw
+    ("in " str)?
+    ident declSig (defsItemTail)?
+  )
+: command
+
+@[inherit_doc externdef, command_elab externdef]
+unsafe def externdefImpl : CommandElab
+| `(command|
+  $mods:declModifiers
+  $externKw $[in $path:str]? $ident $sig $[$tail]?
+) => do
+  let defMod ←
+    match externKw with
+    | `(externKw| extern_def) => pure none
+    | `(externKw| extern_def!) => `(defsMod| !)
+    | `(externKw| extern_def?) => `(defsMod| ?)
+    | `(externKw| extern_def!?) => `(defsMod| !?)
+    | `(externKw| extern_def?!) => `(defsMod| ?!)
+    | _ => throwUnsupportedSyntax
+  let stx ← `(
+    external! $[in $path]?
+      $mods:declModifiers
+      def $[$defMod]? $ident $sig $[$tail:defsItemTail]?
+  )
+  Command.elabCommand stx
 | _ => throwUnsupportedSyntax
 
 end defsMacro
