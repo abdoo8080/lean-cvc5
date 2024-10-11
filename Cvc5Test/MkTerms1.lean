@@ -19,10 +19,10 @@ def mkTerms1 : IO Unit := do
   let intKind := Kind.CONST_INTEGER
 
   let (one, three, seven, eleven) := (
-    tm.mkInteger! 1,
-    tm.mkInteger! 3,
-    tm.mkInteger! 7,
-    tm.mkInteger! 11,
+    tm.mkInteger 1,
+    tm.mkInteger 3,
+    tm.mkInteger 7,
+    tm.mkInteger 11,
   )
   assertEq one.getKind intKind
   assertEq one.getSort.toString "Int"

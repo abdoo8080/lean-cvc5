@@ -129,6 +129,7 @@ instance : ToString Result := ⟨Result.toString⟩
 end Result
 
 section ffi_except_constructors
+
 /-- Only used by FFI to inject values. -/
 @[export except_ok]
 private def mkExceptOk {α : Type} : α → Except Error α :=
@@ -153,6 +154,7 @@ private def mkExceptOkU8 : UInt8 → Except Error UInt8 :=
 @[export except_err]
 private def mkExceptErr {α : Type} : String → Except Error α :=
   .error ∘ Error.error
+
 end ffi_except_constructors
 
 end cvc5
@@ -496,10 +498,8 @@ extern! "termManager"
   /-- Create an integer-value term. -/
   private def mkIntegerFromString : TermManager → String → Except Error Term
   with
-    mkInteger (tm : TermManager) : Int → Except Error Term :=
-      tm.mkIntegerFromString ∘ toString
-    mkInteger? := (mkInteger · · |> Except.toOption)
-    mkInteger! := (mkInteger · · |> Error.unwrap!)
+    mkInteger (tm : TermManager) : Int → Term :=
+      Error.unwrap! ∘ tm.mkIntegerFromString ∘ toString
 
   /-- Create operator of Kind:
 
