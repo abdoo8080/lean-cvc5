@@ -415,10 +415,14 @@ def tryEnum : ParserT m (Enum ⊕ Bool) := do
     let name ← ident!
     let name := Name.mkSimple name.toString
     ws
-    tags! #[")", ":"]
+    tags! #[")"]
     ws
-    let _ ← tryTag "u"
-    tags! #["int32_t", "{"]
+    if ¬ (← tryTag "{") then
+      ws
+      tags! #[":"]
+      ws
+      let _ ← tryTag "u"
+      tags! #["int32_t", "{"]
     ws
     let variants ← variants
     tag! "}"

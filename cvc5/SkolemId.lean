@@ -18,6 +18,11 @@ cppEnumsToLean! "cvc5_skolem_id.h"
 #guard_msgs(drop info) in #check (inferInstance : BEq SkolemId)
 #guard_msgs(drop info) in #check (inferInstance : Hashable SkolemId)
 
+-- raise confidence that the variants are aligned by checking the last one
+/-- info: cvc5.SkolemId.NONE -/
+#guard_msgs in
+#eval repr SkolemId.NONE
+
 namespace SkolemId
 
 @[extern "skolemId_toString"]

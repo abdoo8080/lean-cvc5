@@ -31,7 +31,7 @@ def Lake.unzip (file : FilePath) (dir : FilePath) : LogIO PUnit := do
 
 def cvc5.url := "https://github.com/abdoo8080/cvc5/releases/download"
 
-def cvc5.version := "v0.0.1"
+def cvc5.version := "cvc5-1.2.1"
 
 def cvc5.os :=
   if System.Platform.isWindows then "Win64"
@@ -90,8 +90,9 @@ extern_lib libffi pkg := do
   let libcvc5 := pure (staticLibPath "cvc5")
   let libcvc5parser := pure (staticLibPath "cvc5parser")
   let libgmp := pure (staticLibPath "gmp")
+  let libgmpxx := pure (staticLibPath "gmpxx")
   let libpicpoly := pure (staticLibPath "picpoly")
   let libpicpolyxx := pure (staticLibPath "picpolyxx")
   let mut libs := #[ffiO, libcadical, libcvc5, libcvc5parser, libpicpoly, libpicpolyxx]
-  if System.Platform.isOSX then libs := libs.push libgmp
+  if System.Platform.isOSX then libs := libs ++ #[libgmp, libgmpxx]
   buildStaticLib' libFile libs
