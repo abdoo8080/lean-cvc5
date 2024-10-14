@@ -34,22 +34,22 @@ def mkTerms1 : IO Unit := do
   assertEq eleven.getSort.toString "Int"
 
   let ite1 :=
-    tm.mkTerm Kind.ITE #[fls, three, seven]
+    tm.mkTerm! Kind.ITE #[fls, three, seven]
   assertEq ite1.getKind Kind.ITE
   assertEq ite1.getSort.toString "Int"
 
   let eq1 :=
-    tm.mkTerm Kind.EQUAL #[ite1, eleven]
+    tm.mkTerm! Kind.EQUAL #[ite1, eleven]
   assertEq eq1.getKind Kind.EQUAL
   assertEq eq1.getSort.toString "Bool"
 
   let eq1' :=
-    tm.mkTerm Kind.EQUAL #[ite1, eleven, one]
+    tm.mkTerm! Kind.EQUAL #[ite1, eleven, one]
   assertEq eq1'.getKind Kind.AND
   assertEq eq1'.getSort.toString "Bool"
 
   let ite2 :=
-    tm.mkTerm Kind.ITE #[tru, eq1, fls]
+    tm.mkTerm! Kind.ITE #[tru, eq1, fls]
   assertEq ite2.getKind Kind.ITE
   assertEq ite2.getSort.toString "Bool"
 
