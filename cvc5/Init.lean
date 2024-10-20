@@ -7,8 +7,6 @@ Authors: Abdalrhman Mohamed, Adrien Champion
 
 import Lean.Elab.Command
 
-import cvc5.Autogen
-
 namespace cvc5
 
 /-! ## DSL for definition  DRY -/

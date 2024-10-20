@@ -44,12 +44,46 @@ def cvc5.arch :=
 
 def cvc5.target := s!"{os}-{arch}-static"
 
+open IO.Process in
+def generateEnums (cppDir : Lake.FilePath) : IO Unit := do
+  let proc ← spawn {
+    stdin := Stdio.null
+    stdout := Stdio.piped
+    stderr := Stdio.piped
+    cmd := "lean"
+    args := #[
+      "--run", "PreBuild.lean",
+      "--", -- arguments for `PreBuild.lean` binary: C++ source dir and lean target dir
+      cppDir.toString, "cvc5"
+    ]
+    cwd := none
+    env := #[]
+    setsid := false
+  }
+  -- logInfo "running..."
+  let code ← proc.wait
+  -- logInfo "  done"
+  if 0 < code then
+    let stdout ← proc.stdout.readToEnd
+    let stderr ← proc.stderr.readToEnd
+    throw <| .userError s!"C++ to Lean `enum` translation failed with exit code `{code}`:\n\n\
+```stdout
+{stdout}
+```
+
+```stderr
+{stderr}
+```\
+    "
+
 target libcvc5 pkg : Unit := do
   if !(← (pkg.lakeDir / s!"cvc5-{cvc5.target}").pathExists) then
     let zipPath := pkg.lakeDir / s!"cvc5-{cvc5.target}.zip"
     download s!"{cvc5.url}/{cvc5.version}/cvc5-{cvc5.target}.zip" zipPath
     unzip zipPath pkg.lakeDir
     IO.FS.removeFile zipPath
+  let cvc5Root := pkg.lakeDir / s!"cvc5-{cvc5.target}" / "include" / "cvc5"
+  generateEnums cvc5Root
   return pure ()
 
 def Lake.compileStaticLib'
