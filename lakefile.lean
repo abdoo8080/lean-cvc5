@@ -22,6 +22,11 @@ lean_lib cvc5Test {
   globs := #[Glob.submodules `Cvc5Test]
 }
 
+lean_exe Test {
+  moreLeanArgs := #[s!"--load-dynlib={libcpp}"]
+  moreLinkArgs := #["-L/usr/lib/x86_64-linux-gnu", "/usr/lib/x86_64-linux-gnu/libstdc++.so.6"]
+}
+
 def Lake.unzip (file : FilePath) (dir : FilePath) : LogIO PUnit := do
   IO.FS.createDirAll dir
   proc (quiet := true) {
@@ -46,27 +51,16 @@ def cvc5.target := s!"{os}-{arch}-static"
 
 open IO.Process in
 def generateEnums (cppDir : Lake.FilePath) : IO Unit := do
-  let proc ← spawn {
-    stdin := Stdio.null
-    stdout := Stdio.piped
-    stderr := Stdio.piped
+  let { exitCode, stdout, stderr } ← output {
     cmd := "lean"
     args := #[
       "--run", "PreBuild.lean",
       "--", -- arguments for `PreBuild.lean` binary: C++ source dir and lean target dir
       cppDir.toString, "cvc5"
     ]
-    cwd := none
-    env := #[]
-    setsid := false
   }
-  -- logInfo "running..."
-  let code ← proc.wait
-  -- logInfo "  done"
-  if 0 < code then
-    let stdout ← proc.stdout.readToEnd
-    let stderr ← proc.stderr.readToEnd
-    throw <| .userError s!"C++ to Lean `enum` translation failed with exit code `{code}`:\n\n\
+  if 0 < exitCode then
+    throw <| .userError s!"C++ to Lean `enum` translation failed with exit code `{exitCode}`:\n\n\
 ```stdout
 {stdout}
 ```

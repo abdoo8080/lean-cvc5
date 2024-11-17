@@ -6,7 +6,6 @@ namespace cvc5.PreBuild
 open Std.Internal (Parsec)
 open Std.Internal.Parsec (ParseResult Input)
 
-
 /-- `C++` docstring as lines.
 
 Does not feature the line-leading `*` featured in most `C++` docstrings. -/
@@ -48,6 +47,7 @@ def writeln (bits : List String) := do
     for bit in bits do
       h.putStr bit
   h.putStrLn ""
+
 def writelns (bbits : List (List String)) := do
   for bits in bbits do
     writeln h pref bits
@@ -69,11 +69,11 @@ def Enum.writeToLean (e : Enum) (skipIfDefs := true) : IO Unit := do
   let wln := writeln h pref
   let wlns := writelns h pref
   e.doc.writeToLean h pref
-  wln ["inductive ", e.ident]
+  wln ["inductive ", e.ident, " where"]
   for v in e.variants do
     if skipIfDefs ∧ v.ifdef.isSome then
       continue
-    v.writeToLean h pref
+    v.writeToLean h (pref ++ "  ")
   wlns [
     ["deriving Inhabited, Repr, BEq, Hashable"],
     [],
@@ -100,18 +100,15 @@ Authors: Abdalrhman Mohamed, Adrien Champion
   "]
   wln []
   wln ["namespace cvc5"]
-  wln []
   for e in es do
-    e.writeToLean h pref skipIfDefs
     wln []
+    e.writeToLean h pref skipIfDefs
 
 def Enums.writeToFile (path : System.FilePath) (es : Enums) (skipIfDefs := true) : IO Unit := do
   let handle ← Handle.mk path .write
   es.writeToLean handle "" skipIfDefs
 
 end codegen
-
-
 
 /-- Parser monad, based on `Std.Internal.Parsec` over `String`s (actually `String.Iterator`). -/
 abbrev Parser := @Std.Internal.Parsec.String.Parser
@@ -166,9 +163,6 @@ end
 
 /-! ## Helpers -/
 
-def trash (p : Parser α) : Parser Unit :=
-  (fun _ => ()) <$> p
-
 def ptry (p : Parser α) : Parser (Option α) := do
   (some <$> attempt p) <|> (pure none)
 
@@ -199,7 +193,7 @@ partial def takeUntil' (p : Parser α) (acc := "") : Parser (String × Option α
       takeUntil' p acc
 
 def takeUntil (p : Parser α) (acc := "") : Parser String := do
-  Prod.fst <$> takeUntil' (trash p) acc
+  Prod.fst <$> takeUntil' (discard p) acc
 
 def newline : Parser Char :=
   pchar '\n' <|> pchar '\r'
@@ -211,13 +205,13 @@ def lineTail (trimRight := true) : Parser String := do
 /-! ## Non-doc comments -/
 
 def cmt.sl : Parser Unit := do
-  trash $ pstring "//"
+  discard $ pstring "//"
   if let some '/' ← peek? then
     fail "expected `//`-comment, found `///`-docstring"
-  trash <| skipUntil newline
+  discard <| skipUntil newline
 
 partial def cmt.ml : Parser Unit := do
-  trash $ pstring "/*"
+  discard $ pstring "/*"
   if let some '*' ← peek? then
     fail "expected `/*...*/`-comment, found `/**...*/`-docstring"
   -- notFollowedBy $ pchar '*'
@@ -230,11 +224,11 @@ where closeOrNested : Nat → Parser Unit
     else if ← ptest <| pstring "*/" then
       closeOrNested nPrev
     else
-      trash skip
+      discard skip
       closeOrNested n
 
 def header : Parser Unit := do
-  trash $ pstring "/***"
+  discard $ pstring "/***"
   cmt.ml.closeOrNested 1
 
 def cmt : Parser Unit :=
@@ -250,7 +244,7 @@ partial def wsCmt : Parser Unit := do
 /-! ## Doc comments -/
 
 partial def docCmtLines.ml (acc : Array String := #[]) : Parser Doc := do
-  trash $ pstring "/**"
+  discard $ pstring "/**"
   parseLines acc
 where
   docLineEnd : Parser Bool := do
@@ -260,7 +254,7 @@ where
     if ← ptest <| pstring "*/" then
       return acc
     if ← ptest <| pchar '*' then
-      trash $ pchar? ' '
+      discard $ pchar? ' '
     let (line, closed) ← takeUntil' docLineEnd
     let acc := acc.push line
     if let some false := closed
@@ -286,11 +280,11 @@ def Delim.chars : Delim → Char × Char
 
 def delimited (p : Parser α) (delim : Delim := .paren) : Parser α := do
   let (op, cl) := delim.chars
-  trash $ pchar op
+  discard $ pchar op
   wsCmt
   let res ← p
   wsCmt
-  trash $ pchar cl
+  discard $ pchar cl
   return res
 
 def Delim.parse (d : Delim) : Parser α → Parser α :=
@@ -325,7 +319,7 @@ def pint : Parser Int := do
 def pvariant (ifdef? : Option String) : Parser Variant := do
   let doc? ← pdoc?
   wsCmt
-  trash $ pstring "EVALUE"
+  discard $ pstring "EVALUE"
   wsCmt
   let (ident, offset) ←
     delimited do
@@ -340,7 +334,7 @@ def pvariant (ifdef? : Option String) : Parser Variant := do
       wsCmt
       pure (ident, offset)
   wsCmt
-  trash $ pchar? ','
+  discard $ pchar? ','
   return ⟨doc?, ident, offset, ifdef?⟩
 
 partial def pvariants : Parser Variants := do
@@ -363,27 +357,27 @@ where loop (i : Nat) (acc : Variants) (ifdef? : Option String) : Parser Variants
     return acc
   else
     let variant ← pvariant ifdef?
-    let acc := acc.push variant
+    let acc := if variant.ident.startsWith "LAST_" then acc else acc.push variant
     loop i.succ acc ifdef?
 
 partial def penum : Parser Enum := do
   wsCmt
   let doc ← pdoc
   wsCmt
-  trash $ pstring "enum"
+  discard $ pstring "enum"
   wsCmt
-  trash $ pstring "ENUM"
+  discard $ pstring "ENUM"
   wsCmt
   let ident ← delimited pident
   wsCmt
   if ← ptest $ pchar ':' then
     wsCmt
-    trash $ pchar? 'u'
-    trash $ pstring "int32_t"
+    discard $ pchar? 'u'
+    discard $ pstring "int32_t"
     wsCmt
   let variants ← delimited (delim := .brace) pvariants
   wsCmt
-  trash $ pchar? ';'
+  discard $ pchar? ';'
   return ⟨doc, ident, variants⟩
 
 partial def penums (acc : Enums := #[]) : Parser Enums := do
@@ -392,7 +386,7 @@ partial def penums (acc : Enums := #[]) : Parser Enums := do
   | some enum => acc.push enum |> penums
 
 def pfile : Parser Enums := do
-  trash $ ptry header
+  discard $ ptry header
   let enums ← penums
   wsCmt
   if ← isEof then
@@ -477,7 +471,7 @@ def parseContentWith (p : Parser α) (content : String) (notEoiFail := true) : I
       return res
     else p
   match p content.iter with
-  | .success _ι a => return a
+  | .success _ a => return a
   | .error ι msg => do
     let pretty ← prettyError ι content msg
     throw <| IO.Error.userError pretty
@@ -541,7 +535,6 @@ def updateLean (cppDir leanDir : FilePath) : IO Unit := do
   for (cpp, lean) in pairs do
     updateLeanFile (cppDir / cpp) (leanDir / lean)
 
-
 end Fs
 
 end cvc5.PreBuild
@@ -560,301 +553,3 @@ def main (args : List String) : IO Unit := do
     fail s!"Lean directory `{leanDir}` does not exist or is not a directory"
   println! "updating enums `{cppDir}` → `{leanDir}`"
   updateLean cppDir leanDir
-
-
-
--- namespace cvc5.PreBuild.Test
-
--- open Parser
-
--- def mlCommentStr := r##"
--- /** some comment */
--- /**
--- some
--- comment
--- */
--- "##
-
--- #eval do
---   let _ ← parseContentWith
---     (do
---       wsCmt
---       trash $ pdoc
---       wsCmt
---       trash $ pdoc
---       wsCmt
---     )
---     mlCommentStr
---   println! "done"
-
--- def docStr := r##"
--- // comment
--- /**
---  * The kind of a cvc5 Sort.
---  *
---  * \internal
---  *
---  * Note that the API type `cvc5::SortKind` roughly corresponds to
---  * `cvc5::internal::Kind`, but is a different type. It hides internal kinds
---  * that should not be exported to the API, and maps all kinds that we want to
---  * export to its corresponding internal kinds. The underlying type of
---  * `cvc5::Kind` must be signed (to enable range checks for validity). The size
---  * of this type depends on the size of `cvc5::internal::Kind`
---  * (`NodeValue::NBITS_KIND`, currently 10 bits, see expr/node_value.h).
---  */
--- enum ENUM(Blah)
--- {
--- };
--- "##
-
--- #eval do
---   let _ ← parseContentWith
---     (do let _ ← penum ; wsCmt)
---     docStr
---   println! "done"
-
--- def sortKindStr := r##"
--- // clang-format off
--- /**
---  * The kind of a cvc5 Sort.
---  *
---  * \internal
---  *
---  * Note that the API type `cvc5::SortKind` roughly corresponds to
---  * `cvc5::internal::Kind`, but is a different type. It hides internal kinds
---  * that should not be exported to the API, and maps all kinds that we want to
---  * export to its corresponding internal kinds. The underlying type of
---  * `cvc5::Kind` must be signed (to enable range checks for validity). The size
---  * of this type depends on the size of `cvc5::internal::Kind`
---  * (`NodeValue::NBITS_KIND`, currently 10 bits, see expr/node_value.h).
---  */
--- enum ENUM(SortKind)
--- {
---   /**
---    * Internal kind.
---    *
---    * This kind serves as an abstraction for internal kinds that are not exposed
---    * via the API but may appear in terms returned by API functions, e.g.,
---    * when querying the simplified form of a term.
---    *
---    * \rst
---    * .. note:: Should never be created via the API.
---    * \endrst
---    */
---   EVALUE(INTERNAL_SORT_KIND = -2),
---   /**
---    * Undefined kind.
---    *
---    * \rst
---    * .. note:: Should never be exposed or created via the API.
---    * \endrst
---    */
---   EVALUE(UNDEFINED_SORT_KIND = -1),
---   /**
---    * Null kind.
---    *
---    * The kind of a null sort (Sort::Sort()).
---    *
---    * \rst
---    * .. note:: May not be explicitly created via API functions other than
---    *           :cpp:func:`Sort::Sort()`.
---    * \endrst
---    */
---   EVALUE(NULL_SORT),
-
---   /* Sort Kinds ------------------------------------------------------------ */
---   /**
---    * An abstract sort.
---    *
---    * An abstract sort represents a sort whose parameters or argument sorts are
---    * unspecified. For example, `mkAbstractSort(BITVECTOR_SORT)` returns a
---    * sort that represents the sort of bit-vectors whose bit-width is
---    * unspecified.
---    *
---    * - Create Sort of this Kind with:
---    *
---    *   - Solver::mkAbstractSort(SortKind) const
---    */
---   EVALUE(ABSTRACT_SORT),
---   /**
---    * An array sort, whose argument sorts are the index and element sorts of the
---    * array.
---    *
---    * - Create Sort of this Kind with:
---    *
---    *   - Solver::mkArraySort(Sort, Sort) const
---    */
---   EVALUE(ARRAY_SORT),
---   /**
---    * A bag sort, whose argument sort is the element sort of the bag.
---    *
---    * - Create Sort of this Kind with:
---    *
---    *   - Solver::mkBagSort(Sort) const
---    */
---   EVALUE(BAG_SORT),
---   /**
---    * The Boolean sort.
---    *
---    * - Create Sort of this Kind with:
---    *
---    *   - Solver::getBooleanSort() const
---    */
---   EVALUE(BOOLEAN_SORT),
---   /**
---    * A bit-vector sort, parameterized by an integer denoting its bit-width.
---    *
---    * - Create Sort of this Kind with:
---    *
---    *   - Solver::mkBitVectorSort(uint32_t) const
---    */
---   EVALUE(BITVECTOR_SORT),
---   /**
---    * A datatype sort.
---    *
---    * - Create Sort of this Kind with:
---    *
---    *   - Solver::mkDatatypeSort(DatatypeDecl)
---    *   - Solver::mkDatatypeSorts(const std::vector<DatatypeDecl>&)
---    */
---   EVALUE(DATATYPE_SORT),
---   /**
---    * A finite field sort, parameterized by a size.
---    *
---    * - Create Sort of this Kind with:
---    *
---    *   - Solver::mkFiniteFieldSort(const std::string&, uint32_t base) const
---    */
---   EVALUE(FINITE_FIELD_SORT),
---   /**
---    * A floating-point sort, parameterized by two integers denoting its
---    * exponent and significand bit-widths.
---    *
---    * - Create Sort of this Kind with:
---    *
---    *   - Solver::mkFloatingPointSort(uint32_t, uint32_t) const
---    */
---   EVALUE(FLOATINGPOINT_SORT),
---   /**
---    * A function sort with given domain sorts and codomain sort.
---    *
---    * - Create Sort of this Kind with:
---    *
---    *   - Solver::mkFunctionSort(const std::vector<Sort>&, Sort) const
---    */
---   EVALUE(FUNCTION_SORT),
---   /**
---    * The integer sort.
---    *
---    * - Create Sort of this Kind with:
---    *
---    *   - Solver::getIntegerSort() const
---    */
---   EVALUE(INTEGER_SORT),
---   /**
---    * The real sort.
---    *
---    * - Create Sort of this Kind with:
---    *
---    *   - Solver::getRealSort() const
---    */
---   EVALUE(REAL_SORT),
---   /**
---    * The regular language sort.
---    *
---    * - Create Sort of this Kind with:
---    *
---    *   - Solver::getRegExpSort() const
---    */
---   EVALUE(REGLAN_SORT),
---   /**
---    * The rounding mode sort.
---    *
---    * - Create Sort of this Kind with:
---    *
---    *   - Solver::getRoundingModeSort() const
---    */
---   EVALUE(ROUNDINGMODE_SORT),
---   /**
---    * A sequence sort, whose argument sort is the element sort of the sequence.
---    *
---    * - Create Sort of this Kind with:
---    *
---    *   - Solver::mkSequenceSort(Sort) const
---    */
---   EVALUE(SEQUENCE_SORT),
---   /**
---    * A set sort, whose argument sort is the element sort of the set.
---    *
---    * - Create Sort of this Kind with:
---    *
---    *   - Solver::mkSetSort(Sort) const
---    */
---   EVALUE(SET_SORT),
---   /**
---    * The string sort.
---    *
---    * - Create Sort of this Kind with:
---    *
---    *   - Solver::getStringSort() const
---    */
---   EVALUE(STRING_SORT),
---   /**
---    * A tuple sort, whose argument sorts denote the sorts of the direct children
---    * of the tuple.
---    *
---    * - Create Sort of this Kind with:
---    *
---    *   - Solver::mkTupleSort(const std::vector<Sort>&) const
---    */
---   EVALUE(TUPLE_SORT),
---   /**
---    * A nullable sort, whose argument sort denotes the sort of the direct child
---    * of the nullable.
---    *
---    * - Create Sort of this Kind with:
---    *
---    *   - Solver::mkNullableSort(const Sort&) const
---    */
---   EVALUE(NULLABLE_SORT),
---   /**
---    * An uninterpreted sort.
---    *
---    * - Create Sort of this Kind with:
---    *
---    *   - Solver::mkUninterpretedSort(const std::optional<std::string>&) const
---    */
---   EVALUE(UNINTERPRETED_SORT),
---   /* ----------------------------------------------------------------------- */
---   /** Marks the upper-bound of this enumeration. */
---   EVALUE(LAST_SORT_KIND)
--- };
--- "##
-
--- #eval do
---   let enums ← parseContent sortKindStr
---   println! "parsed {enums.size} enum(s)"
---   for enum in enums do
---     println! "- enum `{enum.ident}`, {enum.variants.size} variant(s)"
-
--- #eval do
---   let enums ← parseFile ".lake/cvc5-macOS-arm64-static/include/cvc5/cvc5_kind.h"
---   println! "parsed {enums.size} enum(s)"
---   for enum in enums do
---     println! "- enum `{enum.ident}`, {enum.variants.size} variant(s)"
-
--- #eval do
---   let enums ← parseFile ".lake/cvc5-macOS-arm64-static/include/cvc5/cvc5_proof_rule.h"
---   println! "parsed {enums.size} enum(s)"
---   for enum in enums do
---     println! "- enum `{enum.ident}`, {enum.variants.size} variant(s)"
-
--- #eval do
---   let enums ← parseFile ".lake/cvc5-macOS-arm64-static/include/cvc5/cvc5_skolem_id.h"
---   println! "parsed {enums.size} enum(s)"
---   for enum in enums do
---     println! "- enum `{enum.ident}`, {enum.variants.size} variant(s)"
-
---   enums.writeToFile "test.lean"
-
--- end Test
