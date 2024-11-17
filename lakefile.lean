@@ -50,13 +50,13 @@ def cvc5.arch :=
 def cvc5.target := s!"{os}-{arch}-static"
 
 open IO.Process in
-def generateEnums (cppDir : Lake.FilePath) (pkg : NPackage ``cvc5) : IO Unit := do
+def generateEnums (cppDir : Lake.FilePath) (pkg : NPackage _package.name) : IO Unit := do
   let { exitCode, stdout, stderr } ← output {
     cmd := "lean"
     args := #[
       "--run", (pkg.srcDir / "PreBuild.lean").toString,
       "--", -- arguments for `PreBuild.lean` binary: C++ source dir and lean target dir
-      cppDir.toString, "cvc5"
+      cppDir.toString, pkg.srcDir.toString
     ]
   }
   if 0 < exitCode then
