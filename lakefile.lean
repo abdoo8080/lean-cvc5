@@ -50,11 +50,11 @@ def cvc5.arch :=
 def cvc5.target := s!"{os}-{arch}-static"
 
 open IO.Process in
-def generateEnums (cppDir : Lake.FilePath) : IO Unit := do
+def generateEnums (cppDir : Lake.FilePath) (pkg : NPackage ``cvc5) : IO Unit := do
   let { exitCode, stdout, stderr } ← output {
     cmd := "lean"
     args := #[
-      "--run", "PreBuild.lean",
+      "--run", (pkg.srcDir / "PreBuild.lean").toString,
       "--", -- arguments for `PreBuild.lean` binary: C++ source dir and lean target dir
       cppDir.toString, "cvc5"
     ]
@@ -76,8 +76,8 @@ target libcvc5 pkg : Unit := do
     download s!"{cvc5.url}/{cvc5.version}/cvc5-{cvc5.target}.zip" zipPath
     unzip zipPath pkg.lakeDir
     IO.FS.removeFile zipPath
-  let cvc5Root := pkg.lakeDir / s!"cvc5-{cvc5.target}" / "include" / "cvc5"
-  generateEnums cvc5Root
+    let cvc5Root := pkg.lakeDir / s!"cvc5-{cvc5.target}" / "include" / "cvc5"
+    generateEnums cvc5Root pkg
   return pure ()
 
 def Lake.compileStaticLib'

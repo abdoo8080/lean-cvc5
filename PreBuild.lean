@@ -502,29 +502,13 @@ def modified (p : FilePath) : IO Time := do
   let meta ← p.metadata
   return meta.modified
 
-/-- True if `lft` was modified more recently than `rgt`, or `rgt` does not exist. -/
-def moreRecentThan (lft rgt : FilePath) : IO Bool := do
-  if ¬ (← rgt.pathExists) then
-    println! "  target does not exist"
-    return true
-  else
-    let lTime ← lft.modified
-    let rTime ← rgt.modified
-    if rTime < lTime then
-      println! "  source is more recent than target"
-      return true
-    else
-      println! "  target is more recent than source"
-      return false
-
 end FilePath
 
 def updateLeanFile (cpp lean : FilePath) : IO Unit := do
   println! "- {cpp} → {lean}"
-  if ← cpp.moreRecentThan lean then
-    println! "  updating"
-    writeLean cpp lean
-    println! "  done"
+  println! "  updating"
+  writeLean cpp lean
+  println! "  done"
 
 def updateLean (cppDir leanDir : FilePath) : IO Unit := do
   let pairs := [
