@@ -760,7 +760,7 @@ deriving Inhabited, Repr, BEq, Hashable
 namespace SkolemId
 
 /-- Produces a string representation. -/
-@[extern "SkolemId_toString"]
+@[extern "skolemId_toString"]
 protected opaque toString : SkolemId → String
 
 instance : ToString SkolemId := ⟨SkolemId.toString⟩

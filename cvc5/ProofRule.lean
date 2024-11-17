@@ -2240,7 +2240,7 @@ deriving Inhabited, Repr, BEq, Hashable
 namespace ProofRule
 
 /-- Produces a string representation. -/
-@[extern "ProofRule_toString"]
+@[extern "proofRule_toString"]
 protected opaque toString : ProofRule → String
 
 instance : ToString ProofRule := ⟨ProofRule.toString⟩
@@ -4618,7 +4618,7 @@ deriving Inhabited, Repr, BEq, Hashable
 namespace ProofRewriteRule
 
 /-- Produces a string representation. -/
-@[extern "ProofRewriteRule_toString"]
+@[extern "proofRewriteRule_toString"]
 protected opaque toString : ProofRewriteRule → String
 
 instance : ToString ProofRewriteRule := ⟨ProofRewriteRule.toString⟩

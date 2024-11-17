@@ -22,11 +22,6 @@ lean_lib cvc5Test {
   globs := #[Glob.submodules `Cvc5Test]
 }
 
-lean_exe Test {
-  moreLeanArgs := #[s!"--load-dynlib={libcpp}"]
-  moreLinkArgs := #["-L/usr/lib/x86_64-linux-gnu", "/usr/lib/x86_64-linux-gnu/libstdc++.so.6"]
-}
-
 def Lake.unzip (file : FilePath) (dir : FilePath) : LogIO PUnit := do
   IO.FS.createDirAll dir
   proc (quiet := true) {
@@ -56,7 +51,7 @@ def generateEnums (cppDir : Lake.FilePath) (pkg : NPackage _package.name) : IO U
     args := #[
       "--run", (pkg.srcDir / "PreBuild.lean").toString,
       "--", -- arguments for `PreBuild.lean` binary: C++ source dir and lean target dir
-      cppDir.toString, pkg.srcDir.toString
+      cppDir.toString, (pkg.srcDir / "cvc5").toString
     ]
   }
   if 0 < exitCode then

@@ -5744,7 +5744,7 @@ deriving Inhabited, Repr, BEq, Hashable
 namespace Kind
 
 /-- Produces a string representation. -/
-@[extern "Kind_toString"]
+@[extern "kind_toString"]
 protected opaque toString : Kind → String
 
 instance : ToString Kind := ⟨Kind.toString⟩
@@ -5963,7 +5963,7 @@ deriving Inhabited, Repr, BEq, Hashable
 namespace SortKind
 
 /-- Produces a string representation. -/
-@[extern "SortKind_toString"]
+@[extern "sortKind_toString"]
 protected opaque toString : SortKind → String
 
 instance : ToString SortKind := ⟨SortKind.toString⟩

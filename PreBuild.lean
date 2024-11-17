@@ -29,7 +29,7 @@ structure Enum where
 /-- Lowercases the first letter of `ident`. -/
 def Enum.toExternPref (e : Enum) :=
   e.ident.get 0
-  |>.toUpper
+  |>.toLower
   |> e.ident.set 0
 
 abbrev Enums := Array Enum
