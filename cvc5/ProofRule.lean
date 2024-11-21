@@ -2480,6 +2480,20 @@ inductive ProofRewriteRule where
   | QUANT_MERGE_PRENEX
   /--
   \verbatim embed:rst:leading-asterisk
+  **Quantifiers -- Macro miniscoping**
+  
+  .. math::
+    \forall X.\> F_1 \wedge \cdots \wedge F_n =
+    G_1 \wedge \cdots \wedge G_n
+  
+  where each :math:`G_i` is semantically equivalent to
+  :math:`\forall X.\> F_i`.
+  
+  \endverbatim
+  -/
+  | MACRO_QUANT_MINISCOPE
+  /--
+  \verbatim embed:rst:leading-asterisk
   **Quantifiers -- Miniscoping**
   
   .. math::
@@ -2502,6 +2516,20 @@ inductive ProofRewriteRule where
   \endverbatim
   -/
   | QUANT_MINISCOPE_FV
+  /--
+  \verbatim embed:rst:leading-asterisk
+  **Quantifiers -- Datatypes Split**
+  
+  .. math::
+    (\forall x Y.\> F) = (\forall X_1 Y. F_1) \vee \cdots \vee (\forall X_n Y. F_n)
+  
+  where :math:`x` is of a datatype type with constructors
+  :math:`C_1, \ldots, C_n`, where for each :math:`i = 1, \ldots, n`,
+  :math:`F_i` is :math:`F \{ x \mapsto C_i(X_i) \}`.
+  
+  \endverbatim
+  -/
+  | QUANT_DT_SPLIT
   /--
   \verbatim embed:rst:leading-asterisk
   **Quantifiers -- Macro connected free variable partitioning**
@@ -2631,6 +2659,19 @@ inductive ProofRewriteRule where
   \endverbatim
   -/
   | DT_CONS_EQ
+  /--
+  \verbatim embed:rst:leading-asterisk
+  **Datatypes -- cycle**
+  
+  .. math::
+    (x = t[x]) = \bot
+  
+  where all terms on the path to :math:`x` in :math:`t[x]` are applications
+  of constructors, and this path is non-empty.
+  
+  \endverbatim
+  -/
+  | DT_CYCLE
   /--
   \verbatim embed:rst:leading-asterisk
   **Datatypes -- collapse tester**
@@ -2874,10 +2915,6 @@ inductive ProofRewriteRule where
   -/
   | SETS_INSERT_ELIM
   /--
-  Auto-generated from RARE rule arith-plus-zero 
-  -/
-  | ARITH_PLUS_ZERO
-  /--
   Auto-generated from RARE rule arith-mul-one 
   -/
   | ARITH_MUL_ONE
@@ -2886,13 +2923,21 @@ inductive ProofRewriteRule where
   -/
   | ARITH_MUL_ZERO
   /--
-  Auto-generated from RARE rule arith-div-total 
+  Auto-generated from RARE rule arith-div-total-real 
   -/
-  | ARITH_DIV_TOTAL
+  | ARITH_DIV_TOTAL_REAL
   /--
-  Auto-generated from RARE rule arith-div-total-zero 
+  Auto-generated from RARE rule arith-div-total-int 
   -/
-  | ARITH_DIV_TOTAL_ZERO
+  | ARITH_DIV_TOTAL_INT
+  /--
+  Auto-generated from RARE rule arith-div-total-zero-real 
+  -/
+  | ARITH_DIV_TOTAL_ZERO_REAL
+  /--
+  Auto-generated from RARE rule arith-div-total-zero-int 
+  -/
+  | ARITH_DIV_TOTAL_ZERO_INT
   /--
   Auto-generated from RARE rule arith-int-div-total 
   -/
@@ -2946,9 +2991,13 @@ inductive ProofRewriteRule where
   -/
   | ARITH_GEQ_TIGHTEN
   /--
-  Auto-generated from RARE rule arith-geq-norm1 
+  Auto-generated from RARE rule arith-geq-norm1-int 
   -/
-  | ARITH_GEQ_NORM1
+  | ARITH_GEQ_NORM1_INT
+  /--
+  Auto-generated from RARE rule arith-geq-norm1-real 
+  -/
+  | ARITH_GEQ_NORM1_REAL
   /--
   Auto-generated from RARE rule arith-geq-norm2 
   -/
@@ -2970,13 +3019,13 @@ inductive ProofRewriteRule where
   -/
   | ARITH_REFL_GT
   /--
-  Auto-generated from RARE rule arith-real-eq-elim 
+  Auto-generated from RARE rule arith-eq-elim-real 
   -/
-  | ARITH_REAL_EQ_ELIM
+  | ARITH_EQ_ELIM_REAL
   /--
-  Auto-generated from RARE rule arith-int-eq-elim 
+  Auto-generated from RARE rule arith-eq-elim-int 
   -/
-  | ARITH_INT_EQ_ELIM
+  | ARITH_EQ_ELIM_INT
   /--
   Auto-generated from RARE rule arith-plus-flatten 
   -/
@@ -2990,9 +3039,13 @@ inductive ProofRewriteRule where
   -/
   | ARITH_MULT_DIST
   /--
-  Auto-generated from RARE rule arith-abs-elim 
+  Auto-generated from RARE rule arith-abs-elim-int 
   -/
-  | ARITH_ABS_ELIM
+  | ARITH_ABS_ELIM_INT
+  /--
+  Auto-generated from RARE rule arith-abs-elim-real 
+  -/
+  | ARITH_ABS_ELIM_REAL
   /--
   Auto-generated from RARE rule arith-to-real-elim 
   -/
@@ -3297,6 +3350,18 @@ inductive ProofRewriteRule where
   Auto-generated from RARE rule bv-extract-concat-4 
   -/
   | BV_EXTRACT_CONCAT_4
+  /--
+  Auto-generated from RARE rule bv-eq-extract-elim1 
+  -/
+  | BV_EQ_EXTRACT_ELIM1
+  /--
+  Auto-generated from RARE rule bv-eq-extract-elim2 
+  -/
+  | BV_EQ_EXTRACT_ELIM2
+  /--
+  Auto-generated from RARE rule bv-eq-extract-elim3 
+  -/
+  | BV_EQ_EXTRACT_ELIM3
   /--
   Auto-generated from RARE rule bv-extract-bitwise-and 
   -/
