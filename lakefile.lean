@@ -9,13 +9,12 @@ def libcpp : String :=
 package cvc5 {
   precompileModules := true
   moreGlobalServerArgs := #[s!"--load-dynlib={libcpp}"]
+  moreLeanArgs := #[s!"--load-dynlib={libcpp}"]
   extraDepTargets := #[`libcvc5]
 }
 
 @[default_target]
-lean_lib cvc5 {
-  moreLeanArgs := #[s!"--load-dynlib={libcpp}"]
-}
+lean_lib cvc5
 
 @[test_driver]
 lean_lib cvc5Test {
