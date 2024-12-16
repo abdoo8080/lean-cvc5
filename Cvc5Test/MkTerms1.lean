@@ -53,6 +53,5 @@ def mkTerms1 : IO Unit := do
   assertEq ite2.getKind Kind.ITE
   assertEq ite2.getSort.toString "Bool"
 
-/-- info: -/
 #guard_msgs in
   #eval mkTerms1
