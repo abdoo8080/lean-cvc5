@@ -1,5 +1,6 @@
 import Lake
-open Lake DSL
+
+open Lake DSL System
 
 def libcpp : String :=
   if System.Platform.isWindows then "libstdc++-6.dll"
@@ -44,7 +45,7 @@ def cvc5.arch :=
 def cvc5.target := s!"{os}-{arch}-static"
 
 open IO.Process in
-def generateEnums (cppDir : Lake.FilePath) (pkg : NPackage _package.name) : IO Unit := do
+def generateEnums (cppDir : FilePath) (pkg : NPackage _package.name) : IO Unit := do
   let { exitCode, stdout, stderr } ← output {
     cmd := "lean"
     args := #[
@@ -115,6 +116,5 @@ extern_lib libffi pkg := do
   let libgmpxx := pure (staticLibPath "gmpxx")
   let libpicpoly := pure (staticLibPath "picpoly")
   let libpicpolyxx := pure (staticLibPath "picpolyxx")
-  let mut libs := #[ffiO, libcadical, libcvc5, libcvc5parser, libpicpoly, libpicpolyxx]
-  if System.Platform.isOSX then libs := libs ++ #[libgmp, libgmpxx]
+  let mut libs := #[ffiO, libcadical, libcvc5, libcvc5parser, libgmp, libgmpxx, libpicpoly, libpicpolyxx]
   buildStaticLib' libFile libs
