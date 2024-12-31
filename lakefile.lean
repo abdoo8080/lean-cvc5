@@ -2,25 +2,17 @@ import Lake
 
 open Lake DSL System
 
-def libcpp : String :=
-  if System.Platform.isWindows then "libstdc++-6.dll"
-  else if System.Platform.isOSX then "libc++.dylib"
-  else "libstdc++.so.6"
-
-package cvc5 {
+package cvc5 where
   precompileModules := true
-  moreGlobalServerArgs := #[s!"--load-dynlib={libcpp}"]
-  moreLeanArgs := #[s!"--load-dynlib={libcpp}"]
+  preferReleaseBuild := true
   extraDepTargets := #[`libcvc5]
-}
 
 @[default_target]
 lean_lib cvc5
 
 @[test_driver]
-lean_lib cvc5Test {
+lean_lib cvc5Test where
   globs := #[Glob.submodules `Cvc5Test]
-}
 
 def Lake.unzip (file : FilePath) (dir : FilePath) : LogIO PUnit := do
   IO.FS.createDirAll dir
@@ -66,12 +58,12 @@ def generateEnums (cppDir : FilePath) (pkg : NPackage _package.name) : IO Unit :
     "
 
 target libcvc5 pkg : Unit := do
-  if !(← (pkg.lakeDir / s!"cvc5-{cvc5.target}").pathExists) then
-    let zipPath := pkg.lakeDir / s!"cvc5-{cvc5.target}.zip"
+  if !(← (pkg.buildDir / s!"cvc5-{cvc5.target}").pathExists) then
+    let zipPath := pkg.buildDir / s!"cvc5-{cvc5.target}.zip"
     download s!"{cvc5.url}/{cvc5.version}/cvc5-{cvc5.target}.zip" zipPath
-    unzip zipPath pkg.lakeDir
+    unzip zipPath pkg.buildDir
     IO.FS.removeFile zipPath
-    let cvc5Root := pkg.lakeDir / s!"cvc5-{cvc5.target}" / "include" / "cvc5"
+    let cvc5Root := pkg.buildDir / s!"cvc5-{cvc5.target}" / "include" / "cvc5"
     generateEnums cvc5Root pkg
   return pure ()
 
@@ -97,18 +89,19 @@ target ffiO pkg : FilePath := do
   let srcJob ← inputBinFile <| pkg.dir / "ffi" / "ffi.cpp"
   let flags := #[
     "-std=c++17",
+    "-stdlib=libc++",
     "-I", (← getLeanIncludeDir).toString,
-    "-I", (pkg.lakeDir / s!"cvc5-{cvc5.target}" / "include").toString,
+    "-I", (pkg.buildDir / s!"cvc5-{cvc5.target}" / "include").toString,
     "-fPIC"
   ]
-  buildO oFile srcJob flags
+  buildO oFile srcJob flags (compiler := "clang++-15")
 
 extern_lib libffi pkg := do
   let name := nameToStaticLib "ffi"
   let libFile := pkg.nativeLibDir / name
   let ffiO ← fetch (pkg.target ``ffiO)
   let staticLibPath (lib : String) :=
-    pkg.lakeDir / s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib lib
+    pkg.buildDir / s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib lib
   let libcadical := pure (staticLibPath "cadical")
   let libcvc5 := pure (staticLibPath "cvc5")
   let libcvc5parser := pure (staticLibPath "cvc5parser")
