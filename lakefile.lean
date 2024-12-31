@@ -94,7 +94,7 @@ target ffiO pkg : FilePath := do
     "-I", (pkg.buildDir / s!"cvc5-{cvc5.target}" / "include").toString,
     "-fPIC"
   ]
-  buildO oFile srcJob flags (compiler := "clang++-15")
+  buildO oFile srcJob flags
 
 extern_lib libffi pkg := do
   let name := nameToStaticLib "ffi"
