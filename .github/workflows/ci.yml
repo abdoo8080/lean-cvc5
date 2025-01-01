@@ -1,6 +1,14 @@
 name: CI
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -30,3 +38,9 @@ jobs:
       uses: leanprover/lean-action@v1
       with:
         use-github-cache: false
+    - name: Upload Release Artifact
+      if: github.event_name == 'release'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        TAG: ${{ github.event.release.tag_name }}
+      run: lake upload $TAG
