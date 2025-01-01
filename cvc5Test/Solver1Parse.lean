@@ -1,4 +1,4 @@
-import Cvc5Test.Init
+import cvc5Test.Init
 
 namespace cvc5.Test
 

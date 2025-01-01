@@ -5,14 +5,13 @@ open Lake DSL System
 package cvc5 where
   precompileModules := true
   preferReleaseBuild := true
-  extraDepTargets := #[`libcvc5]
 
 @[default_target]
 lean_lib cvc5
 
 @[test_driver]
 lean_lib cvc5Test where
-  globs := #[Glob.submodules `Cvc5Test]
+  globs := #[Glob.submodules `cvc5Test]
 
 def Lake.unzip (file : FilePath) (dir : FilePath) : LogIO PUnit := do
   IO.FS.createDirAll dir
@@ -57,15 +56,15 @@ def generateEnums (cppDir : FilePath) (pkg : NPackage _package.name) : IO Unit :
 ```\
     "
 
-target libcvc5 pkg : Unit := do
-  if !(← (pkg.buildDir / s!"cvc5-{cvc5.target}").pathExists) then
+target libcvc5 pkg : FilePath := do
+  let cvc5Dir := pkg.buildDir / s!"cvc5-{cvc5.target}"
+  if !(← cvc5Dir.pathExists) then
     let zipPath := pkg.buildDir / s!"cvc5-{cvc5.target}.zip"
     download s!"{cvc5.url}/{cvc5.version}/cvc5-{cvc5.target}.zip" zipPath
     unzip zipPath pkg.buildDir
     IO.FS.removeFile zipPath
-    let cvc5Root := pkg.buildDir / s!"cvc5-{cvc5.target}" / "include" / "cvc5"
-    generateEnums cvc5Root pkg
-  return pure ()
+    generateEnums (cvc5Dir / "include" / "cvc5") pkg
+  return pure cvc5Dir
 
 def Lake.compileStaticLib'
   (libFile : FilePath) (oFiles : Array FilePath)
@@ -84,30 +83,34 @@ def Lake.buildStaticLib'
   buildFileAfterDepArray libFile oFileJobs fun oFiles => do
     compileStaticLib' libFile oFiles (← getLeanAr)
 
-target ffiO pkg : FilePath := do
-  let oFile := pkg.buildDir / "ffi" / "ffi.o"
-  let srcJob ← inputBinFile <| pkg.dir / "ffi" / "ffi.cpp"
-  let flags := #[
-    "-std=c++17",
-    "-stdlib=libc++",
-    "-I", (← getLeanIncludeDir).toString,
-    "-I", (pkg.buildDir / s!"cvc5-{cvc5.target}" / "include").toString,
-    "-fPIC"
-  ]
-  buildO oFile srcJob flags
+target ffi.o pkg : FilePath := do
+  let cvc5Dir ← fetch (pkg.target ``libcvc5)
+  cvc5Dir.bindAsync fun cvc5Dir cvc5Trace => do
+    let oFile := pkg.buildDir / "ffi" / "ffi.o"
+    let srcJob ← inputBinFile <| pkg.dir / "ffi" / "ffi.cpp"
+    let flags := #[
+      "-std=c++17",
+      "-stdlib=libc++",
+      "-I", (← getLeanIncludeDir).toString,
+      "-I", (cvc5Dir / "include").toString,
+      "-fPIC"
+    ]
+    buildO oFile srcJob flags (extraDepTrace := pure cvc5Trace)
 
 extern_lib libffi pkg := do
-  let name := nameToStaticLib "ffi"
-  let libFile := pkg.nativeLibDir / name
-  let ffiO ← fetch (pkg.target ``ffiO)
-  let staticLibPath (lib : String) :=
-    pkg.buildDir / s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib lib
-  let libcadical := pure (staticLibPath "cadical")
-  let libcvc5 := pure (staticLibPath "cvc5")
-  let libcvc5parser := pure (staticLibPath "cvc5parser")
-  let libgmp := pure (staticLibPath "gmp")
-  let libgmpxx := pure (staticLibPath "gmpxx")
-  let libpicpoly := pure (staticLibPath "picpoly")
-  let libpicpolyxx := pure (staticLibPath "picpolyxx")
-  let mut libs := #[ffiO, libcadical, libcvc5, libcvc5parser, libgmp, libgmpxx, libpicpoly, libpicpolyxx]
-  buildStaticLib' libFile libs
+  let ffiO ← fetch (pkg.target ``ffi.o)
+  let cvc5Dir ← fetch (pkg.target ``libcvc5)
+  cvc5Dir.bindAsync fun cvc5Dir cvc5Trace => do
+    let name := nameToStaticLib "ffi"
+    let libFile := pkg.nativeLibDir / name
+    let staticLibPath (lib : String) :=
+      cvc5Dir / "lib" / nameToStaticLib lib
+    let libcadical := pure (staticLibPath "cadical", cvc5Trace)
+    let libcvc5 := pure (staticLibPath "cvc5", cvc5Trace)
+    let libcvc5parser := pure (staticLibPath "cvc5parser", cvc5Trace)
+    let libgmp := pure (staticLibPath "gmp", cvc5Trace)
+    let libgmpxx := pure (staticLibPath "gmpxx", cvc5Trace)
+    let libpicpoly := pure (staticLibPath "picpoly", cvc5Trace)
+    let libpicpolyxx := pure (staticLibPath "picpolyxx", cvc5Trace)
+    let mut libs := #[ffiO, libcadical, libcvc5, libcvc5parser, libgmp, libgmpxx, libpicpoly, libpicpolyxx]
+    buildStaticLib' libFile libs
