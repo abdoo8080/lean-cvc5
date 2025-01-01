@@ -56,15 +56,30 @@ def generateEnums (cppDir : FilePath) (pkg : NPackage _package.name) : IO Unit :
 ```\
     "
 
-target libcvc5 pkg : FilePath := do
-  let cvc5Dir := pkg.buildDir / s!"cvc5-{cvc5.target}"
-  if !(← cvc5Dir.pathExists) then
-    let zipPath := pkg.buildDir / s!"cvc5-{cvc5.target}.zip"
-    download s!"{cvc5.url}/{cvc5.version}/cvc5-{cvc5.target}.zip" zipPath
-    unzip zipPath pkg.buildDir
-    IO.FS.removeFile zipPath
-    generateEnums (cvc5Dir / "include" / "cvc5") pkg
-  return pure cvc5Dir
+/--
+Download cvc5 release and update enumerations.
+-/
+script downloadRelease do
+  let ws ← getWorkspace
+  let args := ws.lakeArgs?.getD #[]
+  let v := Verbosity.normal
+  let v := if args.contains "-q" || args.contains "--quiet" then Verbosity.quiet else v
+  let v := if args.contains "-v" || args.contains "--verbose" then Verbosity.verbose else v
+  let exitCode ← LoggerIO.toBaseIO (minLv := v.minLogLv) <| ws.runLakeT do
+    if let some pkg ← findPackage? _package.name then
+      let cvc5Dir := pkg.buildDir / s!"cvc5-{cvc5.target}"
+      let zipPath := cvc5Dir.addExtension "zip"
+      if ← cvc5Dir.pathExists then
+        IO.FS.removeDirAll cvc5Dir
+      download s!"{cvc5.url}/{cvc5.version}/cvc5-{cvc5.target}.zip" zipPath
+      unzip zipPath pkg.buildDir
+      IO.FS.removeFile zipPath
+      generateEnums (cvc5Dir / "include" / "cvc5") pkg
+      return 0
+    else
+      logError "package not found"
+      return 1
+  return ⟨exitCode.getD 1⟩
 
 def Lake.compileStaticLib'
   (libFile : FilePath) (oFiles : Array FilePath)
@@ -83,34 +98,27 @@ def Lake.buildStaticLib'
   buildFileAfterDepArray libFile oFileJobs fun oFiles => do
     compileStaticLib' libFile oFiles (← getLeanAr)
 
+def includes := #["cvc5_export.h", "cvc5_kind.h", "cvc5_parser.h", "cvc5_proof_rule.h",
+                  "cvc5_skolem_id.h", "cvc5_types.h", "cvc5.h"]
+
 target ffi.o pkg : FilePath := do
-  let cvc5Dir ← fetch (pkg.target ``libcvc5)
-  cvc5Dir.bindAsync fun cvc5Dir cvc5Trace => do
-    let oFile := pkg.buildDir / "ffi" / "ffi.o"
-    let srcJob ← inputBinFile <| pkg.dir / "ffi" / "ffi.cpp"
-    let flags := #[
-      "-std=c++17",
-      "-stdlib=libc++",
-      "-I", (← getLeanIncludeDir).toString,
-      "-I", (cvc5Dir / "include").toString,
-      "-fPIC"
-    ]
-    buildO oFile srcJob flags (extraDepTrace := pure cvc5Trace)
+  let includes := includes.map (pkg.buildDir / s!"cvc5-{cvc5.target}" / "include" / "cvc5" / ⟨·⟩)
+  let depTrace := (← getLeanTrace).mix (← computeTrace includes)
+  let oFile := pkg.buildDir / "ffi" / "ffi.o"
+  let srcJob ← inputBinFile <| pkg.dir / "ffi" / "ffi.cpp"
+  let flags := #[
+    "-std=c++17",
+    "-stdlib=libc++",
+    "-I", (← getLeanIncludeDir).toString,
+    "-I", (pkg.buildDir / s!"cvc5-{cvc5.target}" / "include").toString,
+    "-fPIC"
+  ]
+  buildO oFile srcJob flags (extraDepTrace := pure depTrace)
+
+def libs := #["cadical", "cvc5", "cvc5parser", "gmp", "gmpxx", "picpoly", "picpolyxx"]
 
 extern_lib libffi pkg := do
+  let libs := libs.map (pure <| pkg.buildDir / s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib ·)
   let ffiO ← fetch (pkg.target ``ffi.o)
-  let cvc5Dir ← fetch (pkg.target ``libcvc5)
-  cvc5Dir.bindAsync fun cvc5Dir cvc5Trace => do
-    let name := nameToStaticLib "ffi"
-    let libFile := pkg.nativeLibDir / name
-    let staticLibPath (lib : String) :=
-      cvc5Dir / "lib" / nameToStaticLib lib
-    let libcadical := pure (staticLibPath "cadical", cvc5Trace)
-    let libcvc5 := pure (staticLibPath "cvc5", cvc5Trace)
-    let libcvc5parser := pure (staticLibPath "cvc5parser", cvc5Trace)
-    let libgmp := pure (staticLibPath "gmp", cvc5Trace)
-    let libgmpxx := pure (staticLibPath "gmpxx", cvc5Trace)
-    let libpicpoly := pure (staticLibPath "picpoly", cvc5Trace)
-    let libpicpolyxx := pure (staticLibPath "picpolyxx", cvc5Trace)
-    let mut libs := #[ffiO, libcadical, libcvc5, libcvc5parser, libgmp, libgmpxx, libpicpoly, libpicpolyxx]
-    buildStaticLib' libFile libs
+  let libFile := pkg.nativeLibDir / nameToStaticLib "ffi"
+  buildStaticLib' libFile (libs.push ffiO)
