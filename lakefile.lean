@@ -98,27 +98,23 @@ def Lake.buildStaticLib'
   buildFileAfterDepArray libFile oFileJobs fun oFiles => do
     compileStaticLib' libFile oFiles (← getLeanAr)
 
-def includes := #["cvc5_export.h", "cvc5_kind.h", "cvc5_parser.h", "cvc5_proof_rule.h",
-                  "cvc5_skolem_id.h", "cvc5_types.h", "cvc5.h"]
-
 target ffi.o pkg : FilePath := do
-  let includes := includes.map (pkg.buildDir / s!"cvc5-{cvc5.target}" / "include" / "cvc5" / ⟨·⟩)
-  let depTrace := (← getLeanTrace).mix (← computeTrace includes)
-  let oFile := pkg.buildDir / "ffi" / "ffi.o"
-  let srcJob ← inputBinFile <| pkg.dir / "ffi" / "ffi.cpp"
-  let flags := #[
-    "-std=c++17",
-    "-stdlib=libc++",
-    "-I", (← getLeanIncludeDir).toString,
-    "-I", (pkg.buildDir / s!"cvc5-{cvc5.target}" / "include").toString,
-    "-fPIC"
-  ]
-  buildO oFile srcJob flags (extraDepTrace := pure depTrace)
+  pkg.afterBuildCacheAsync do
+    let oFile := pkg.buildDir / "ffi" / "ffi.o"
+    let srcJob ← inputBinFile <| pkg.dir / "ffi" / "ffi.cpp"
+    let flags := #[
+      "-std=c++17",
+      "-stdlib=libc++",
+      "-I", (← getLeanIncludeDir).toString,
+      "-I", (pkg.buildDir / s!"cvc5-{cvc5.target}" / "include").toString,
+      "-fPIC"
+    ]
+    buildO oFile srcJob flags
 
 def libs := #["cadical", "cvc5", "cvc5parser", "gmp", "gmpxx", "picpoly", "picpolyxx"]
 
 extern_lib libffi pkg := do
-  let libs := libs.map (pure <| pkg.buildDir / s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib ·)
   let ffiO ← fetch (pkg.target ``ffi.o)
+  let libs := libs.map (pure <| pkg.buildDir / s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib ·)
   let libFile := pkg.nativeLibDir / nameToStaticLib "ffi"
   buildStaticLib' libFile (libs.push ffiO)
