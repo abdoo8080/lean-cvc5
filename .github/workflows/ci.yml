@@ -44,7 +44,10 @@ jobs:
     - name: Build and Test lean-cvc5
       uses: leanprover/lean-action@v1
       with:
-        use-github-cache: false
+        use-github-cache: false 
+    - name: Purge Disk Cache # https://github.com/actions/runner-images/issues/2619
+      if: github.event_name == 'release' && runner.os == 'macOS'
+      run: sudo /usr/sbin/purge
     - name: Upload Release Artifact
       if: github.event_name == 'release'
       env:
