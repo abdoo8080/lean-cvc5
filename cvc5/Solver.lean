@@ -5,7 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Abdalrhman Mohamed
 -/
 
-import Lean.Data.Rat
+import Std.Internal.Rat
 
 import cvc5.Init
 import cvc5.Kind
@@ -315,7 +315,7 @@ extern_def!? getBitVectorValue : Term → UInt32 → Except Error String
 extern_def!? getIntegerValue : Term → Except Error Int
 
 /-- Get the native rational value of a real, rational-compatible value. -/
-extern_def!? getRationalValue : Term → Except Error Lean.Rat
+extern_def!? getRationalValue : Term → Except Error Std.Internal.Rat
 
 /-- Get the symbol of this term.
 
