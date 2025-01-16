@@ -6,71 +6,56 @@ using namespace cvc5;
 
 // ## `Except Error α` constructors
 
-extern "C" lean_obj_res except_ok(
-  lean_obj_arg alpha,
-  lean_obj_arg val
-);
+extern "C" lean_obj_res except_ok(lean_obj_arg alpha, lean_obj_arg val);
 
-extern "C" lean_obj_res except_ok_bool(
-  uint8_t val
-);
+extern "C" lean_obj_res except_ok_bool(uint8_t val);
 
-extern "C" lean_obj_res except_ok_u32(
-  uint32_t val
-);
+extern "C" lean_obj_res except_ok_u32(uint32_t val);
 
-extern "C" lean_obj_res except_ok_u8(
-  uint8_t val
-);
+extern "C" lean_obj_res except_ok_u8(uint8_t val);
 
-extern "C" lean_obj_res except_err(
-  lean_obj_arg alpha,
-  lean_obj_arg msg
-); 
+extern "C" lean_obj_res except_err(lean_obj_arg alpha, lean_obj_arg msg);
 
 // ## Exception-catching macro for `Except`
 //
 // Runs `code`, `return`s an `Except Error α` error on exceptions.
 
 #define CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN \
-  try {
-#define CVC5_LEAN_API_TRY_CATCH_EXCEPT_END \
-  } catch (CVC5ApiException& e) { \
-    return except_err(lean_box(0), lean_mk_string(e.what())); \
-  } catch (char const* e) { \
-    return except_err(lean_box(0), lean_mk_string(e)); \
-  } catch (...) { \
-    return except_err( \
-      lean_box(0), \
-      lean_mk_string("cvc5's term manager raised an unexpected exception") \
-    ); \
+  try                                        \
+  {
+#define CVC5_LEAN_API_TRY_CATCH_EXCEPT_END                                     \
+  }                                                                            \
+  catch (CVC5ApiException & e)                                                 \
+  {                                                                            \
+    return except_err(lean_box(0), lean_mk_string(e.what()));                  \
+  }                                                                            \
+  catch (char const* e) { return except_err(lean_box(0), lean_mk_string(e)); } \
+  catch (...)                                                                  \
+  {                                                                            \
+    return except_err(                                                         \
+        lean_box(0),                                                           \
+        lean_mk_string("cvc5's term manager raised an unexpected exception")); \
   }
 
 // ## `SolverT` constructors
 
-extern "C" lean_obj_res solver_val(
-  lean_obj_arg m,
-  lean_obj_arg inst,
-  lean_obj_arg alpha,
-  lean_obj_arg a,
-  lean_obj_arg solver
-);
+extern "C" lean_obj_res solver_val(lean_obj_arg m,
+                                   lean_obj_arg inst,
+                                   lean_obj_arg alpha,
+                                   lean_obj_arg a,
+                                   lean_obj_arg solver);
 
-extern "C" lean_obj_res solver_err(
-  lean_obj_arg m,
-  lean_obj_arg inst,
-  lean_obj_arg alpha,
-  lean_obj_arg e,
-  lean_obj_arg solver
-);
+extern "C" lean_obj_res solver_err(lean_obj_arg m,
+                                   lean_obj_arg inst,
+                                   lean_obj_arg alpha,
+                                   lean_obj_arg e,
+                                   lean_obj_arg solver);
 
-extern "C" lean_obj_res solver_errOfString(
-  lean_obj_arg m,
-  lean_obj_arg inst,
-  lean_obj_arg alpha,
-  lean_obj_arg msg,
-  lean_obj_arg solver
-);
+extern "C" lean_obj_res solver_errOfString(lean_obj_arg m,
+                                           lean_obj_arg inst,
+                                           lean_obj_arg alpha,
+                                           lean_obj_arg msg,
+                                           lean_obj_arg solver);
 
 // ## Exception-catching macro for `SolverT`
 //
@@ -81,21 +66,28 @@ extern "C" lean_obj_res solver_errOfString(
 // - `code`: the code to run and catch exceptions for.
 
 #define CVC5_LEAN_API_TRY_CATCH_SOLVER_BEGIN \
-  try {
-#define CVC5_LEAN_API_TRY_CATCH_SOLVER_END(inst, solver) \
-  } catch (CVC5ApiException& e) { \
-    return solver_errOfString( \
-      lean_box(0), inst, lean_box(0), lean_mk_string(e.what()), solver \
-    ); \
-  } catch (char const* e) { \
-    return solver_errOfString( \
-      lean_box(0), inst, lean_box(0), lean_mk_string(e), solver \
-    ); \
-  } catch (...) { \
-    return solver_errOfString( \
-      lean_box(0), inst, lean_box(0), \
-      lean_mk_string("cvc5 raised an unexpected exception"), solver \
-    ); \
+  try                                        \
+  {
+#define CVC5_LEAN_API_TRY_CATCH_SOLVER_END(inst, solver)                   \
+  }                                                                        \
+  catch (CVC5ApiException & e)                                             \
+  {                                                                        \
+    return solver_errOfString(                                             \
+        lean_box(0), inst, lean_box(0), lean_mk_string(e.what()), solver); \
+  }                                                                        \
+  catch (char const* e)                                                    \
+  {                                                                        \
+    return solver_errOfString(                                             \
+        lean_box(0), inst, lean_box(0), lean_mk_string(e), solver);        \
+  }                                                                        \
+  catch (...)                                                              \
+  {                                                                        \
+    return solver_errOfString(                                             \
+        lean_box(0),                                                       \
+        inst,                                                              \
+        lean_box(0),                                                       \
+        lean_mk_string("cvc5 raised an unexpected exception"),             \
+        solver);                                                           \
   }
 
 inline lean_obj_res mk_unit_unit() { return lean_box(0); }
@@ -244,9 +236,9 @@ extern "C" lean_obj_res sort_getFunctionDomainSorts(lean_obj_arg s)
 extern "C" lean_obj_res sort_getFunctionCodomainSort(lean_obj_arg s)
 {
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
-  return except_ok(lean_box(0),
-    sort_box(new Sort(sort_unbox(s)->getFunctionCodomainSort()))
-  );
+  return except_ok(
+      lean_box(0),
+      sort_box(new Sort(sort_unbox(s)->getFunctionCodomainSort())));
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
@@ -254,8 +246,7 @@ extern "C" lean_obj_res sort_getSymbol(lean_obj_arg s)
 {
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
   return except_ok(lean_box(0),
-    lean_mk_string(sort_unbox(s)->getSymbol().c_str())
-  );
+                   lean_mk_string(sort_unbox(s)->getSymbol().c_str()));
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
@@ -267,9 +258,7 @@ extern "C" uint8_t sort_isInteger(lean_obj_arg s)
 extern "C" lean_obj_res sort_getBitVectorSize(lean_obj_arg s)
 {
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
-  return except_ok_u32(
-    static_cast<int32_t>(sort_unbox(s)->getBitVectorSize())
-  );
+  return except_ok_u32(static_cast<int32_t>(sort_unbox(s)->getBitVectorSize()));
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
@@ -388,14 +377,17 @@ extern "C" lean_obj_res term_not(lean_obj_arg t)
 extern "C" lean_obj_res term_and(lean_obj_arg t1, lean_obj_arg t2)
 {
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
-  return except_ok(lean_box(0), term_box(new Term(term_unbox(t1)->andTerm(*term_unbox(t2)))));
+  return except_ok(
+      lean_box(0),
+      term_box(new Term(term_unbox(t1)->andTerm(*term_unbox(t2)))));
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
 extern "C" lean_obj_res term_or(lean_obj_arg t1, lean_obj_arg t2)
 {
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
-  return except_ok(lean_box(0), term_box(new Term(term_unbox(t1)->orTerm(*term_unbox(t2)))));
+  return except_ok(lean_box(0),
+                   term_box(new Term(term_unbox(t1)->orTerm(*term_unbox(t2)))));
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
@@ -446,30 +438,32 @@ extern "C" lean_obj_res term_getBooleanValue(lean_obj_arg t)
 extern "C" lean_obj_res term_getBitVectorValue(lean_obj_arg t, uint32_t base)
 {
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
-  return except_ok(lean_box(0), lean_mk_string(term_unbox(t)->getBitVectorValue(base).c_str()));
+  return except_ok(
+      lean_box(0),
+      lean_mk_string(term_unbox(t)->getBitVectorValue(base).c_str()));
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
 extern "C" lean_obj_res term_getIntegerValue(lean_obj_arg t)
 {
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
-  return except_ok(lean_box(0), lean_cstr_to_int(term_unbox(t)->getIntegerValue().c_str()));
+  return except_ok(lean_box(0),
+                   lean_cstr_to_int(term_unbox(t)->getIntegerValue().c_str()));
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
-extern "C" lean_obj_res l_Std_Internal_mkRat(lean_obj_arg num, lean_obj_arg den);
+extern "C" lean_obj_res l_Std_Internal_mkRat(lean_obj_arg num,
+                                             lean_obj_arg den);
 
 extern "C" lean_obj_res term_getRationalValue(lean_obj_arg t)
 {
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
   std::string r = term_unbox(t)->getRealValue();
   size_t i = r.find('/');
-  return except_ok(lean_box(0),
-    l_Std_Internal_mkRat(
-      lean_cstr_to_int(r.substr(0, i).c_str()),
-      lean_cstr_to_nat(r.substr(i + 1).c_str())
-    )
-  );
+  return except_ok(
+      lean_box(0),
+      l_Std_Internal_mkRat(lean_cstr_to_int(r.substr(0, i).c_str()),
+                           lean_cstr_to_nat(r.substr(i + 1).c_str())));
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
@@ -481,7 +475,8 @@ extern "C" uint8_t term_hasSymbol(lean_obj_arg t)
 extern "C" lean_obj_res term_getSymbol(lean_obj_arg t)
 {
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
-  return except_ok(lean_box(0), lean_mk_string(term_unbox(t)->getSymbol().c_str()));
+  return except_ok(lean_box(0),
+                   lean_mk_string(term_unbox(t)->getSymbol().c_str()));
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
@@ -667,42 +662,40 @@ extern "C" lean_obj_arg termManager_getStringSort(lean_obj_arg tm)
   return sort_box(new Sort(mut_tm_unbox(tm)->getStringSort()));
 }
 
-extern "C" lean_obj_arg termManager_mkArraySort(lean_obj_arg tm, lean_obj_arg idx, lean_obj_arg elm)
+extern "C" lean_obj_arg termManager_mkArraySort(lean_obj_arg tm,
+                                                lean_obj_arg idx,
+                                                lean_obj_arg elm)
 {
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
   return except_ok(lean_box(0),
-    sort_box(new Sort(mut_tm_unbox(tm)->mkArraySort(*sort_unbox(idx), *sort_unbox(elm))))
-  );
+                   sort_box(new Sort(mut_tm_unbox(tm)->mkArraySort(
+                       *sort_unbox(idx), *sort_unbox(elm)))));
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
-extern "C" lean_obj_arg termManager_mkBitVectorSort(lean_obj_arg tm, uint32_t size)
+extern "C" lean_obj_arg termManager_mkBitVectorSort(lean_obj_arg tm,
+                                                    uint32_t size)
 {
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
   return except_ok(lean_box(0),
-    sort_box(new Sort(mut_tm_unbox(tm)->mkBitVectorSort(size)))
-  );
+                   sort_box(new Sort(mut_tm_unbox(tm)->mkBitVectorSort(size))));
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
-extern "C" lean_obj_arg termManager_mkFloatingPointSort(
-  lean_obj_arg tm,
-  uint32_t exp,
-  uint32_t sig
-)
+extern "C" lean_obj_arg termManager_mkFloatingPointSort(lean_obj_arg tm,
+                                                        uint32_t exp,
+                                                        uint32_t sig)
 {
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
-  return except_ok(lean_box(0),
-    sort_box(new Sort(mut_tm_unbox(tm)->mkFloatingPointSort(exp, sig)))
-  );
+  return except_ok(
+      lean_box(0),
+      sort_box(new Sort(mut_tm_unbox(tm)->mkFloatingPointSort(exp, sig))));
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
-extern "C" lean_obj_arg termManager_mkFunctionSort(
-  lean_obj_arg tm,
-  lean_obj_arg sorts,
-  lean_obj_arg codomain
-)
+extern "C" lean_obj_arg termManager_mkFunctionSort(lean_obj_arg tm,
+                                                   lean_obj_arg sorts,
+                                                   lean_obj_arg codomain)
 {
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
   std::vector<Sort> cvc5Sorts;
@@ -712,8 +705,8 @@ extern "C" lean_obj_arg termManager_mkFunctionSort(
         lean_array_get(sort_box(new Sort()), sorts, lean_usize_to_nat(i))));
   }
   return except_ok(lean_box(0),
-    sort_box(new Sort(mut_tm_unbox(tm)->mkFunctionSort(cvc5Sorts, *sort_unbox(codomain))))
-  );
+                   sort_box(new Sort(mut_tm_unbox(tm)->mkFunctionSort(
+                       cvc5Sorts, *sort_unbox(codomain)))));
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
@@ -726,9 +719,9 @@ extern "C" lean_obj_res termManager_mkIntegerFromString(lean_obj_arg tm,
                                                         lean_obj_arg val)
 {
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
-  return except_ok(lean_box(0),
-    term_box(new Term(mut_tm_unbox(tm)->mkInteger(lean_string_cstr(val))))
-  );
+  return except_ok(
+      lean_box(0),
+      term_box(new Term(mut_tm_unbox(tm)->mkInteger(lean_string_cstr(val)))));
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
@@ -745,16 +738,13 @@ extern "C" lean_obj_res termManager_mkTerm(lean_obj_arg tm,
         lean_array_get(term_box(new Term()), children, lean_usize_to_nat(i))));
   }
   return except_ok(lean_box(0),
-    term_box(new Term(mut_tm_unbox(tm)->mkTerm(k, cs)))
-  );
+                   term_box(new Term(mut_tm_unbox(tm)->mkTerm(k, cs))));
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
-extern "C" lean_obj_res termManager_mkTermOfOp(
-  lean_obj_arg tm,
-  lean_obj_arg op,
-  lean_obj_arg children
-)
+extern "C" lean_obj_res termManager_mkTermOfOp(lean_obj_arg tm,
+                                               lean_obj_arg op,
+                                               lean_obj_arg children)
 {
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
   std::vector<Term> cs;
@@ -763,26 +753,23 @@ extern "C" lean_obj_res termManager_mkTermOfOp(
     cs.push_back(*term_unbox(
         lean_array_get(term_box(new Term()), children, lean_usize_to_nat(i))));
   }
-  return except_ok(lean_box(0),
-    term_box(new Term(mut_tm_unbox(tm)->mkTerm(*op_unbox(op), cs)))
-  );
+  return except_ok(
+      lean_box(0),
+      term_box(new Term(mut_tm_unbox(tm)->mkTerm(*op_unbox(op), cs))));
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
-extern "C" lean_obj_res termManager_mkConst(
-  lean_obj_arg tm,
-  lean_obj_arg sort,
-  lean_obj_arg symbol
-)
+extern "C" lean_obj_res termManager_mkConst(lean_obj_arg tm,
+                                            lean_obj_arg sort,
+                                            lean_obj_arg symbol)
 {
-  return term_box(new Term(mut_tm_unbox(tm)->mkConst(*sort_unbox(sort), lean_string_cstr(symbol))));
+  return term_box(new Term(
+      mut_tm_unbox(tm)->mkConst(*sort_unbox(sort), lean_string_cstr(symbol))));
 }
 
-extern "C" lean_obj_res termManager_mkOpOfIndices(
-  lean_obj_arg tm,
-  uint16_t kind,
-  lean_obj_arg args
-)
+extern "C" lean_obj_res termManager_mkOpOfIndices(lean_obj_arg tm,
+                                                  uint16_t kind,
+                                                  lean_obj_arg args)
 {
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
   Kind k = static_cast<Kind>(static_cast<int32_t>(kind) - 2);
@@ -790,26 +777,22 @@ extern "C" lean_obj_res termManager_mkOpOfIndices(
   for (size_t i = 0, n = lean_array_size(args); i < n; ++i)
   {
     indices.push_back(
-      lean_uint32_of_nat(lean_array_get(0, args, lean_usize_to_nat(i)))
-    );
+        lean_uint32_of_nat(lean_array_get(0, args, lean_usize_to_nat(i))));
   }
   return except_ok(lean_box(0),
-    op_box(new Op(mut_tm_unbox(tm)->mkOp(k, indices)))
-  );
+                   op_box(new Op(mut_tm_unbox(tm)->mkOp(k, indices))));
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
-extern "C" lean_obj_res termManager_mkOpOfString(
-  lean_obj_arg tm,
-  uint16_t kind,
-  lean_obj_arg arg
-)
+extern "C" lean_obj_res termManager_mkOpOfString(lean_obj_arg tm,
+                                                 uint16_t kind,
+                                                 lean_obj_arg arg)
 {
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
   Kind k = static_cast<Kind>(static_cast<int32_t>(kind) - 2);
-  return except_ok(lean_box(0),
-    op_box(new Op(mut_tm_unbox(tm)->mkOp(k, lean_string_cstr(arg))))
-  );
+  return except_ok(
+      lean_box(0),
+      op_box(new Op(mut_tm_unbox(tm)->mkOp(k, lean_string_cstr(arg)))));
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
@@ -846,11 +829,11 @@ extern "C" lean_obj_res solver_getVersion(lean_obj_arg inst,
                                           lean_obj_arg solver)
 {
   CVC5_LEAN_API_TRY_CATCH_SOLVER_BEGIN;
-  return solver_val(
-    lean_box(0), inst, lean_box(0),
-    lean_mk_string(solver_unbox(solver)->getVersion().c_str()),
-    solver
-  );
+  return solver_val(lean_box(0),
+                    inst,
+                    lean_box(0),
+                    lean_mk_string(solver_unbox(solver)->getVersion().c_str()),
+                    solver);
   CVC5_LEAN_API_TRY_CATCH_SOLVER_END(inst, solver);
 }
 
@@ -863,6 +846,27 @@ extern "C" lean_obj_res solver_setOption(lean_obj_arg inst,
   solver_unbox(solver)->setOption(lean_string_cstr(option),
                                   lean_string_cstr(value));
   return solver_val(lean_box(0), inst, lean_box(0), mk_unit_unit(), solver);
+  CVC5_LEAN_API_TRY_CATCH_SOLVER_END(inst, solver);
+}
+
+extern "C" lean_obj_res solver_declareFun(lean_obj_arg inst,
+                                          lean_obj_arg symbol,
+                                          lean_obj_arg sorts,
+                                          lean_obj_arg sort,
+                                          uint8_t fresh,
+                                          lean_obj_arg solver)
+{
+  CVC5_LEAN_API_TRY_CATCH_SOLVER_BEGIN;
+  std::vector<Sort> ss;
+  for (size_t i = 0, n = lean_array_size(sorts); i < n; ++i)
+  {
+    ss.push_back(*sort_unbox(
+        lean_array_get(sort_box(new Sort()), sorts, lean_usize_to_nat(i))));
+  }
+  Term f = solver_unbox(solver)->declareFun(
+      lean_string_cstr(symbol), ss, *sort_unbox(sort), bool_unbox(fresh));
+  return solver_val(
+      lean_box(0), inst, lean_box(0), term_box(new Term(f)), solver);
   CVC5_LEAN_API_TRY_CATCH_SOLVER_END(inst, solver);
 }
 
@@ -879,11 +883,11 @@ extern "C" lean_obj_res solver_assertFormula(lean_obj_arg inst,
 extern "C" lean_obj_res solver_checkSat(lean_obj_arg inst, lean_obj_arg solver)
 {
   CVC5_LEAN_API_TRY_CATCH_SOLVER_BEGIN;
-  return solver_val(
-    lean_box(0), inst, lean_box(0),
-    result_box(new Result(solver_unbox(solver)->checkSat())),
-    solver
-  );
+  return solver_val(lean_box(0),
+                    inst,
+                    lean_box(0),
+                    result_box(new Result(solver_unbox(solver)->checkSat())),
+                    solver);
   CVC5_LEAN_API_TRY_CATCH_SOLVER_END(inst, solver);
 }
 
@@ -900,16 +904,53 @@ extern "C" lean_obj_res solver_getProof(lean_obj_arg inst, lean_obj_arg solver)
   CVC5_LEAN_API_TRY_CATCH_SOLVER_END(inst, solver);
 }
 
+extern "C" lean_obj_res solver_getValue(lean_obj_arg inst,
+                                        lean_obj_arg term,
+                                        lean_obj_arg solver)
+{
+  CVC5_LEAN_API_TRY_CATCH_SOLVER_BEGIN;
+  return solver_val(
+      lean_box(0),
+      inst,
+      lean_box(0),
+      term_box(new Term(solver_unbox(solver)->getValue(*term_unbox(term)))),
+      solver);
+  CVC5_LEAN_API_TRY_CATCH_SOLVER_END(inst, solver);
+}
+
+extern "C" lean_obj_res solver_getValues(lean_obj_arg inst,
+                                         lean_obj_arg terms,
+                                         lean_obj_arg solver)
+{
+  CVC5_LEAN_API_TRY_CATCH_SOLVER_BEGIN;
+  std::vector<Term> ts;
+  for (size_t i = 0, n = lean_array_size(terms); i < n; ++i)
+  {
+    ts.push_back(*term_unbox(
+        lean_array_get(term_box(new Term()), terms, lean_usize_to_nat(i))));
+  }
+  std::vector<Term> values = solver_unbox(solver)->getValue(ts);
+  lean_object* vs = lean_mk_empty_array();
+  for (const Term& value : values)
+  {
+    vs = lean_array_push(vs, term_box(new Term(value)));
+  }
+  return solver_val(lean_box(0), inst, lean_box(0), vs, solver);
+  CVC5_LEAN_API_TRY_CATCH_SOLVER_END(inst, solver);
+}
+
 extern "C" lean_obj_res solver_proofToString(lean_obj_arg inst,
                                              lean_obj_arg proof,
                                              lean_obj_arg solver)
 {
   CVC5_LEAN_API_TRY_CATCH_SOLVER_BEGIN;
   return solver_val(
-    lean_box(0), inst, lean_box(0),
-    lean_mk_string(solver_unbox(solver)->proofToString(*proof_unbox(proof)).c_str()),
-    solver
-  );
+      lean_box(0),
+      inst,
+      lean_box(0),
+      lean_mk_string(
+          solver_unbox(solver)->proofToString(*proof_unbox(proof)).c_str()),
+      solver);
   CVC5_LEAN_API_TRY_CATCH_SOLVER_END(inst, solver);
 }
 

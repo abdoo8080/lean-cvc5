@@ -575,6 +575,26 @@ extern_def getVersion : SolverT m String
 -/
 extern_def setOption (option value : String) : SolverT m Unit
 
+/--
+Declare n-ary function symbol.
+
+SMT-LIB:
+
+\verbatim embed:rst:leading-asterisk
+ .. code:: smtlib
+
+     (declare-fun <symbol> ( <sort>* ) <sort>)
+ \endverbatim
+
+- `symbol`: The name of the function.
+- `sorts`: The sorts of the parameters to this function.
+- `sort`: The sort of the return value of this function.
+- `fresh`: If true, then this method always returns a new Term.
+           Otherwise, this method will always return the same Term
+           for each call with the given sorts and symbol where fresh is false.
+-/
+extern_def declareFun (symbol : String) (sorts : Array cvc5.Sort) (sort : cvc5.Sort) (fresh := true) : SolverT m Term
+
 /-- Assert a formula.
 
 - `term`: The formula to assert.
@@ -589,6 +609,36 @@ extern_def checkSat : SolverT m Result
 Requires to enable option `produce-proofs`.
 -/
 extern_def getProof : SolverT m (Array Proof)
+
+/--
+Get the values of the given term in the current model.
+
+SMT-LIB:
+
+\verbatim embed:rst:leading-asterisk
+.. code:: smtlib
+
+    (get-value ( <term>* ))
+\endverbatim
+
+- `terms`: The term for which the value is queried.
+-/
+extern_def getValue (term : Term) : SolverT m Term
+
+/--
+Get the values of the given terms in the current model.
+
+SMT-LIB:
+
+\verbatim embed:rst:leading-asterisk
+.. code:: smtlib
+
+    (get-value ( <term>* ))
+\endverbatim
+
+- `terms`: The terms for which the values are queried.
+-/
+extern_def getValues (terms : Array Term) : SolverT m (Array Term)
 
 /-- Prints a proof as a string in a selected proof format mode.
 
@@ -610,6 +660,12 @@ def run (tm : TermManager) (query : SolverT m α) : m (Except Error α) :=
   return match ← ExceptT.run query (new tm) with
   | (.ok x, _) => .ok x
   | (.error e, _) => .error e
+
+/-- Run a `query` given a term manager `tm`. -/
+def run! [Inhabited α] (tm : TermManager) (query : SolverT m α) : m α :=
+  return match ← ExceptT.run query (new tm) with
+  | (.ok x, _) => x
+  | (.error e, _) => panic! s!"{e}"
 
 end Solver
 
