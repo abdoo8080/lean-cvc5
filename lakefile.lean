@@ -56,10 +56,12 @@ def generateEnums (cppDir : FilePath) (pkg : NPackage _package.name) : IO Unit :
 ```\
     "
 
-/--
-Download cvc5 release and update enumerations.
+/-- Initialization script.
+
+- download cvc5 release;
+- generate lean-enumerations.
 -/
-script downloadRelease do
+script init do
   let ws ← getWorkspace
   let args := ws.lakeArgs?.getD #[]
   let v := Verbosity.normal
@@ -93,9 +95,9 @@ def Lake.compileStaticLib'
 
 /-- Build a static library from object file jobs using the `ar` packaged with Lean. -/
 def Lake.buildStaticLib'
-  (libFile : FilePath) (oFileJobs : Array (BuildJob FilePath))
-: SpawnM (BuildJob FilePath) :=
-  buildFileAfterDepArray libFile oFileJobs fun oFiles => do
+  (libFile : FilePath) (oFileJobs : Array (Job FilePath))
+: SpawnM (Job FilePath) :=
+  buildFileAfterDep libFile (.collectArray oFileJobs) fun oFiles => do
     compileStaticLib' libFile oFiles (← getLeanAr)
 
 target ffi.o pkg : FilePath := do
