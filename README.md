@@ -28,7 +28,7 @@ require smt from git "https://github.com/abdoo8080/lean-cvc5.git" @ "main"
 Build this library by running the `init` script before `lake`-building:
 
 ```text
-lake script run init
+lake run init
 [...]
 lake build
 [...]

@@ -58,8 +58,8 @@ def generateEnums (cppDir : FilePath) (pkg : NPackage _package.name) : IO Unit :
 
 /-- Initialization script.
 
-- download cvc5 release;
-- generate lean-enumerations.
+- download cvc5 release files;
+- generate/update lean-enumerations.
 -/
 script init do
   let ws ← getWorkspace
