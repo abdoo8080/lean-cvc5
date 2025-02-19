@@ -777,7 +777,7 @@ extern "C" lean_obj_res termManager_mkOpOfIndices(lean_obj_arg tm,
   for (size_t i = 0, n = lean_array_size(args); i < n; ++i)
   {
     indices.push_back(
-        lean_uint32_of_nat(lean_array_get(0, args, lean_usize_to_nat(i))));
+      lean_uint32_of_nat_mk(lean_array_get(lean_usize_to_nat(0), args, lean_usize_to_nat(i))));
   }
   return except_ok(lean_box(0),
                    op_box(new Op(mut_tm_unbox(tm)->mkOp(k, indices))));
