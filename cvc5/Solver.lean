@@ -510,7 +510,14 @@ See `cvc5.Kind` for a description of the parameters.
 If `args` is empty, the `Op` simply wraps the `cvc5.Kind`. The `Kind` can be used in
 `Solver.mkTerm` directly without creating an `Op` first.
 -/
-extern_def!? mkOpOfIndices : TermManager → (kind : Kind) → (args : Array Nat) → Except Error Op
+extern_def!? mkOpOfIndices : TermManager → (kind : Kind) → (args : Array Nat := #[]) → Except Error Op
+
+@[inherit_doc mkOpOfIndices]
+abbrev mkOp := @mkOpOfIndices
+@[inherit_doc mkOpOfIndices!]
+abbrev mkOp! := @mkOpOfIndices!
+@[inherit_doc mkOpOfIndices?]
+abbrev mkOp? := @mkOpOfIndices?
 
 /-- Create operator of kind:
 
