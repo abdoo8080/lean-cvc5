@@ -186,6 +186,12 @@ protected extern_def isFunction : cvc5.Sort → Bool
 /-- A string representation of this sort. -/
 protected extern_def toString : cvc5.Sort → String
 
+/-- Determine if this term has a symbol (a name).
+
+For example, free constants and variables have symbols.
+-/
+extern_def hasSymbol : cvc5.Sort → Except Error Bool
+
 /-- Get the symbol of this sort.
 
 The symbol of this sort is the string that was provided when consrtucting it *via* one of
@@ -470,6 +476,14 @@ extern_def!? mkFloatingPointSort : TermManager → (exp sig : UInt32) → Except
 -/
 extern_def!? mkFunctionSort
 : TermManager → (sorts : Array cvc5.Sort) → (codomain : cvc5.Sort) → Except Error cvc5.Sort
+
+/-- Create a sort parameter.
+
+- `symbol` The name of the sort.
+
+**Warning**: This function is experimental and may change in future versions.
+-/
+extern_def mkParamSort : TermManager → String → cvc5.Sort
 
 /-- Create a Boolean constant.
 

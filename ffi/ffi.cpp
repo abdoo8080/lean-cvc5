@@ -242,6 +242,13 @@ extern "C" lean_obj_res sort_getFunctionCodomainSort(lean_obj_arg s)
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
+extern "C" lean_obj_res sort_hasSymbol(lean_obj_arg s)
+{
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  return except_ok_u8(bool_box(sort_unbox(s)->hasSymbol()));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
+}
+
 extern "C" lean_obj_res sort_getSymbol(lean_obj_arg s)
 {
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
@@ -708,6 +715,11 @@ extern "C" lean_obj_arg termManager_mkFunctionSort(lean_obj_arg tm,
                    sort_box(new Sort(mut_tm_unbox(tm)->mkFunctionSort(
                        cvc5Sorts, *sort_unbox(codomain)))));
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
+}
+
+extern "C" lean_obj_res termManager_mkParamSort(lean_obj_arg tm, lean_obj_arg symbol)
+{
+  return sort_box(new Sort(mut_tm_unbox(tm)->mkParamSort(lean_string_cstr(symbol))));
 }
 
 extern "C" lean_obj_res termManager_mkBoolean(lean_obj_arg tm, uint8_t val)
