@@ -624,6 +624,12 @@ extern_def assertFormula : Term → SolverT m Unit
 /-- Check satisfiability. -/
 extern_def checkSat : SolverT m Result
 
+/-- Check satisfiability assuming the given formulas.
+
+- `assumptions`: The formulas to assume.
+-/
+extern_def checkSatAssuming : (assumptions : Array Term) → SolverT m Result
+
 /-- Get a proof associated with the most recent call to `checkSat`.
 
 Requires to enable option `produce-proofs`.

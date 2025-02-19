@@ -927,6 +927,27 @@ extern "C" lean_obj_res solver_checkSat(lean_obj_arg inst, lean_obj_arg solver)
   CVC5_LEAN_API_TRY_CATCH_SOLVER_END(inst, solver);
 }
 
+extern "C" lean_obj_res solver_checkSatAssuming(
+  lean_obj_arg inst,
+  lean_obj_arg assumptions,
+  lean_obj_arg solver
+)
+{
+  CVC5_LEAN_API_TRY_CATCH_SOLVER_BEGIN;
+  std::vector<Term> formulas;
+  for (size_t i = 0, n = lean_array_size(assumptions); i < n; ++i)
+  {
+    formulas.push_back(
+      *term_unbox(
+        lean_array_get(term_box(new Term()), assumptions, lean_usize_to_nat(i))
+      )
+    );
+  }
+  Result res = solver_unbox(solver)->checkSatAssuming(formulas);
+  return solver_val(lean_box(0), inst, lean_box(0), result_box(new Result(res)), solver);
+  CVC5_LEAN_API_TRY_CATCH_SOLVER_END(inst, solver);
+}
+
 extern "C" lean_obj_res solver_getProof(lean_obj_arg inst, lean_obj_arg solver)
 {
   CVC5_LEAN_API_TRY_CATCH_SOLVER_BEGIN;
