@@ -563,6 +563,14 @@ extern_def!? mkBitVectorSort : TermManager → (size : UInt32) → Except Error 
 -/
 extern_def!? mkFloatingPointSort : TermManager → (exp sig : UInt32) → Except Error cvc5.Sort
 
+/-- Create a finite-field sort from a given string of base n.
+
+- `size` The modulus of the field. Must be a prime.
+- `base` The base of the string representation of `size`.
+-/
+extern_def!? mkFiniteFieldSort
+: TermManager → (size : String) → (base : UInt32 := 10) → Except Error cvc5.Sort
+
 /-- Create function sort.
 
 - `sorts` The sort of the function arguments.
@@ -570,6 +578,14 @@ extern_def!? mkFloatingPointSort : TermManager → (exp sig : UInt32) → Except
 -/
 extern_def!? mkFunctionSort
 : TermManager → (sorts : Array cvc5.Sort) → (codomain : cvc5.Sort) → Except Error cvc5.Sort
+
+/-- Create a predicate sort.
+
+This is equivalent to calling `mkFunctionSort` with Boolean sort as the codomain.
+
+- `sorts` The list of sorts of the predicate.
+-/
+extern_def!? mkPredicateSort : TermManager → (sorts : Array cvc5.Sort) → Except Error cvc5.Sort
 
 /-- Create a sort parameter.
 
