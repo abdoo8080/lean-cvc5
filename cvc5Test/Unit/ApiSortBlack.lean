@@ -23,7 +23,7 @@ test! tm => do
 test! tm => do
   let b := tm.getBooleanSort
   assertEq b.getKind SortKind.BOOLEAN_SORT
-  -- let dtSort ← tm.createDatatypeSort
+  -- let dtSort ← tm.createDatatypeSort -- should be (some variant of) `mkDatatypeSort`?
   -- assertEq dtSort.getKind SortKnd.DATATYPE_SORT
   let r := tm.getRealSort
   let i := tm.getIntegerSort
@@ -61,3 +61,50 @@ test! tm => do
   assertEq (← assertOk b.hasSymbol) false
   assertEq (← assertOk s0.getSymbol) "s0"
   assertEq (← assertOk s1.getSymbol) "|s1\\|"
+
+test! tm => do
+  let n := cvc5.Sort.null ()
+  assertEq n.isNull true
+  assertEq tm.getBooleanSort.isNull false
+
+test! tm => do
+  assertEq tm.getBooleanSort.isBoolean true
+  let n := cvc5.Sort.null ()
+  assertEq n.isBoolean false -- no error, returns `false`
+
+test! tm => do
+  assertEq tm.getIntegerSort.isInteger true
+  assertEq tm.getRealSort.isInteger false
+  let n := cvc5.Sort.null ()
+  assertEq n.isInteger false -- no error, returns `false`
+
+test! tm => do
+  assertEq tm.getRealSort.isReal true
+  assertEq tm.getIntegerSort.isReal false
+  let n := cvc5.Sort.null ()
+  assertEq n.isReal false -- no error, returns `false`
+
+test! tm => do
+  assertEq tm.getStringSort.isString true
+  let n := cvc5.Sort.null ()
+  assertEq n.isString false -- no error, returns `false`
+
+test! tm => do
+  assertEq tm.getRegExpSort.isRegExp true
+  let n := cvc5.Sort.null ()
+  assertEq n.isRegExp false -- no error, returns `false`
+
+test! tm => do
+  assertEq tm.getRoundingModeSort.isRoundingMode true
+  let n := cvc5.Sort.null ()
+  assertEq n.isRoundingMode false -- no error, returns `false`
+
+test! tm => do
+  assertEq (← tm.mkBitVectorSort 8).isBitVector true
+  let n := cvc5.Sort.null ()
+  assertEq n.isBitVector false -- no error, returns `false`
+
+-- test! tm => do
+--   assertEq (← tm.mkFiniteFieldSort "7").isFiniteField true
+--   let n := cvc5.Sort.null ()
+--   assertEq n.isFiniteField false -- no error, returns `false`
