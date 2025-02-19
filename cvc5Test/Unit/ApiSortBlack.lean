@@ -104,7 +104,55 @@ test! tm => do
   let n := cvc5.Sort.null ()
   assertEq n.isBitVector false -- no error, returns `false`
 
+test! tm => do
+  assertEq (← tm.mkFiniteFieldSort "7").isFiniteField true
+  let n := cvc5.Sort.null ()
+  assertEq n.isFiniteField false -- no error, returns `false`
+
+test! tm => do
+  assertEq (← tm.mkFloatingPointSort 8 24).isFloatingPoint true
+  let n := cvc5.Sort.null ()
+  assertEq n.isFloatingPoint false -- no error, returns `false`
+
 -- test! tm => do
---   assertEq (← tm.mkFiniteFieldSort "7").isFiniteField true
+--   let dtSort ← tm.createDatatypeSort
+--   assertEq dtSort.isDatatype true
 --   let n := cvc5.Sort.null ()
---   assertEq n.isFiniteField false -- no error, returns `false`
+--   assertEq n.isDatatype false -- no error, returns `false`
+
+-- test! tm => do
+--   let dtSort ← tm.createDatatypeSort
+--   let dt := dtSort.getDatatype
+--   let consSort := dt[0].getTerm.getSort
+--   -- assertError "failure" dt[3] -- not possible in lean
+--   assertEq consSort.isDatatypeConstructor true
+--   let n := cvc5.Sort.null ()
+--   assertEq n.isDatatypeConstructor false -- no error, returns `false`
+
+-- test! tm => do
+--   let dtSort ← tm.createDatatypeSort
+--   let dt := dtSort.getDatatype
+--   let testerSort := dt[0].getTesterTerm.getSort
+--   -- assertError "failure" dt[3] -- not possible in lean
+--   assertEq testerSort.isDatatypeTester true
+--   let n := cvc5.Sort.null ()
+--   assertEq n.isDatatypeTester false -- no error, returns `false`
+
+-- test! tm => do
+--   let dtSort ← tm.createDatatypeSort
+--   let dt := dtSort.getDatatype
+--   let updaterSort := dt[0].getUpdaterTerm.getSort
+--   -- assertError "failure" dt[3] -- not possible in lean
+--   assertEq updaterSort.isDatatypeUpdater true
+--   let n := cvc5.Sort.null ()
+--   assertEq n.isDatatypeUpdater false -- no error, returns `false`
+
+test! tm => do
+  assertEq (← tm.mkFunctionSort #[tm.getBooleanSort] tm.getIntegerSort).isFunction true
+  let n := cvc5.Sort.null ()
+  assertEq n.isFunction false -- no error, returns `false`
+
+test! tm => do
+  assertEq (← tm.mkPredicateSort #[tm.getRealSort]).isPredicate true
+  let n := cvc5.Sort.null ()
+  assertEq n.isPredicate false -- no error, returns `false`
