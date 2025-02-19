@@ -200,9 +200,149 @@ extern "C" lean_obj_res sort_null(lean_obj_arg unit)
   return sort_box(new Sort());
 }
 
+extern "C" uint8_t sort_isNull(lean_obj_arg sort)
+{
+  return bool_box(sort_unbox(sort)->isNull());
+}
+
 extern "C" uint8_t sort_getKind(lean_obj_arg s)
 {
   return static_cast<int32_t>(sort_unbox(s)->getKind()) + 2;
+}
+
+extern "C" uint8_t sort_isBoolean(lean_obj_arg sort)
+{
+  return bool_box(sort_unbox(sort)->isBoolean());
+}
+
+extern "C" uint8_t sort_isInteger(lean_obj_arg sort)
+{
+  return bool_box(sort_unbox(sort)->isInteger());
+}
+
+extern "C" uint8_t sort_isReal(lean_obj_arg sort)
+{
+  return bool_box(sort_unbox(sort)->isReal());
+}
+
+extern "C" uint8_t sort_isString(lean_obj_arg sort)
+{
+  return bool_box(sort_unbox(sort)->isString());
+}
+
+extern "C" uint8_t sort_isRegExp(lean_obj_arg sort)
+{
+  return bool_box(sort_unbox(sort)->isRegExp());
+}
+
+extern "C" uint8_t sort_isRoundingMode(lean_obj_arg sort)
+{
+  return bool_box(sort_unbox(sort)->isRoundingMode());
+}
+
+extern "C" uint8_t sort_isBitVector(lean_obj_arg sort)
+{
+  return bool_box(sort_unbox(sort)->isBitVector());
+}
+
+extern "C" uint8_t sort_isFloatingPoint(lean_obj_arg sort)
+{
+  return bool_box(sort_unbox(sort)->isFloatingPoint());
+}
+
+extern "C" uint8_t sort_isDatatype(lean_obj_arg sort)
+{
+  return bool_box(sort_unbox(sort)->isDatatype());
+}
+
+extern "C" uint8_t sort_isDatatypeConstructor(lean_obj_arg sort)
+{
+  return bool_box(sort_unbox(sort)->isDatatypeConstructor());
+}
+
+extern "C" uint8_t sort_isDatatypeSelector(lean_obj_arg sort)
+{
+  return bool_box(sort_unbox(sort)->isDatatypeSelector());
+}
+
+extern "C" uint8_t sort_isDatatypeTester(lean_obj_arg sort)
+{
+  return bool_box(sort_unbox(sort)->isDatatypeTester());
+}
+
+extern "C" uint8_t sort_isDatatypeUpdater(lean_obj_arg sort)
+{
+  return bool_box(sort_unbox(sort)->isDatatypeUpdater());
+}
+
+extern "C" uint8_t sort_isFunction(lean_obj_arg sort)
+{
+  return bool_box(sort_unbox(sort)->isFunction());
+}
+
+extern "C" uint8_t sort_isPredicate(lean_obj_arg sort)
+{
+  return bool_box(sort_unbox(sort)->isPredicate());
+}
+
+extern "C" uint8_t sort_isTuple(lean_obj_arg sort)
+{
+  return bool_box(sort_unbox(sort)->isTuple());
+}
+
+extern "C" uint8_t sort_isNullable(lean_obj_arg sort)
+{
+  return bool_box(sort_unbox(sort)->isNullable());
+}
+
+extern "C" uint8_t sort_isRecord(lean_obj_arg sort)
+{
+  return bool_box(sort_unbox(sort)->isRecord());
+}
+
+extern "C" uint8_t sort_isArray(lean_obj_arg sort)
+{
+  return bool_box(sort_unbox(sort)->isArray());
+}
+
+extern "C" uint8_t sort_isFiniteField(lean_obj_arg sort)
+{
+  return bool_box(sort_unbox(sort)->isFiniteField());
+}
+
+extern "C" uint8_t sort_isSet(lean_obj_arg sort)
+{
+  return bool_box(sort_unbox(sort)->isSet());
+}
+
+extern "C" uint8_t sort_isBag(lean_obj_arg sort)
+{
+  return bool_box(sort_unbox(sort)->isBag());
+}
+
+extern "C" uint8_t sort_isSequence(lean_obj_arg sort)
+{
+  return bool_box(sort_unbox(sort)->isSequence());
+}
+
+extern "C" uint8_t sort_isAbstract(lean_obj_arg sort)
+{
+  return bool_box(sort_unbox(sort)->isAbstract());
+}
+
+extern "C" uint8_t sort_isUninterpretedSort(lean_obj_arg sort)
+{
+  return bool_box(sort_unbox(sort)->isUninterpretedSort());
+}
+
+extern "C" uint8_t sort_isUninterpretedSortConstructor(lean_obj_arg sort)
+{
+  return bool_box(sort_unbox(sort)->isUninterpretedSortConstructor());
+}
+
+extern "C" uint8_t sort_isInstantiated(lean_obj_arg sort)
+{
+  return bool_box(sort_unbox(sort)->isInstantiated());
 }
 
 extern "C" uint8_t sort_beq(lean_obj_arg l, lean_obj_arg r)
@@ -213,11 +353,6 @@ extern "C" uint8_t sort_beq(lean_obj_arg l, lean_obj_arg r)
 extern "C" uint64_t sort_hash(lean_obj_arg s)
 {
   return std::hash<Sort>()(*sort_unbox(s));
-}
-
-extern "C" uint8_t sort_isFunction(lean_obj_arg s)
-{
-  return bool_box(sort_unbox(s)->isFunction());
 }
 
 extern "C" lean_obj_res sort_getFunctionDomainSorts(lean_obj_arg s)
@@ -255,11 +390,6 @@ extern "C" lean_obj_res sort_getSymbol(lean_obj_arg s)
   return except_ok(lean_box(0),
                    lean_mk_string(sort_unbox(s)->getSymbol().c_str()));
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
-}
-
-extern "C" uint8_t sort_isInteger(lean_obj_arg s)
-{
-  return bool_box(sort_unbox(s)->isInteger());
 }
 
 extern "C" lean_obj_res sort_getBitVectorSize(lean_obj_arg s)

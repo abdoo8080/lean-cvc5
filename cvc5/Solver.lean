@@ -177,11 +177,105 @@ instance : Hashable cvc5.Sort := ⟨Sort.hash⟩
 /-- Get the kind of this sort. -/
 extern_def getKind : cvc5.Sort → SortKind
 
-/-- Determine if this is the integer sort (SMT-LIB: `Int`). -/
+/-- Determine if this is the null sort (`cvc5.Sort`). -/
+extern_def isNull : cvc5.Sort → Bool
+
+/-- Determine if this is the Boolean sort (SMT-LIB: `Bool`). -/
+extern_def isBoolean : cvc5.Sort → Bool
+
+/-- Determine if this is the Integer sort (SMT-LIB: `Int`). -/
 extern_def isInteger : cvc5.Sort → Bool
 
+/-- Determine if this is the Real sort (SMT-LIB: `Real`). -/
+extern_def isReal : cvc5.Sort → Bool
+
+/-- Determine if this is the String sort (SMT-LIB: `String`). -/
+extern_def isString : cvc5.Sort → Bool
+
+/-- Determine if this is the regular expression sort (SMT-LIB: `RegLan`). -/
+extern_def isRegExp : cvc5.Sort → Bool
+
+/-- Determine if this is the rounding mode sort (SMT-LIB: `RoundingMode`). -/
+extern_def isRoundingMode : cvc5.Sort → Bool
+
+/-- Determine if this is a bit-vector sort (SMT-LIB: `(_ BitVec i)`). -/
+extern_def isBitVector : cvc5.Sort → Bool
+
+/-- Determine if this is a floating-point sort (SMT-LIB: `(_ FloatingPoint eb sb)`). -/
+extern_def isFloatingPoint : cvc5.Sort → Bool
+
+/-- Determine if this is a datatype sort. -/
+extern_def isDatatype : cvc5.Sort → Bool
+
+/-- Determine if this is a datatype constructor sort. -/
+extern_def isDatatypeConstructor : cvc5.Sort → Bool
+
+/-- Determine if this is a datatype selector sort. -/
+extern_def isDatatypeSelector : cvc5.Sort → Bool
+
+/-- Determine if this is a datatype tester sort. -/
+extern_def isDatatypeTester : cvc5.Sort → Bool
+
+/-- Determine if this is a datatype updater sort. -/
+extern_def isDatatypeUpdater : cvc5.Sort → Bool
+
 /-- Determine if this is a function sort. -/
-protected extern_def isFunction : cvc5.Sort → Bool
+extern_def isFunction : cvc5.Sort → Bool
+
+/-- Determine if this is a predicate sort.
+
+A predicate sort is a function sort that maps to the Boolean sort. All predicate sorts are also
+function sorts.
+-/
+extern_def isPredicate : cvc5.Sort → Bool
+
+/-- Determine if this is a tuple sort. -/
+extern_def isTuple : cvc5.Sort → Bool
+
+/-- Determine if this is a nullable sort. -/
+extern_def isNullable : cvc5.Sort → Bool
+
+/-- Determine if this is a record sort.
+
+**Warning**: this function is experimental and may change in future versions.
+-/
+extern_def isRecord : cvc5.Sort → Bool
+
+/-- Determine if this is an array sort. -/
+extern_def isArray : cvc5.Sort → Bool
+
+/-- Determine if this is a finite field sort. -/
+extern_def isFiniteField : cvc5.Sort → Bool
+
+/-- Determine if this is a Set sort. -/
+extern_def isSet : cvc5.Sort → Bool
+
+/-- Determine if this is a Bag sort. -/
+extern_def isBag : cvc5.Sort → Bool
+
+/-- Determine if this is a Sequence sort. -/
+extern_def isSequence : cvc5.Sort → Bool
+
+/-- Determine if this is an abstract sort. -/
+extern_def isAbstract : cvc5.Sort → Bool
+
+/-- Determine if this is an uninterpreted sort. -/
+extern_def isUninterpretedSort : cvc5.Sort → Bool
+
+/-- Determine if this is an uninterpreted sort constructor.
+
+An uninterpreted sort constructor has arity `> 0` and can be instantiated to construct uninterpreted
+sorts with given sort parameters.
+-/
+extern_def isUninterpretedSortConstructor : cvc5.Sort → Bool
+
+/-- Determine if this is an instantiated (parametric datatype or uninterpreted sort constructor)
+sort.
+
+An instantiated sort is a sort that has been constructed from instantiating a sort with sort
+arguments --- see also `cvc5.Sort.instantiate`.
+-/
+extern_def isInstantiated : cvc5.Sort → Bool
 
 /-- A string representation of this sort. -/
 protected extern_def toString : cvc5.Sort → String
