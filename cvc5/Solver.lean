@@ -294,14 +294,66 @@ The symbol of this sort is the string that was provided when consrtucting it *vi
 -/
 extern_def!? getSymbol : cvc5.Sort → Except Error String
 
+/-- The arity of a function sort. -/
+extern_def!? getFunctionArity : cvc5.Sort → Except Error Nat
+
 /-- The domain sorts of a function sort. -/
 extern_def!? getFunctionDomainSorts : cvc5.Sort → Except Error (Array cvc5.Sort)
 
 /-- The codomain sort of a function sort. -/
 extern_def!? getFunctionCodomainSort : cvc5.Sort → Except Error cvc5.Sort
 
+/-- The array index sort of an array index. -/
+extern_def!? getArrayIndexSort : cvc5.Sort → Except Error cvc5.Sort
+
+/-- The array element sort of an array index. -/
+extern_def!? getArrayElementSort : cvc5.Sort → Except Error cvc5.Sort
+
+/-- The element sort of a set sort. -/
+extern_def!? getSetElementSort : cvc5.Sort → Except Error cvc5.Sort
+
+/-- The element sort of a bag sort. -/
+extern_def!? getBagElementSort : cvc5.Sort → Except Error cvc5.Sort
+
+/-- The element sort of a sequence sort. -/
+extern_def!? getSequenceElementSort : cvc5.Sort → Except Error cvc5.Sort
+
+/-- The sort kind of an abstract sort, which denotes the kind of sorts that this abstract sort
+denotes.
+-/
+extern_def!? getAbstractedKind : cvc5.Sort → Except Error SortKind
+
+/-- The arity of an uninterpreted sort constructor sort. -/
+extern_def!? getUninterpretedSortConstructorArity : cvc5.Sort → Except Error UInt32
+
 /-- The bit-width of the bit-vector sort. -/
 extern_def!? getBitVectorSize : cvc5.Sort → Except Error UInt32
+
+/-- The size of the finite field sort. -/
+extern_def!? getFiniteFieldSize : cvc5.Sort → Except Error String
+
+/-- The bit-width of the exponent of the floating-point sort. -/
+extern_def!? getFloatingPointExponentSize : cvc5.Sort → Except Error UInt32
+
+/-- The width of the significand of the floating-point sort. -/
+extern_def!? getFloatingPointSignificandSize : cvc5.Sort → Except Error UInt32
+
+/-- The length of a tuple sort. -/
+extern_def!? getTupleLength : cvc5.Sort → Except Error UInt32
+
+/-- The element sorts of a tuple sort. -/
+extern_def!? getTupleSorts : cvc5.Sort → Except Error (Array cvc5.Sort)
+
+/-- Get the associated uninterpreted sort constructor of an instantiated uninterpreted sort. -/
+extern_def!? getUninterpretedSortConstructor : cvc5.Sort → Except Error cvc5.Sort
+
+/-- Instantiate a parameterized datatype sort or uninterpreted sort constructor sort.
+
+Create sort parameters with `TermManager.mkParamSort symbol`.
+
+- `params` The list of sort parameters to instantiate with.
+-/
+extern_def!? instantiate : cvc5.Sort → (params : Array cvc5.Sort) → Except Error cvc5.Sort
 
 instance : ToString cvc5.Sort := ⟨Sort.toString⟩
 instance : Repr cvc5.Sort := ⟨fun self _ => self.toString⟩
@@ -586,6 +638,69 @@ This is equivalent to calling `mkFunctionSort` with Boolean sort as the codomain
 - `sorts` The list of sorts of the predicate.
 -/
 extern_def!? mkPredicateSort : TermManager → (sorts : Array cvc5.Sort) → Except Error cvc5.Sort
+
+/-- Create a tuple sort.
+
+- `sorts` The sorts of the elements of the tuple.
+-/
+extern_def!? mkTupleSort : TermManager → (sorts : Array cvc5.Sort) → Except Error cvc5.Sort
+
+/-- Create an uninterpreted sort constructor sort.
+
+An uninterpreted sort constructor is an uninterpreted sort with arity > 0.
+
+- `arity` The arity of the sort (must be > 0).
+- `symbol` The symbol of the sort.
+-/
+extern_def!? mkUninterpretedSortConstructorSort
+: TermManager → (arity : Nat) → (symbol : String) → Except Error cvc5.Sort
+
+/-- Create a set parameter.
+
+- `elemSort` The sort of the set elements.
+-/
+extern_def mkSetSort : TermManager → (sort : cvc5.Sort) → Except Error cvc5.Sort
+
+/-- Create a set parameter.
+
+- `elemSort` The sort of the set elements.
+-/
+extern_def mkBagSort : TermManager → (sort : cvc5.Sort) → Except Error cvc5.Sort
+
+/-- Create a set parameter.
+
+- `elemSort` The sort of the set elements.
+-/
+extern_def mkSequenceSort : TermManager → (sort : cvc5.Sort) → Except Error cvc5.Sort
+
+/-- Create an abstract sort. An abstract sort represents a sort for a given kind whose parameters
+and arguments are unspecified.
+
+The kind `k` must be the kind of a sort that can be abstracted, *i.e.* a sort that has indices or
+arguments sorts. For example, `SortKind.ARRAY_SORT` and `SortKind.BITVECTOR_SORT` can be passed as
+the kind `k` to this function, while `SortKind.INTEGER_SORT` and `SortKind.STRING_SORT` cannot.
+
+**NB:** Providing the kind `SortKind.ABSTRACT_SORT` as an argument to this function returns the
+(fully) unspecified sort, denoted `?`.
+
+**NB:** Providing a kind `k` that has no indices and a fixed arity of argument sorts will return the
+sort of kind `k` whose arguments are the unspecified sort. For example, `mkAbstractSort
+SortKind.ARRAY_SORT` will return the sort `(ARRAY_SORT ? ?)` instead of the abstract sort whose
+abstract kind is `SortKind.ARRAY_SORT`.
+-/
+extern_def mkAbstractSort : TermManager → (k : SortKind) → Except Error cvc5.Sort
+
+/-- Create an uninterpreted sort.
+
+- `symbol` The name of the sort.
+-/
+extern_def mkUninterpretedSort : TermManager → (symbol : String) → cvc5.Sort
+
+/-- Create a nullable sort.
+
+- `sort` The sort of the element of the nullable.
+-/
+extern_def mkNullableSort : TermManager → (sort : cvc5.Sort) → Except Error cvc5.Sort
 
 /-- Create a sort parameter.
 
