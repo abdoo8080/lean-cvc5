@@ -169,6 +169,38 @@ protected extern_def beq : cvc5.Sort → cvc5.Sort → Bool
 
 instance : BEq cvc5.Sort := ⟨Sort.beq⟩
 
+/-- Less than comparison. -/
+protected extern_def blt : cvc5.Sort → cvc5.Sort → Bool
+
+/-- Greater than comparison. -/
+protected extern_def bgt : cvc5.Sort → cvc5.Sort → Bool
+
+/-- Less than comparison. -/
+protected extern_def ble : cvc5.Sort → cvc5.Sort → Bool
+
+/-- Greater than comparison. -/
+protected extern_def bge : cvc5.Sort → cvc5.Sort → Bool
+
+/-- Comparison of two sorts. -/
+protected def compare (s1 s2 : cvc5.Sort) : Ordering :=
+  if s1.beq s2 then .eq
+  else if s1.bgt s2 then .gt
+  else .lt
+
+instance : Ord cvc5.Sort := ⟨Sort.compare⟩
+
+instance : LT cvc5.Sort where
+  lt := (Sort.blt · ·)
+
+instance : DecidableLT cvc5.Sort :=
+  fun s1 s2 => if h : s1.blt s2 then .isTrue h else .isFalse h
+
+instance : LE cvc5.Sort where
+  le := (Sort.ble · ·)
+
+instance : DecidableLE cvc5.Sort :=
+  fun s1 s2 => if h : s1.ble s2 then .isTrue h else .isFalse h
+
 /-- Hash function for cvc5 sorts. -/
 protected extern_def hash : cvc5.Sort → UInt64
 
@@ -344,6 +376,9 @@ extern_def!? getTupleLength : cvc5.Sort → Except Error UInt32
 /-- The element sorts of a tuple sort. -/
 extern_def!? getTupleSorts : cvc5.Sort → Except Error (Array cvc5.Sort)
 
+/-- The element sort of a nullable sort. -/
+extern_def!? getNullableElementSort : cvc5.Sort → Except Error cvc5.Sort
+
 /-- Get the associated uninterpreted sort constructor of an instantiated uninterpreted sort. -/
 extern_def!? getUninterpretedSortConstructor : cvc5.Sort → Except Error cvc5.Sort
 
@@ -354,6 +389,19 @@ Create sort parameters with `TermManager.mkParamSort symbol`.
 - `params` The list of sort parameters to instantiate with.
 -/
 extern_def!? instantiate : cvc5.Sort → (params : Array cvc5.Sort) → Except Error cvc5.Sort
+
+/-- Simultaneous substitution of Sorts.
+
+Note that this replacement is applied during a pre-order traversal and only once to the sort. It is not run until fix point. In the case that `sorts` contains duplicates, the replacement earliest in
+the vector takes priority.
+
+**Warning:** This function is experimental and may change in future versions.
+
+- `sorts` The sub-sorts to be substituted within this sort.
+- `replacements` The sort replacing the substituted sub-sorts.
+-/
+extern_def!? substitute
+: cvc5.Sort → (sorts : Array cvc5.Sort) → (replacements : Array cvc5.Sort) → Except Error cvc5.Sort
 
 instance : ToString cvc5.Sort := ⟨Sort.toString⟩
 instance : Repr cvc5.Sort := ⟨fun self _ => self.toString⟩

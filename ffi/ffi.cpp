@@ -350,6 +350,26 @@ extern "C" uint8_t sort_beq(lean_obj_arg l, lean_obj_arg r)
   return bool_box(*sort_unbox(l) == *sort_unbox(r));
 }
 
+extern "C" uint8_t sort_blt(lean_obj_arg l, lean_obj_arg r)
+{
+  return bool_box(*sort_unbox(l) < *sort_unbox(r));
+}
+
+extern "C" uint8_t sort_bgt(lean_obj_arg l, lean_obj_arg r)
+{
+  return bool_box(*sort_unbox(l) > *sort_unbox(r));
+}
+
+extern "C" uint8_t sort_ble(lean_obj_arg l, lean_obj_arg r)
+{
+  return bool_box(*sort_unbox(l) <= *sort_unbox(r));
+}
+
+extern "C" uint8_t sort_bge(lean_obj_arg l, lean_obj_arg r)
+{
+  return bool_box(*sort_unbox(l) >= *sort_unbox(r));
+}
+
 extern "C" uint64_t sort_hash(lean_obj_arg s)
 {
   return std::hash<Sort>()(*sort_unbox(s));
@@ -515,6 +535,15 @@ extern "C" lean_obj_res sort_getTupleSorts(lean_obj_arg s)
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
+extern "C" lean_obj_res sort_getNullableElementSort(lean_obj_arg s)
+{
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  return except_ok(
+      lean_box(0),
+      sort_box(new Sort(sort_unbox(s)->getNullableElementSort())));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
+}
+
 extern "C" lean_obj_res sort_getUninterpretedSortConstructor(lean_obj_arg s)
 {
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
@@ -535,6 +564,27 @@ extern "C" lean_obj_arg sort_instantiate(lean_obj_arg s,
   }
   return except_ok(lean_box(0),
                    sort_box(new Sort(sort_unbox(s)->instantiate(cvc5Sorts))));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
+}
+
+extern "C" lean_obj_arg sort_substitute(
+  lean_obj_arg s, lean_obj_arg sorts, lean_obj_arg replacements
+) {
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  std::vector<Sort> cvc5Sorts;
+  for (size_t i = 0, n = lean_array_size(sorts); i < n; ++i)
+  {
+    cvc5Sorts.push_back(*sort_unbox(
+        lean_array_get(sort_box(new Sort()), sorts, lean_usize_to_nat(i))));
+  }
+  std::vector<Sort> cvc5Replacements;
+  for (size_t i = 0, n = lean_array_size(replacements); i < n; ++i)
+  {
+    cvc5Replacements.push_back(*sort_unbox(
+        lean_array_get(sort_box(new Sort()), replacements, lean_usize_to_nat(i))));
+  }
+  return except_ok(lean_box(0),
+                   sort_box(new Sort(sort_unbox(s)->substitute(cvc5Sorts, cvc5Replacements))));
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
