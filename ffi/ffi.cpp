@@ -849,6 +849,42 @@ extern "C" lean_obj_res solver_setOption(lean_obj_arg inst,
   CVC5_LEAN_API_TRY_CATCH_SOLVER_END(inst, solver);
 }
 
+extern "C" lean_obj_res solver_resetAssertions(
+  lean_obj_arg inst,
+  lean_obj_arg solver
+) {
+  CVC5_LEAN_API_TRY_CATCH_SOLVER_BEGIN;
+  solver_unbox(solver)->resetAssertions();
+  return solver_val(lean_box(0), inst, lean_box(0), mk_unit_unit(), solver);
+  CVC5_LEAN_API_TRY_CATCH_SOLVER_END(inst, solver);
+}
+
+extern "C" lean_obj_res solver_setLogic(
+  lean_obj_arg inst,
+  lean_object* logic,
+  lean_obj_arg solver
+) {
+  CVC5_LEAN_API_TRY_CATCH_SOLVER_BEGIN;
+  solver_unbox(solver)->setLogic(lean_string_cstr(logic));
+  return solver_val(lean_box(0), inst, lean_box(0), mk_unit_unit(), solver);
+  CVC5_LEAN_API_TRY_CATCH_SOLVER_END(inst, solver);
+}
+
+extern "C" lean_obj_res solver_simplify(
+  lean_obj_arg inst,
+  lean_obj_arg term,
+  lean_obj_arg applySubs,
+  lean_obj_arg solver
+) {
+  CVC5_LEAN_API_TRY_CATCH_SOLVER_BEGIN;
+  Term value = solver_unbox(solver)->simplify(
+    *term_unbox(term),
+    bool_unbox(lean_unbox(applySubs))
+  );
+  return solver_val(lean_box(0), inst, lean_box(0), term_box(new Term(value)), solver);
+  CVC5_LEAN_API_TRY_CATCH_SOLVER_END(inst, solver);
+}
+
 extern "C" lean_obj_res solver_declareFun(lean_obj_arg inst,
                                           lean_obj_arg symbol,
                                           lean_obj_arg sorts,
