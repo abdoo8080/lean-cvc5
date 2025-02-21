@@ -20,6 +20,12 @@ def assertEq [ToString α] [BEq α] (lft rgt : α) (hint := "") : IO Unit := do
     IO.eprintln s!"{Test.pref hint}comparison failed: `{lft}` is different from `{rgt}`"
     fail "assertion failed"
 
+def assertTrue (b : Bool) (hint := "") : IO Unit :=
+  assertEq true b hint
+
+def assertFalse (b : Bool) (hint := "") : IO Unit :=
+  assertEq false b hint
+
 def assertNe [ToString α] [BEq α] (lft rgt : α) (hint := "") : IO Unit := do
   if lft == rgt then
     IO.eprintln s!"{Test.pref hint}comparison failed: `{lft}` is the same as `{rgt}`"
@@ -117,37 +123,65 @@ def SolverT.run! [Inhabited α] (query : SolverT IO α) := Solver.runIO! query
 
 
 namespace Test
-scoped syntax docComment ? "test! " (ident " => ")? term : command
-scoped syntax docComment ? "test? " (ident " => ")? term : command
+scoped syntax
+  docComment ?
+  "test! " ("[" declId ", " declId "] ")? (ident " => ")? term : command
+scoped syntax
+  docComment ?
+  "test? " ("[" declId ", " declId "] ")? (ident " => ")? term : command
 
 macro_rules
-| `(command| $outputComment:docComment test! $tm:ident => $code:term) => `(
-  $outputComment:docComment
-  #guard_msgs in #eval IO.run do
-    let $tm:ident ← TermManager.new
-    Solver.runWith! $tm do
-      $code:term
-)
-| `(command| test! $tm:ident => $code:term) => `(
-  /-- -/
-  #guard_msgs in #eval IO.run do
-    let $tm:ident ← TermManager.new
-    Solver.runWith! $tm do
-      $code:term
-)
-| `(command| $[$outputComment]? test! $code:term) => `(
+| `(command|
+  $[ $outputComment:docComment ]?
+  test! $[ [ $fileId:ident , $testId:ident ] ]? $tm:ident => $code:term
+) => do
+  let errPrefStrLit :=
+    match (fileId, testId) with
+    | (some fileId, some testId) =>
+      Lean.Syntax.mkStrLit s!"[{fileId}.{testId}] test failed:\n"
+    | _ => Lean.Syntax.mkStrLit ""
+  `(
+    $[ $outputComment:docComment ]?
+    #guard_msgs in #eval IO.run do
+      let $tm:ident ← TermManager.new
+      match ← Solver.run $tm (do $code:term) with
+      | .ok res => return res
+      | .error e => IO.throwServerError ($errPrefStrLit ++ (toString e))
+  )
+-- | `(command| test! $tm:ident => $code:term) => `(
+--   /-- -/
+--   #guard_msgs in #eval IO.run do
+--     let $tm:ident ← TermManager.new
+--     Solver.runWith! $tm do
+--       $code:term
+-- )
+| `(command|
+  $[ $outputComment:docComment ]?
+  test! $[ [ $fileId:ident , $testId:ident ] ]? $code:term
+) => `(
   $[$outputComment]?
-  test! _tm => $code
+  test! $[ [ $fileId, $testId ] ]? _tm => $code
 )
-| `(command| $[ $_outputComment:docComment ]? test? $tm:ident => $code:term) => `(
+
+| `(command|
+  $[ $outputComment:docComment ]?
+  test? $[ [ $fileId, $testId ] ]? $tm:ident => $code:term
+) => `(
   #eval IO.run do
     let $tm:ident ← TermManager.new
-    Solver.runWith! $tm do
-      $code:term
+    match ← Solver.run $tm (do $code:term) with
+    | .ok res => return res
+    | .error e => IO.throwServerError s!"[{fileId}.{testId}] test failed:\n{e}"
 )
-| `(command| $[$outputComment]? test? $code:term) => `(
+-- | `(command| $[ $_outputComment:docComment ]? test? $tm:ident => $code:term) => `(
+--   #eval IO.run do
+--     let $tm:ident ← TermManager.new
+--     Solver.runWith! $tm do
+--       $code:term
+-- )
+| `(command| $[$outputComment]? test? $[ [ $fileId, $testId ] ]? $code:term) => `(
   $[$outputComment]?
-  test? _tm => $code
+  test? $[ [ $fileId, $testId ] ]? _tm => $code
 )
 end Test
 
