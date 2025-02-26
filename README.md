@@ -10,9 +10,6 @@ with cvc5 by calling its functions and accessing its API.
 ## Limitations
 
 - Minimal interface to the cvc5 solver (contributions are welcome!)
-- 
-- Currently only works with Linux (x86_64) and macOS (AArch64 and x86_64) (support for Windows and
-  other architectures is planned for future releases)
 
 ## Getting Started
 
