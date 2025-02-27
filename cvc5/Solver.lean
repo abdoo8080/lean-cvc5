@@ -575,6 +575,26 @@ extern_def getVersion : SolverT m String
 -/
 extern_def setOption (option value : String) : SolverT m Unit
 
+/-- Remove all assertions. -/
+extern_def resetAssertions : SolverT m Unit
+
+/-- Set logic.
+
+- `logic`: The logic to set.
+-/
+extern_def setLogic : (logic : String) → SolverT m Unit
+
+/-- Simplify a term or formula based on rewriting and (optionally) applying substitutions for
+solved variables.
+
+If `applySubs` is true, then for example, if `(= x 0)` was asserted to this solver, this function
+may replace occurrences of `x` with `0`.
+
+- `t` The term to simplify.
+- `applySubs` True to apply substitutions for solved variables.
+-/
+extern_def simplify : (term : Term) → (applySubs : Bool := false) → SolverT m Term
+
 /--
 Declare n-ary function symbol.
 
