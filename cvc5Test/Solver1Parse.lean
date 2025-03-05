@@ -6,7 +6,7 @@ def solver1Parse : IO Unit := do
   let tm ← TermManager.new
 
   let query := do
-    Solver.parse "
+    Solver.parseCommands "
 (set-logic QF_LIA)
 
 (declare-fun n1 () Int)
@@ -30,7 +30,7 @@ def solver1Parse : IO Unit := do
 
 
   let query : SolverM (Array Proof) := do
-    Solver.parse "
+    Solver.parseCommands "
 (set-option :produce-proofs true)
 
 (set-logic QF_LIA)

@@ -17,10 +17,12 @@ jobs:
     strategy:
       matrix:
         include:
+        - name: Linux-aarch64
+          os: ubuntu-22.04-arm
         - name: Linux-x86_64
-          os: ubuntu-20.04
+          os: ubuntu-22.04
         - name: macOS-aarch64
-          os: macos-latest
+          os: macos-14
         - name: macOS-x86_64
           os: macos-13
     steps:
@@ -29,10 +31,7 @@ jobs:
     - name: Install Dependencies
       if: runner.os == 'Linux'
       run: |
-        echo "::group::Install Linux software"
-        wget https://apt.llvm.org/llvm.sh
-        chmod +x llvm.sh
-        sudo ./llvm.sh 15 all
+        sudo apt-get install -y clang-15 lld-15 libc++-15-dev libc++abi-15-dev
         sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang-15 100
     - name: Setup Lean Environment
       uses: leanprover/lean-action@v1

@@ -990,9 +990,9 @@ extern "C" lean_obj_res solver_proofToString(lean_obj_arg inst,
   CVC5_LEAN_API_TRY_CATCH_SOLVER_END(inst, solver);
 }
 
-extern "C" lean_obj_res solver_parse(lean_obj_arg inst,
-                                     lean_obj_arg query,
-                                     lean_obj_arg solver)
+extern "C" lean_obj_res solver_parseCommands(lean_obj_arg inst,
+                                             lean_obj_arg query,
+                                             lean_obj_arg solver)
 {
   CVC5_LEAN_API_TRY_CATCH_SOLVER_BEGIN;
   Solver* slv = solver_unbox(solver);
@@ -1001,7 +1001,7 @@ extern "C" lean_obj_res solver_parse(lean_obj_arg inst,
   // get the symbol manager of the parser, used when invoking commands below
   parser::SymbolManager* sm = parser.getSymbolManager();
   parser.setStringInput(
-      modes::InputLanguage::SMT_LIB_2_6, lean_string_cstr(query), "lean-smt");
+      modes::InputLanguage::SMT_LIB_2_6, lean_string_cstr(query), "lean-cvc5");
   // parse commands until finished
   std::stringstream out;
   parser::Command cmd;

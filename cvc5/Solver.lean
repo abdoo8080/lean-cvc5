@@ -673,7 +673,7 @@ extern_def proofToString : Proof → SolverT m String
 Commands that produce a result such as `(check-sat)`, `(get-model)`, ... are executed but the
 results are ignored.
 -/
-extern_def parse : String → SolverT m Unit
+extern_def parseCommands : String → SolverT m Unit
 
 /-- Run a `query` given a term manager `tm`. -/
 def run (tm : TermManager) (query : SolverT m α) : m (Except Error α) :=
