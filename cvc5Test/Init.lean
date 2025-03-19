@@ -91,10 +91,12 @@ def assertError
 end Test
 
 namespace Result
+
 def toOption (res : Result) : Option Bool :=
   if res.isSat then true
   else if res.isUnsat then false
   else none
+
 end Result
 
 namespace Solver
@@ -103,9 +105,9 @@ variable [Monad m]
 
 def checkSat? : SolverT m (Option Bool) :=
   Result.toOption <$> Solver.checkSat
+
 def checkSatAssuming? (terms : Array Term) : SolverT m (Option Bool) :=
   Result.toOption <$> Solver.checkSatAssuming terms
-
 
 def runWith! [Inhabited α] (tm : TermManager) (query : SolverM α) : IO α := do
   match ← Solver.run tm query with
@@ -121,8 +123,8 @@ end Solver
 
 def SolverT.run! [Inhabited α] (query : SolverT IO α) := Solver.runIO! query
 
-
 namespace Test
+
 scoped syntax
   docComment ?
   "test! " ("[" declId ", " declId "] ")? (ident " => ")? term : command
@@ -162,7 +164,6 @@ macro_rules
   $[$outputComment]?
   test! $[ [ $fileId, $testId ] ]? _tm => $code
 )
-
 | `(command|
   $[ $outputComment:docComment ]?
   test? $[ [ $fileId, $testId ] ]? $tm:ident => $code:term
@@ -183,6 +184,7 @@ macro_rules
   $[$outputComment]?
   test? $[ [ $fileId, $testId ] ]? _tm => $code
 )
+
 end Test
 
 end cvc5

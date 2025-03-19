@@ -2,7 +2,7 @@
 Copyright (c) 2023-2024 by the authors listed in the file AUTHORS and their
 institutional affiliations. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Abdalrhman Mohamed
+Authors: Abdalrhman Mohamed, Adrien Champion
 -/
 
 import Std.Internal.Rat
@@ -175,10 +175,10 @@ protected extern_def blt : cvc5.Sort → cvc5.Sort → Bool
 /-- Greater than comparison. -/
 protected extern_def bgt : cvc5.Sort → cvc5.Sort → Bool
 
-/-- Less than comparison. -/
+/-- Less than or equal comparison. -/
 protected extern_def ble : cvc5.Sort → cvc5.Sort → Bool
 
-/-- Greater than comparison. -/
+/-- Greater than or equal comparison. -/
 protected extern_def bge : cvc5.Sort → cvc5.Sort → Bool
 
 /-- Comparison of two sorts. -/
@@ -362,7 +362,7 @@ extern_def!? getUninterpretedSortConstructorArity : cvc5.Sort → Except Error U
 extern_def!? getBitVectorSize : cvc5.Sort → Except Error UInt32
 
 /-- The size of the finite field sort. -/
-extern_def!? getFiniteFieldSize : cvc5.Sort → Except Error String
+extern_def!? getFiniteFieldSize : cvc5.Sort → Except Error Nat
 
 /-- The bit-width of the exponent of the floating-point sort. -/
 extern_def!? getFloatingPointExponentSize : cvc5.Sort → Except Error UInt32
@@ -668,8 +668,10 @@ extern_def!? mkFloatingPointSort : TermManager → (exp sig : UInt32) → Except
 - `size` The modulus of the field. Must be a prime.
 - `base` The base of the string representation of `size`.
 -/
-extern_def!? mkFiniteFieldSort
-: TermManager → (size : String) → (base : UInt32 := 10) → Except Error cvc5.Sort
+private extern_def mkFiniteFieldSortFromString : TermManager → (size : String) → (base : UInt32 := 10) → Except Error cvc5.Sort
+with
+  mkFiniteFieldSort (tm : TermManager) : Nat → Except Error cvc5.Sort :=
+    (tm.mkFiniteFieldSortFromString · 10) ∘ toString
 
 /-- Create function sort.
 
@@ -756,13 +758,13 @@ extern_def mkNullableSort : TermManager → (sort : cvc5.Sort) → Except Error 
 
 **Warning**: This function is experimental and may change in future versions.
 -/
-extern_def mkParamSort : TermManager → String → cvc5.Sort
+extern_def mkParamSort : TermManager → (symbol : String) → cvc5.Sort
 
 /-- Create a Boolean constant.
 
 - `b`: The Boolean constant.
 -/
-extern_def mkBoolean : TermManager → Bool → Term
+extern_def mkBoolean : TermManager → (b : Bool) → Term
 
 /-- Create an integer-value term. -/
 private extern_def mkIntegerFromString : TermManager → String → Except Error Term

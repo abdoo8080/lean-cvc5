@@ -104,7 +104,7 @@ test![TestApiBlackSort, isBitVector] tm => do
   assertFalse n.isBitVector
 
 test![TestApiBlackSort, isFiniteField] tm => do
-  assertTrue (← tm.mkFiniteFieldSort "7").isFiniteField
+  assertTrue (← tm.mkFiniteFieldSort 7).isFiniteField
   let n := cvc5.Sort.null ()
   assertFalse n.isFiniteField
 
@@ -450,9 +450,9 @@ test![TestApiBlackSort, getBitVectorSize] tm => do
   assertError "not a bit-vector sort." setSort.getBitVectorSize
 
 test![TestApiBlackSort, getFiniteFieldSize] tm => do
-  let ffSort ← tm.mkFiniteFieldSort "31"
+  let ffSort ← tm.mkFiniteFieldSort 31
   assertOkDiscard ffSort.getFiniteFieldSize
-  assertEq (← ffSort.getFiniteFieldSize) "31"
+  assertEq (← ffSort.getFiniteFieldSize) 31
   (cvc5.Sort.null ()).getFiniteFieldSize |> assertError
     "invalid call to 'std::string cvc5::Sort::getFiniteFieldSize() const', \
     expected non-null object"
