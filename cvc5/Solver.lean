@@ -316,7 +316,7 @@ protected extern_def toString : cvc5.Sort → String
 
 For example, free constants and variables have symbols.
 -/
-extern_def hasSymbol : cvc5.Sort → Except Error Bool
+extern_def!? hasSymbol : cvc5.Sort → Except Error Bool
 
 /-- Get the symbol of this sort.
 
@@ -666,12 +666,18 @@ extern_def!? mkFloatingPointSort : TermManager → (exp sig : UInt32) → Except
 /-- Create a finite-field sort from a given string of base n.
 
 - `size` The modulus of the field. Must be a prime.
-- `base` The base of the string representation of `size`.
 -/
 private extern_def mkFiniteFieldSortFromString : TermManager → (size : String) → (base : UInt32 := 10) → Except Error cvc5.Sort
-with
-  mkFiniteFieldSort (tm : TermManager) : Nat → Except Error cvc5.Sort :=
-    (tm.mkFiniteFieldSortFromString · 10) ∘ toString
+
+@[inherit_doc mkFiniteFieldSortFromString]
+abbrev mkFiniteFieldSort (tm : TermManager) : (size : Nat) → Except Error cvc5.Sort :=
+  (tm.mkFiniteFieldSortFromString · 10) ∘ toString
+@[inherit_doc mkFiniteFieldSortFromString]
+abbrev mkFiniteFieldSort! (tm : TermManager) : (size : Nat) → cvc5.Sort :=
+  Error.unwrap! ∘ (tm.mkFiniteFieldSortFromString · 10) ∘ toString
+@[inherit_doc mkFiniteFieldSortFromString]
+abbrev mkFiniteFieldSort? (tm : TermManager) : (size : Nat) → Option cvc5.Sort :=
+  Except.toOption ∘ (tm.mkFiniteFieldSortFromString · 10) ∘ toString
 
 /-- Create function sort.
 
@@ -709,19 +715,19 @@ extern_def!? mkUninterpretedSortConstructorSort
 
 - `elemSort` The sort of the set elements.
 -/
-extern_def mkSetSort : TermManager → (sort : cvc5.Sort) → Except Error cvc5.Sort
+extern_def!? mkSetSort : TermManager → (sort : cvc5.Sort) → Except Error cvc5.Sort
 
 /-- Create a set parameter.
 
 - `elemSort` The sort of the set elements.
 -/
-extern_def mkBagSort : TermManager → (sort : cvc5.Sort) → Except Error cvc5.Sort
+extern_def!? mkBagSort : TermManager → (sort : cvc5.Sort) → Except Error cvc5.Sort
 
 /-- Create a set parameter.
 
 - `elemSort` The sort of the set elements.
 -/
-extern_def mkSequenceSort : TermManager → (sort : cvc5.Sort) → Except Error cvc5.Sort
+extern_def!? mkSequenceSort : TermManager → (sort : cvc5.Sort) → Except Error cvc5.Sort
 
 /-- Create an abstract sort. An abstract sort represents a sort for a given kind whose parameters
 and arguments are unspecified.
@@ -738,7 +744,7 @@ sort of kind `k` whose arguments are the unspecified sort. For example, `mkAbstr
 SortKind.ARRAY_SORT` will return the sort `(ARRAY_SORT ? ?)` instead of the abstract sort whose
 abstract kind is `SortKind.ARRAY_SORT`.
 -/
-extern_def mkAbstractSort : TermManager → (k : SortKind) → Except Error cvc5.Sort
+extern_def!? mkAbstractSort : TermManager → (k : SortKind) → Except Error cvc5.Sort
 
 /-- Create an uninterpreted sort.
 
@@ -750,7 +756,7 @@ extern_def mkUninterpretedSort : TermManager → (symbol : String) → cvc5.Sort
 
 - `sort` The sort of the element of the nullable.
 -/
-extern_def mkNullableSort : TermManager → (sort : cvc5.Sort) → Except Error cvc5.Sort
+extern_def!? mkNullableSort : TermManager → (sort : cvc5.Sort) → Except Error cvc5.Sort
 
 /-- Create a sort parameter.
 
