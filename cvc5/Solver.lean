@@ -2,7 +2,7 @@
 Copyright (c) 2023-2024 by the authors listed in the file AUTHORS and their
 institutional affiliations. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Abdalrhman Mohamed
+Authors: Abdalrhman Mohamed, Adrien Champion
 -/
 
 import Std.Internal.Rat
@@ -169,6 +169,38 @@ protected extern_def beq : cvc5.Sort → cvc5.Sort → Bool
 
 instance : BEq cvc5.Sort := ⟨Sort.beq⟩
 
+/-- Less than comparison. -/
+protected extern_def blt : cvc5.Sort → cvc5.Sort → Bool
+
+/-- Greater than comparison. -/
+protected extern_def bgt : cvc5.Sort → cvc5.Sort → Bool
+
+/-- Less than or equal comparison. -/
+protected extern_def ble : cvc5.Sort → cvc5.Sort → Bool
+
+/-- Greater than or equal comparison. -/
+protected extern_def bge : cvc5.Sort → cvc5.Sort → Bool
+
+/-- Comparison of two sorts. -/
+protected def compare (s1 s2 : cvc5.Sort) : Ordering :=
+  if s1.beq s2 then .eq
+  else if s1.bgt s2 then .gt
+  else .lt
+
+instance : Ord cvc5.Sort := ⟨Sort.compare⟩
+
+instance : LT cvc5.Sort where
+  lt := (Sort.blt · ·)
+
+instance : DecidableLT cvc5.Sort :=
+  fun s1 s2 => if h : s1.blt s2 then .isTrue h else .isFalse h
+
+instance : LE cvc5.Sort where
+  le := (Sort.ble · ·)
+
+instance : DecidableLE cvc5.Sort :=
+  fun s1 s2 => if h : s1.ble s2 then .isTrue h else .isFalse h
+
 /-- Hash function for cvc5 sorts. -/
 protected extern_def hash : cvc5.Sort → UInt64
 
@@ -177,14 +209,114 @@ instance : Hashable cvc5.Sort := ⟨Sort.hash⟩
 /-- Get the kind of this sort. -/
 extern_def getKind : cvc5.Sort → SortKind
 
-/-- Determine if this is the integer sort (SMT-LIB: `Int`). -/
+/-- Determine if this is the null sort (`cvc5.Sort`). -/
+extern_def isNull : cvc5.Sort → Bool
+
+/-- Determine if this is the Boolean sort (SMT-LIB: `Bool`). -/
+extern_def isBoolean : cvc5.Sort → Bool
+
+/-- Determine if this is the Integer sort (SMT-LIB: `Int`). -/
 extern_def isInteger : cvc5.Sort → Bool
 
+/-- Determine if this is the Real sort (SMT-LIB: `Real`). -/
+extern_def isReal : cvc5.Sort → Bool
+
+/-- Determine if this is the String sort (SMT-LIB: `String`). -/
+extern_def isString : cvc5.Sort → Bool
+
+/-- Determine if this is the regular expression sort (SMT-LIB: `RegLan`). -/
+extern_def isRegExp : cvc5.Sort → Bool
+
+/-- Determine if this is the rounding mode sort (SMT-LIB: `RoundingMode`). -/
+extern_def isRoundingMode : cvc5.Sort → Bool
+
+/-- Determine if this is a bit-vector sort (SMT-LIB: `(_ BitVec i)`). -/
+extern_def isBitVector : cvc5.Sort → Bool
+
+/-- Determine if this is a floating-point sort (SMT-LIB: `(_ FloatingPoint eb sb)`). -/
+extern_def isFloatingPoint : cvc5.Sort → Bool
+
+/-- Determine if this is a datatype sort. -/
+extern_def isDatatype : cvc5.Sort → Bool
+
+/-- Determine if this is a datatype constructor sort. -/
+extern_def isDatatypeConstructor : cvc5.Sort → Bool
+
+/-- Determine if this is a datatype selector sort. -/
+extern_def isDatatypeSelector : cvc5.Sort → Bool
+
+/-- Determine if this is a datatype tester sort. -/
+extern_def isDatatypeTester : cvc5.Sort → Bool
+
+/-- Determine if this is a datatype updater sort. -/
+extern_def isDatatypeUpdater : cvc5.Sort → Bool
+
 /-- Determine if this is a function sort. -/
-protected extern_def isFunction : cvc5.Sort → Bool
+extern_def isFunction : cvc5.Sort → Bool
+
+/-- Determine if this is a predicate sort.
+
+A predicate sort is a function sort that maps to the Boolean sort. All predicate sorts are also
+function sorts.
+-/
+extern_def isPredicate : cvc5.Sort → Bool
+
+/-- Determine if this is a tuple sort. -/
+extern_def isTuple : cvc5.Sort → Bool
+
+/-- Determine if this is a nullable sort. -/
+extern_def isNullable : cvc5.Sort → Bool
+
+/-- Determine if this is a record sort.
+
+**Warning**: this function is experimental and may change in future versions.
+-/
+extern_def isRecord : cvc5.Sort → Bool
+
+/-- Determine if this is an array sort. -/
+extern_def isArray : cvc5.Sort → Bool
+
+/-- Determine if this is a finite field sort. -/
+extern_def isFiniteField : cvc5.Sort → Bool
+
+/-- Determine if this is a Set sort. -/
+extern_def isSet : cvc5.Sort → Bool
+
+/-- Determine if this is a Bag sort. -/
+extern_def isBag : cvc5.Sort → Bool
+
+/-- Determine if this is a Sequence sort. -/
+extern_def isSequence : cvc5.Sort → Bool
+
+/-- Determine if this is an abstract sort. -/
+extern_def isAbstract : cvc5.Sort → Bool
+
+/-- Determine if this is an uninterpreted sort. -/
+extern_def isUninterpretedSort : cvc5.Sort → Bool
+
+/-- Determine if this is an uninterpreted sort constructor.
+
+An uninterpreted sort constructor has arity `> 0` and can be instantiated to construct uninterpreted
+sorts with given sort parameters.
+-/
+extern_def isUninterpretedSortConstructor : cvc5.Sort → Bool
+
+/-- Determine if this is an instantiated (parametric datatype or uninterpreted sort constructor)
+sort.
+
+An instantiated sort is a sort that has been constructed from instantiating a sort with sort
+arguments --- see also `cvc5.Sort.instantiate`.
+-/
+extern_def isInstantiated : cvc5.Sort → Bool
 
 /-- A string representation of this sort. -/
 protected extern_def toString : cvc5.Sort → String
+
+/-- Determine if this term has a symbol (a name).
+
+For example, free constants and variables have symbols.
+-/
+extern_def!? hasSymbol : cvc5.Sort → Except Error Bool
 
 /-- Get the symbol of this sort.
 
@@ -194,14 +326,82 @@ The symbol of this sort is the string that was provided when consrtucting it *vi
 -/
 extern_def!? getSymbol : cvc5.Sort → Except Error String
 
+/-- The arity of a function sort. -/
+extern_def!? getFunctionArity : cvc5.Sort → Except Error Nat
+
 /-- The domain sorts of a function sort. -/
 extern_def!? getFunctionDomainSorts : cvc5.Sort → Except Error (Array cvc5.Sort)
 
 /-- The codomain sort of a function sort. -/
 extern_def!? getFunctionCodomainSort : cvc5.Sort → Except Error cvc5.Sort
 
+/-- The array index sort of an array index. -/
+extern_def!? getArrayIndexSort : cvc5.Sort → Except Error cvc5.Sort
+
+/-- The array element sort of an array index. -/
+extern_def!? getArrayElementSort : cvc5.Sort → Except Error cvc5.Sort
+
+/-- The element sort of a set sort. -/
+extern_def!? getSetElementSort : cvc5.Sort → Except Error cvc5.Sort
+
+/-- The element sort of a bag sort. -/
+extern_def!? getBagElementSort : cvc5.Sort → Except Error cvc5.Sort
+
+/-- The element sort of a sequence sort. -/
+extern_def!? getSequenceElementSort : cvc5.Sort → Except Error cvc5.Sort
+
+/-- The sort kind of an abstract sort, which denotes the kind of sorts that this abstract sort
+denotes.
+-/
+extern_def!? getAbstractedKind : cvc5.Sort → Except Error SortKind
+
+/-- The arity of an uninterpreted sort constructor sort. -/
+extern_def!? getUninterpretedSortConstructorArity : cvc5.Sort → Except Error UInt32
+
 /-- The bit-width of the bit-vector sort. -/
 extern_def!? getBitVectorSize : cvc5.Sort → Except Error UInt32
+
+/-- The size of the finite field sort. -/
+extern_def!? getFiniteFieldSize : cvc5.Sort → Except Error Nat
+
+/-- The bit-width of the exponent of the floating-point sort. -/
+extern_def!? getFloatingPointExponentSize : cvc5.Sort → Except Error UInt32
+
+/-- The width of the significand of the floating-point sort. -/
+extern_def!? getFloatingPointSignificandSize : cvc5.Sort → Except Error UInt32
+
+/-- The length of a tuple sort. -/
+extern_def!? getTupleLength : cvc5.Sort → Except Error UInt32
+
+/-- The element sorts of a tuple sort. -/
+extern_def!? getTupleSorts : cvc5.Sort → Except Error (Array cvc5.Sort)
+
+/-- The element sort of a nullable sort. -/
+extern_def!? getNullableElementSort : cvc5.Sort → Except Error cvc5.Sort
+
+/-- Get the associated uninterpreted sort constructor of an instantiated uninterpreted sort. -/
+extern_def!? getUninterpretedSortConstructor : cvc5.Sort → Except Error cvc5.Sort
+
+/-- Instantiate a parameterized datatype sort or uninterpreted sort constructor sort.
+
+Create sort parameters with `TermManager.mkParamSort symbol`.
+
+- `params` The list of sort parameters to instantiate with.
+-/
+extern_def!? instantiate : cvc5.Sort → (params : Array cvc5.Sort) → Except Error cvc5.Sort
+
+/-- Simultaneous substitution of Sorts.
+
+Note that this replacement is applied during a pre-order traversal and only once to the sort. It is not run until fix point. In the case that `sorts` contains duplicates, the replacement earliest in
+the vector takes priority.
+
+**Warning:** This function is experimental and may change in future versions.
+
+- `sorts` The sub-sorts to be substituted within this sort.
+- `replacements` The sort replacing the substituted sub-sorts.
+-/
+extern_def!? substitute
+: cvc5.Sort → (sorts : Array cvc5.Sort) → (replacements : Array cvc5.Sort) → Except Error cvc5.Sort
 
 instance : ToString cvc5.Sort := ⟨Sort.toString⟩
 instance : Repr cvc5.Sort := ⟨fun self _ => self.toString⟩
@@ -463,6 +663,22 @@ extern_def!? mkBitVectorSort : TermManager → (size : UInt32) → Except Error 
 -/
 extern_def!? mkFloatingPointSort : TermManager → (exp sig : UInt32) → Except Error cvc5.Sort
 
+/-- Create a finite-field sort from a given string of base n.
+
+- `size` The modulus of the field. Must be a prime.
+-/
+private extern_def mkFiniteFieldSortFromString : TermManager → (size : String) → (base : UInt32 := 10) → Except Error cvc5.Sort
+
+@[inherit_doc mkFiniteFieldSortFromString]
+abbrev mkFiniteFieldSort (tm : TermManager) : (size : Nat) → Except Error cvc5.Sort :=
+  (tm.mkFiniteFieldSortFromString · 10) ∘ toString
+@[inherit_doc mkFiniteFieldSortFromString]
+abbrev mkFiniteFieldSort! (tm : TermManager) : (size : Nat) → cvc5.Sort :=
+  Error.unwrap! ∘ (tm.mkFiniteFieldSortFromString · 10) ∘ toString
+@[inherit_doc mkFiniteFieldSortFromString]
+abbrev mkFiniteFieldSort? (tm : TermManager) : (size : Nat) → Option cvc5.Sort :=
+  Except.toOption ∘ (tm.mkFiniteFieldSortFromString · 10) ∘ toString
+
 /-- Create function sort.
 
 - `sorts` The sort of the function arguments.
@@ -471,11 +687,90 @@ extern_def!? mkFloatingPointSort : TermManager → (exp sig : UInt32) → Except
 extern_def!? mkFunctionSort
 : TermManager → (sorts : Array cvc5.Sort) → (codomain : cvc5.Sort) → Except Error cvc5.Sort
 
+/-- Create a predicate sort.
+
+This is equivalent to calling `mkFunctionSort` with Boolean sort as the codomain.
+
+- `sorts` The list of sorts of the predicate.
+-/
+extern_def!? mkPredicateSort : TermManager → (sorts : Array cvc5.Sort) → Except Error cvc5.Sort
+
+/-- Create a tuple sort.
+
+- `sorts` The sorts of the elements of the tuple.
+-/
+extern_def!? mkTupleSort : TermManager → (sorts : Array cvc5.Sort) → Except Error cvc5.Sort
+
+/-- Create an uninterpreted sort constructor sort.
+
+An uninterpreted sort constructor is an uninterpreted sort with arity > 0.
+
+- `arity` The arity of the sort (must be > 0).
+- `symbol` The symbol of the sort.
+-/
+extern_def!? mkUninterpretedSortConstructorSort
+: TermManager → (arity : Nat) → (symbol : String) → Except Error cvc5.Sort
+
+/-- Create a set parameter.
+
+- `elemSort` The sort of the set elements.
+-/
+extern_def!? mkSetSort : TermManager → (sort : cvc5.Sort) → Except Error cvc5.Sort
+
+/-- Create a set parameter.
+
+- `elemSort` The sort of the set elements.
+-/
+extern_def!? mkBagSort : TermManager → (sort : cvc5.Sort) → Except Error cvc5.Sort
+
+/-- Create a set parameter.
+
+- `elemSort` The sort of the set elements.
+-/
+extern_def!? mkSequenceSort : TermManager → (sort : cvc5.Sort) → Except Error cvc5.Sort
+
+/-- Create an abstract sort. An abstract sort represents a sort for a given kind whose parameters
+and arguments are unspecified.
+
+The kind `k` must be the kind of a sort that can be abstracted, *i.e.* a sort that has indices or
+arguments sorts. For example, `SortKind.ARRAY_SORT` and `SortKind.BITVECTOR_SORT` can be passed as
+the kind `k` to this function, while `SortKind.INTEGER_SORT` and `SortKind.STRING_SORT` cannot.
+
+**NB:** Providing the kind `SortKind.ABSTRACT_SORT` as an argument to this function returns the
+(fully) unspecified sort, denoted `?`.
+
+**NB:** Providing a kind `k` that has no indices and a fixed arity of argument sorts will return the
+sort of kind `k` whose arguments are the unspecified sort. For example, `mkAbstractSort
+SortKind.ARRAY_SORT` will return the sort `(ARRAY_SORT ? ?)` instead of the abstract sort whose
+abstract kind is `SortKind.ARRAY_SORT`.
+-/
+extern_def!? mkAbstractSort : TermManager → (k : SortKind) → Except Error cvc5.Sort
+
+/-- Create an uninterpreted sort.
+
+- `symbol` The name of the sort.
+-/
+extern_def mkUninterpretedSort : TermManager → (symbol : String) → cvc5.Sort
+
+/-- Create a nullable sort.
+
+- `sort` The sort of the element of the nullable.
+-/
+extern_def!? mkNullableSort : TermManager → (sort : cvc5.Sort) → Except Error cvc5.Sort
+
+/-- Create a sort parameter.
+
+- `symbol` The name of the sort.
+
+**Warning**: This function is experimental and may change in future versions.
+-/
+extern_def mkParamSort : TermManager → (symbol : String) → cvc5.Sort
+
 /-- Create a Boolean constant.
 
 - `b`: The Boolean constant.
 -/
-extern_def mkBoolean : TermManager → Bool → Term
+extern_def mkBoolean : TermManager → (b : Bool) → Term
 
 /-- Create an integer-value term. -/
 private extern_def mkIntegerFromString : TermManager → String → Except Error Term
@@ -510,7 +805,14 @@ See `cvc5.Kind` for a description of the parameters.
 If `args` is empty, the `Op` simply wraps the `cvc5.Kind`. The `Kind` can be used in
 `Solver.mkTerm` directly without creating an `Op` first.
 -/
-extern_def!? mkOpOfIndices : TermManager → (kind : Kind) → (args : Array Nat) → Except Error Op
+extern_def!? mkOpOfIndices : TermManager → (kind : Kind) → (args : Array Nat := #[]) → Except Error Op
+
+@[inherit_doc mkOpOfIndices]
+abbrev mkOp := @mkOpOfIndices
+@[inherit_doc mkOpOfIndices!]
+abbrev mkOp! := @mkOpOfIndices!
+@[inherit_doc mkOpOfIndices?]
+abbrev mkOp? := @mkOpOfIndices?
 
 /-- Create operator of kind:
 
@@ -575,6 +877,26 @@ extern_def getVersion : SolverT m String
 -/
 extern_def setOption (option value : String) : SolverT m Unit
 
+/-- Remove all assertions. -/
+extern_def resetAssertions : SolverT m Unit
+
+/-- Set logic.
+
+- `logic`: The logic to set.
+-/
+extern_def setLogic : (logic : String) → SolverT m Unit
+
+/-- Simplify a term or formula based on rewriting and (optionally) applying substitutions for
+solved variables.
+
+If `applySubs` is true, then for example, if `(= x 0)` was asserted to this solver, this function
+may replace occurrences of `x` with `0`.
+
+- `t` The term to simplify.
+- `applySubs` True to apply substitutions for solved variables.
+-/
+extern_def simplify : (term : Term) → (applySubs : Bool := false) → SolverT m Term
+
 /--
 Declare n-ary function symbol.
 
@@ -603,6 +925,12 @@ extern_def assertFormula : Term → SolverT m Unit
 
 /-- Check satisfiability. -/
 extern_def checkSat : SolverT m Result
+
+/-- Check satisfiability assuming the given formulas.
+
+- `assumptions`: The formulas to assume.
+-/
+extern_def checkSatAssuming : (assumptions : Array Term) → SolverT m Result
 
 /-- Get a proof associated with the most recent call to `checkSat`.
 
@@ -653,7 +981,7 @@ extern_def proofToString : Proof → SolverT m String
 Commands that produce a result such as `(check-sat)`, `(get-model)`, ... are executed but the
 results are ignored.
 -/
-extern_def parse : String → SolverT m Unit
+extern_def parseCommands : String → SolverT m Unit
 
 /-- Run a `query` given a term manager `tm`. -/
 def run (tm : TermManager) (query : SolverT m α) : m (Except Error α) :=
