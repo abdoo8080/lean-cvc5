@@ -127,10 +127,10 @@ namespace Test
 
 scoped syntax
   docComment ?
-  "test! " ("[" declId ", " declId "] ")? (ident " => ")? term : command
+  "test! " ("[" declId ", " declId "] ")? ("smt ")? (ident " => ")? term : command
 scoped syntax
   docComment ?
-  "test? " ("[" declId ", " declId "] ")? (ident " => ")? term : command
+  "test? " ("[" declId ", " declId "] ")? ("smt ")? (ident " => ")? term : command
 
 macro_rules
 | `(command|
@@ -159,6 +159,13 @@ macro_rules
 -- )
 | `(command|
   $[ $outputComment:docComment ]?
+  test! $[ [ $fileId:ident , $testId:ident ] ]? smt $tm:ident => $code:term
+) => `(
+  $[$outputComment]?
+  test! $[ [ $fileId, $testId ] ]? $tm => cvc5.Solver.run! $tm $code
+)
+| `(command|
+  $[ $outputComment:docComment ]?
   test! $[ [ $fileId:ident , $testId:ident ] ]? $code:term
 ) => `(
   $[$outputComment]?
@@ -180,6 +187,13 @@ macro_rules
 --     Solver.runWith! $tm do
 --       $code:term
 -- )
+| `(command|
+  $[ $outputComment:docComment ]?
+  test? $[ [ $fileId:ident , $testId:ident ] ]? smt $tm:ident => $code:term
+) => `(
+  $[$outputComment]?
+  test? $[ [ $fileId, $testId ] ]? $tm => cvc5.Solver.run! $tm $code
+)
 | `(command| $[$outputComment]? test? $[ [ $fileId, $testId ] ]? $code:term) => `(
   $[$outputComment]?
   test? $[ [ $fileId, $testId ] ]? _tm => $code
