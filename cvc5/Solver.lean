@@ -89,11 +89,6 @@ abbrev SolverT m := ExceptT Error (StateT Solver m)
 
 namespace SolverT
 
-instance SolverT.instMonadLift [Monad m] : MonadLift m (SolverT m) where
-  monadLift code state := do
-    let res ← code
-    return (.ok res, state)
-
 end SolverT
 
 /-- Solver error/state-monad wrapped in `IO`. -/
