@@ -898,9 +898,11 @@ extern "C" uint8_t proof_getRule(lean_obj_arg p)
   return static_cast<uint32_t>(proof_unbox(p)->getRule());
 }
 
-extern "C" uint16_t proof_getRewriteRule(lean_obj_arg p)
+extern "C" lean_obj_res proof_getRewriteRule(lean_obj_arg p)
 {
-  return static_cast<uint32_t>(proof_unbox(p)->getRewriteRule());
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  return except_ok_u32(static_cast<uint32_t>(proof_unbox(p)->getRewriteRule()));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
 extern "C" lean_obj_res proof_getResult(lean_obj_arg p)
