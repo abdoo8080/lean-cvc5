@@ -841,6 +841,16 @@ Create operators with `mkOp`.
 -/
 extern_def!? mkTermOfOp : TermManager → (op : Op) → (children : Array Term := #[]) → Except Error Term
 
+/-- Create a free constant.
+
+Note that the returned term is always fresh, even if the same arguments were provided on a previous
+call to `mkConst`.
+
+- `sort` The sort of the constant.
+- `symbol` The name of the constant (optional).
+-/
+extern_def mkConst : TermManager → (sort : cvc5.Sort) → (symbol: String := "") → Term
+
 end TermManager
 
 namespace Solver
