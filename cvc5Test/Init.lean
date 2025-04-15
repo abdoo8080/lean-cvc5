@@ -112,12 +112,16 @@ def checkSatAssuming? (terms : Array Term) : SolverT m (Option Bool) :=
 def runWith! [Inhabited α] (tm : TermManager) (query : SolverM α) : IO α := do
   match ← Solver.run tm query with
   | .ok res => return res
-  | .error err => IO.throwServerError err.toString
+  | .error err =>
+    IO.eprintln err.toString
+    return default
 
 def runIO! [Inhabited α] (query : SolverM α) : IO α := do
   match ← Solver.run (← TermManager.new) query with
   | .ok res => return res
-  | .error err => IO.throwServerError err.toString
+  | .error err =>
+    IO.eprintln err.toString
+    return default
 
 end Solver
 
@@ -141,14 +145,16 @@ macro_rules
     match (fileId, testId) with
     | (some fileId, some testId) =>
       Lean.Syntax.mkStrLit s!"[{fileId}.{testId}] test failed:\n"
-    | _ => Lean.Syntax.mkStrLit ""
+    | _ => Lean.Syntax.mkStrLit "test failed"
   `(
     $[ $outputComment:docComment ]?
     #guard_msgs in #eval IO.run do
       let $tm:ident ← TermManager.new
       match ← Solver.run $tm (do $code:term) with
       | .ok res => return res
-      | .error e => IO.throwServerError ($errPrefStrLit ++ (toString e))
+      | .error e =>
+        IO.eprintln ($errPrefStrLit ++ (toString e))
+        return default
   )
 -- | `(command| test! $tm:ident => $code:term) => `(
 --   /-- -/
@@ -162,7 +168,7 @@ macro_rules
   test! $[ [ $fileId:ident , $testId:ident ] ]? smt $tm:ident => $code:term
 ) => `(
   $[$outputComment]?
-  test! $[ [ $fileId, $testId ] ]? $tm => cvc5.Solver.run! $tm $code
+  test! $[ [ $fileId, $testId ] ]? $tm => cvc5.Solver.runWith! $tm $code
 )
 | `(command|
   $[ $outputComment:docComment ]?
@@ -173,14 +179,22 @@ macro_rules
 )
 | `(command|
   $[ $outputComment:docComment ]?
-  test? $[ [ $fileId, $testId ] ]? $tm:ident => $code:term
-) => `(
-  #eval IO.run do
-    let $tm:ident ← TermManager.new
-    match ← Solver.run $tm (do $code:term) with
-    | .ok res => return res
-    | .error e => IO.throwServerError s!"[{fileId}.{testId}] test failed:\n{e}"
-)
+  test? $[ [ $fileId:ident, $testId:ident ] ]? $tm:ident => $code:term
+) =>
+  let errPrefStrLit :=
+    match (fileId, testId) with
+    | (some fileId, some testId) =>
+      Lean.Syntax.mkStrLit s!"[{fileId}.{testId}] test failed:\n"
+    | _ => Lean.Syntax.mkStrLit "test failed"
+  `(
+    #eval IO.run do
+      let $tm:ident ← TermManager.new
+      match ← Solver.run $tm (do $code:term) with
+      | .ok res => return res
+      | .error e =>
+        IO.eprintln ($errPrefStrLit ++ (toString e))
+        return default
+  )
 -- | `(command| $[ $_outputComment:docComment ]? test? $tm:ident => $code:term) => `(
 --   #eval IO.run do
 --     let $tm:ident ← TermManager.new
@@ -192,7 +206,7 @@ macro_rules
   test? $[ [ $fileId:ident , $testId:ident ] ]? smt $tm:ident => $code:term
 ) => `(
   $[$outputComment]?
-  test? $[ [ $fileId, $testId ] ]? $tm => cvc5.Solver.run! $tm $code
+  test? $[ [ $fileId, $testId ] ]? $tm => cvc5.Solver.runWith! $tm $code
 )
 | `(command| $[$outputComment]? test? $[ [ $fileId, $testId ] ]? $code:term) => `(
   $[$outputComment]?
