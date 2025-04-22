@@ -56,20 +56,26 @@ def generateEnums (cppDir : FilePath) (pkg : NPackage _package.name) : IO Unit :
 ```\
     "
 
-/-- Initialization script.
+/-- Post-update script script.
 
+- remove `libffi.*` files if any;
 - download cvc5 release files;
 - generate/update lean-enumerations.
 -/
-script init do
+post_update pkg do
   let ws ← getWorkspace
   let args := ws.lakeArgs?.getD #[]
   let v := Verbosity.normal
   let v := if args.contains "-q" || args.contains "--quiet" then Verbosity.quiet else v
   let v := if args.contains "-v" || args.contains "--verbose" then Verbosity.verbose else v
-  let exitCode ← LoggerIO.toBaseIO (minLv := v.minLogLv) <| ws.runLakeT do
+  let exitCode? ← LoggerIO.toBaseIO (minLv := v.minLogLv) <| ws.runLakeT do
     if let some pkg ← findPackage? _package.name then
       let cvc5Dir := pkg.buildDir / s!"cvc5-{cvc5.target}"
+      let libDir := pkg.leanLibDir
+      if ← libDir.pathExists then
+        for file in ← libDir.readDir do
+          if file.root = libDir ∧ file.fileName.startsWith "libffi" then
+            IO.FS.removeFile file.path
       let zipPath := cvc5Dir.addExtension "zip"
       if ← cvc5Dir.pathExists then
         IO.FS.removeDirAll cvc5Dir
@@ -81,7 +87,8 @@ script init do
     else
       logError "package not found"
       return 1
-  return ⟨exitCode.getD 1⟩
+  let exitCode := exitCode?.getD 1
+  if exitCode = 0 then return () else error s!"{pkg.name}: failed to download/setup `lean-cvc5`"
 
 def Lake.compileStaticLib'
   (libFile : FilePath) (oFiles : Array FilePath)
