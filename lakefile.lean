@@ -69,7 +69,6 @@ post_update pkg do
   let libDir := pkg.leanLibDir
   if ← libDir.pathExists then
     for file in ← libDir.readDir do
-      logInfo s!"looking at {file.path}"
       if file.root = libDir ∧ file.fileName.startsWith "libffi" then
         log s!"removing ffi build file {file.path}"
         IO.FS.removeFile file.path
