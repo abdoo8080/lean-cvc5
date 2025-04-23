@@ -148,6 +148,11 @@ private def mkExceptOkU32 : UInt32 → Except Error UInt32 :=
   .ok
 
 /-- Only used by FFI to inject values. -/
+@[export except_ok_u16]
+private def mkExceptOkU16 : UInt16 → Except Error UInt16 :=
+  .ok
+
+/-- Only used by FFI to inject values. -/
 @[export except_ok_u8]
 private def mkExceptOkU8 : UInt8 → Except Error UInt8 :=
   .ok

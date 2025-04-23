@@ -12,6 +12,8 @@ extern "C" lean_obj_res except_ok_bool(uint8_t val);
 
 extern "C" lean_obj_res except_ok_u32(uint32_t val);
 
+extern "C" lean_obj_res except_ok_u16(uint8_t val);
+
 extern "C" lean_obj_res except_ok_u8(uint8_t val);
 
 extern "C" lean_obj_res except_err(lean_obj_arg alpha, lean_obj_arg msg);
@@ -902,7 +904,7 @@ extern "C" uint8_t proof_getRule(lean_obj_arg p)
 extern "C" lean_obj_res proof_getRewriteRule(lean_obj_arg p)
 {
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
-  return except_ok_u32(static_cast<uint32_t>(proof_unbox(p)->getRewriteRule()));
+  return except_ok_u16(static_cast<int>(proof_unbox(p)->getRewriteRule()));
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
