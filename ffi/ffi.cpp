@@ -147,6 +147,7 @@ extern "C" lean_obj_res skolemId_toString(uint8_t si)
 {
   return lean_mk_string(std::to_string(static_cast<SkolemId>(si)).c_str());
 }
+
 extern "C" uint64_t skolemId_hash(uint8_t si)
 {
   return std::hash<SkolemId>()(static_cast<SkolemId>(si));
