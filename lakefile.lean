@@ -149,7 +149,6 @@ extern_lib cvc5ffi pkg := do
             path.fileName.map (fun s => s.startsWith cvc5.srcDirNamePref)
             |>.getD false
           if rm then IO.FS.removeDirAll path
-        else
     let zipFile := cvc5.zip.file pkg.buildDir
     logV s!"- download `{cvc5.zip.url}`"
     download cvc5.zip.url zipFile
