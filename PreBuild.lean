@@ -85,6 +85,12 @@ def Enum.writeToLean (e : Enum) (skipIfDefs := true) : IO Unit := do
     [],
     ["instance : ToString ", e.ident, " := ⟨", e.ident, ".toString⟩"],
     [],
+    ["/-- Produces a hash. -/"],
+    ["@[extern \"", e.toExternPref, "_hash\"]"],
+    ["protected opaque hash : ", e.ident, " → UInt64"],
+    [],
+    ["instance : Hashable ", e.ident, " := ⟨", e.ident, ".hash⟩"],
+    [],
     ["end ", e.ident],
   ]
 

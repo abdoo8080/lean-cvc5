@@ -788,4 +788,10 @@ protected opaque toString : SkolemId → String
 
 instance : ToString SkolemId := ⟨SkolemId.toString⟩
 
+/-- Produces a hash. -/
+@[extern "skolemId_hash"]
+protected opaque hash : SkolemId → UInt64
+
+instance : Hashable SkolemId := ⟨SkolemId.hash⟩
+
 end SkolemId
