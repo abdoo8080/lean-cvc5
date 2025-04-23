@@ -5739,7 +5739,7 @@ inductive Kind where
     - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
   -/
   | INST_PATTERN_LIST
-deriving Inhabited, Repr, BEq, Hashable
+deriving Inhabited, Repr, BEq
 
 namespace Kind
 
@@ -5964,7 +5964,7 @@ inductive SortKind where
     - Solver::mkUninterpretedSort(const std::optional<std::string>&) const
   -/
   | UNINTERPRETED_SORT
-deriving Inhabited, Repr, BEq, Hashable
+deriving Inhabited, Repr, BEq
 
 namespace SortKind
 
