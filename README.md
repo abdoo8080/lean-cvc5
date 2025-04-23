@@ -17,7 +17,7 @@ To use the cvc5 FFI in your project, add the following line to your list of depe
 `lakefile.lean`:
 
 ```lean
-require smt from git "https://github.com/abdoo8080/lean-cvc5.git" @ "main"
+require smt from git "https://github.com/abdoo8080/lean-cvc5.git" @ "39a646d"
 ```
 
 ## Building
