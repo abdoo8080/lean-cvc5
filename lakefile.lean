@@ -55,8 +55,10 @@ def url : String := s!"{cvc5.url}/{cvc5.version}/{cvc5.zip.fileName}"
 
 end zip
 
+/-- Prefix shared by all source directories for this os and architecture. -/
+def srcDirNamePref : String := cvc5.zip.stem
 /-- Name of the directory that eventually stores the cvc5 sources. -/
-def srcDirName : FilePath := s!"{cvc5.zip.stem}-{cvc5.version}"
+def srcDirName : FilePath := s!"{srcDirNamePref}-{cvc5.version}"
 /-- Path to the directory that eventually stores the cvC5 sources. -/
 def srcDir (root : FilePath) : FilePath := root / srcDirName
 
@@ -139,12 +141,12 @@ extern_lib cvc5ffi pkg := do
   else
     logV "setting up cvc5"
     if ← pkg.buildDir.pathExists then
-      -- remove any directory that starts with `cvc5.osArchTarget`
+      -- remove any directory that starts with `cvc5.srcDirNamePref`
       for entry in ← pkg.buildDir.readDir do
         let path := entry.path
         if ← path.isDir then
           let rm :=
-            path.fileName.map (fun s => s.startsWith cvc5.osArchTarget)
+            path.fileName.map (fun s => s.startsWith cvc5.srcDirNamePref)
             |>.getD false
           if rm then IO.FS.removeDirAll path
     let zipFile := cvc5.zip.file pkg.buildDir
