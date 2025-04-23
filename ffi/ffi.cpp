@@ -584,6 +584,19 @@ extern "C" lean_obj_arg sort_instantiate(lean_obj_arg s, lean_obj_arg params)
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
+extern "C" lean_obj_res sort_getInstantiatedParameters(lean_obj_arg s)
+{
+  CVC5_LEAN_API_TRY_CATCH_SOLVER_BEGIN;
+  std::vector<Sort> sorts = sort_unbox(s)->getInstantiatedParameters();
+  lean_object* array = lean_mk_empty_array();
+  for (const Sort& sort : sorts)
+  {
+    array = lean_array_push(array, sort_box(new Sort(sort)));
+  }
+  return except_ok(lean_box(0), array);
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
+}
+
 extern "C" lean_obj_arg sort_substitute(lean_obj_arg s,
                                         lean_obj_arg sorts,
                                         lean_obj_arg replacements)

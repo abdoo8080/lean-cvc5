@@ -394,6 +394,11 @@ Create sort parameters with `TermManager.mkParamSort symbol`.
 -/
 extern_def!? instantiate : cvc5.Sort → (params : Array cvc5.Sort) → Except Error cvc5.Sort
 
+/-- Get the sorts used to instantiate the sort parameters of a parametric sort (parametric datatype
+or uninterpreted sort constructor sort, see `cvc5.Sort.instantiate`.)
+-/
+extern_def getInstantiatedParameters : cvc5.Sort → Array cvc5.Sort
+
 /-- Simultaneous substitution of Sorts.
 
 Note that this replacement is applied during a pre-order traversal and only once to the sort. It is not run until fix point. In the case that `sorts` contains duplicates, the replacement earliest in
