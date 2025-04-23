@@ -139,7 +139,7 @@ extern_lib cvc5ffi pkg := do
   else
     logV "setting up cvc5"
     if ← pkg.buildDir.pathExists then
-      -- remove any directory that starts with `cvc5.orArchTarget`
+      -- remove any directory that starts with `cvc5.osArchTarget`
       for entry in ← pkg.buildDir.readDir do
         let path := entry.path
         if ← path.isDir then
