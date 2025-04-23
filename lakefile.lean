@@ -56,40 +56,6 @@ def generateEnums (cppDir : FilePath) (pkg : NPackage _package.name) : IO Unit :
 ```\
     "
 
-/-- Post-update script script.
-
-- remove `libffi.*` files if any;
-- download cvc5 release files;
-- generate/update lean-enumerations.
--/
-post_update pkg do
-  let log {m : Type → Type} [Monad m] [MonadLog m] (s : String) : m _ :=
-    logVerbose s!"{s}"
-  -- remove files that are sensitive to API/cvc5 version changes
-  let libDir := pkg.leanLibDir
-  if ← libDir.pathExists then
-    for file in ← libDir.readDir do
-      if file.root = libDir ∧ file.fileName.startsWith "libffi" then
-        log s!"removing ffi build file {file.path}"
-        IO.FS.removeFile file.path
-  -- download/unzip cvc5 archive if needed
-  let cvc5ZipDir := pkg.buildDir / s!"cvc5-{cvc5.target}"
-  if ← cvc5ZipDir.pathExists then
-    log s!"cvc5 C++ interface up to date, nothing to do"
-  else
-    let zipUrl := s!"{cvc5.url}/{cvc5.version}/cvc5-{cvc5.target}.zip"
-    log s!"downloading `{zipUrl}`"
-    let zipPath := cvc5ZipDir.addExtension "zip"
-    if ← cvc5ZipDir.pathExists then
-      IO.FS.removeDirAll cvc5ZipDir
-    download zipUrl zipPath
-    log s!"extracting `{zipPath}`"
-    unzip zipPath pkg.buildDir
-    IO.FS.removeFile zipPath
-    log s!"generating lean-level enum-like types"
-    generateEnums (cvc5ZipDir / "include" / "cvc5") pkg
-  log "done"
-
 def Lake.compileStaticLib'
   (libFile : FilePath) (oFiles : Array FilePath)
   (ar : FilePath := "ar")
@@ -123,6 +89,32 @@ target ffi.o pkg : FilePath := do
 def libs := #["cadical", "cvc5", "cvc5parser", "gmp", "gmpxx", "picpoly", "picpolyxx"]
 
 extern_lib libffi pkg := do
+  let log {m : Type → Type} [Monad m] [MonadLog m] (s : String) : m _ :=
+    logVerbose s!"{s}"
+  -- remove files that are sensitive to API/cvc5 version changes
+  let libDir := pkg.leanLibDir
+  if ← libDir.pathExists then
+    for file in ← libDir.readDir do
+      if file.root = libDir ∧ file.fileName.startsWith "libffi" then
+        log s!"removing ffi build file {file.path}"
+        IO.FS.removeFile file.path
+  -- download/unzip cvc5 archive if needed
+  let cvc5ZipDir := pkg.buildDir / s!"cvc5-{cvc5.target}"
+  if ← cvc5ZipDir.pathExists then
+    log s!"cvc5 C++ interface up to date, nothing to do"
+  else
+    let zipUrl := s!"{cvc5.url}/{cvc5.version}/cvc5-{cvc5.target}.zip"
+    log s!"downloading `{zipUrl}`"
+    let zipPath := cvc5ZipDir.addExtension "zip"
+    if ← cvc5ZipDir.pathExists then
+      IO.FS.removeDirAll cvc5ZipDir
+    download zipUrl zipPath
+    log s!"extracting `{zipPath}`"
+    unzip zipPath pkg.buildDir
+    IO.FS.removeFile zipPath
+    log s!"generating lean-level enum-like types"
+    generateEnums (cvc5ZipDir / "include" / "cvc5") pkg
+  log "done"
   let ffiO ← fetch (pkg.target ``ffi.o)
   let libs := libs.map (pure <| pkg.buildDir / s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib ·)
   let libFile := pkg.nativeLibDir / nameToStaticLib "ffi"
