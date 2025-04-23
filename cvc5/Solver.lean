@@ -848,15 +848,21 @@ Create operators with `mkOp`.
 -/
 extern_def!? mkTermOfOp : TermManager → (op : Op) → (children : Array Term := #[]) → Except Error Term
 
-/-- Create a free constant.
+/-- **THIS FUNCTION MUST NOT BE EXPOSED.**
 
-Note that the returned term is always fresh, even if the same arguments were provided on a previous
-call to `mkConst`.
+**It produces a different (fresh) term every time it's called which is really bad for purity.**
+
+Create a free constant.
+
+Note that the returned term is always fresh, even if the same arguments were provided on a
+previous call to `mkConst`.
 
 - `sort` The sort of the constant.
 - `symbol` The name of the constant (optional).
 -/
-extern_def mkConst : TermManager → (sort : cvc5.Sort) → (symbol: String := "") → Term
+private
+def mkConst (_ : TermManager) (_ : cvc5.Sort) (_ : String := "") : Term :=
+  panic! "illegal call to `cvc5.TermManager.mkConst"
 
 end TermManager
 
@@ -928,11 +934,8 @@ SMT-LIB:
 - `symbol`: The name of the function.
 - `sorts`: The sorts of the parameters to this function.
 - `sort`: The sort of the return value of this function.
-- `fresh`: If true, then this method always returns a new Term.
-           Otherwise, this method will always return the same Term
-           for each call with the given sorts and symbol where fresh is false.
 -/
-extern_def declareFun (symbol : String) (sorts : Array cvc5.Sort) (sort : cvc5.Sort) (fresh := true) : SolverT m Term
+extern_def declareFun (symbol : String) (sorts : Array cvc5.Sort) (sort : cvc5.Sort) : SolverT m Term
 
 /-- Assert a formula.
 

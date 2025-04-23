@@ -23,10 +23,10 @@ def createProof (tm : TermManager) : SolverM Proof := do
   let uToIntSort ← tm.mkFunctionSort #[uSort] intSort
   let intPredSort ← tm.mkFunctionSort #[intSort] boolSort
 
-  let x := tm.mkConst uSort "x"
-  let y := tm.mkConst uSort "y"
-  let f := tm.mkConst uToIntSort "f"
-  let p := tm.mkConst intPredSort "p"
+  let x ← declareFun "x" #[] uSort
+  let y ← declareFun "y" #[] uSort
+  let f ← declareFun "f" #[uSort] intSort
+  let p ← declareFun "p" #[intSort] boolSort
   let zero := tm.mkInteger 0
   let one := tm.mkInteger 1
   let f_x ← tm.mkTerm Kind.APPLY_UF #[f, x]
@@ -53,7 +53,7 @@ def createRewriteProof (tm : TermManager) : SolverM Proof := do
   setOption "produce-proofs" "true"
   setOption "proof-granularity" "dsl-rewrite"
   let intSort := tm.getIntegerSort
-  let x := tm.mkConst intSort "x"
+  let x ← declareFun "x" #[] intSort
   let zero := tm.mkInteger 0
   let geq ← tm.mkTerm Kind.GEQ #[x, zero]
   let leq ← tm.mkTerm Kind.LEQ #[zero, x]
