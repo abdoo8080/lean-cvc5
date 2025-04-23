@@ -113,7 +113,7 @@ def runWith! [Inhabited α] (tm : TermManager) (query : SolverM α) : IO α := d
   match ← Solver.run tm query with
   | .ok res => return res
   | .error err =>
-    IO.eprintln err.toString
+    IO.eprintln err
     return default
 
 def runIO! [Inhabited α] (query : SolverM α) : IO α := do
