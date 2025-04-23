@@ -75,7 +75,7 @@ def Enum.writeToLean (e : Enum) (skipIfDefs := true) : IO Unit := do
       continue
     v.writeToLean h (pref ++ "  ")
   wlns [
-    ["deriving Inhabited, Repr, BEq, Hashable"],
+    ["deriving Inhabited, Repr, BEq"],
     [],
     ["namespace ", e.ident],
     [],
