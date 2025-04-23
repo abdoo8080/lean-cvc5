@@ -138,7 +138,7 @@ extern "C" lean_obj_res proofRewriteRule_toString(uint16_t prr)
       std::to_string(static_cast<ProofRewriteRule>(prr)).c_str());
 }
 
-extern "C" uint64_t proofRewriteRule_hash(uint8_t prr)
+extern "C" uint64_t proofRewriteRule_hash(uint16_t prr)
 {
   return std::hash<ProofRewriteRule>()(static_cast<ProofRewriteRule>(prr));
 }
