@@ -75,7 +75,7 @@ def Enum.writeToLean (e : Enum) (skipIfDefs := true) : IO Unit := do
       continue
     v.writeToLean h (pref ++ "  ")
   wlns [
-    ["deriving Inhabited, Repr, BEq, Hashable"],
+    ["deriving Inhabited, Repr, BEq"],
     [],
     ["namespace ", e.ident],
     [],
@@ -84,6 +84,12 @@ def Enum.writeToLean (e : Enum) (skipIfDefs := true) : IO Unit := do
     ["protected opaque toString : ", e.ident, " → String"],
     [],
     ["instance : ToString ", e.ident, " := ⟨", e.ident, ".toString⟩"],
+    [],
+    ["/-- Produces a hash. -/"],
+    ["@[extern \"", e.toExternPref, "_hash\"]"],
+    ["protected opaque hash : ", e.ident, " → UInt64"],
+    [],
+    ["instance : Hashable ", e.ident, " := ⟨", e.ident, ".hash⟩"],
     [],
     ["end ", e.ident],
   ]

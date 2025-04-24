@@ -12,6 +12,8 @@ extern "C" lean_obj_res except_ok_bool(uint8_t val);
 
 extern "C" lean_obj_res except_ok_u32(uint32_t val);
 
+extern "C" lean_obj_res except_ok_u16(uint8_t val);
+
 extern "C" lean_obj_res except_ok_u8(uint8_t val);
 
 extern "C" lean_obj_res except_err(lean_obj_arg alpha, lean_obj_arg msg);
@@ -107,14 +109,29 @@ extern "C" lean_obj_res kind_toString(uint16_t k)
   return lean_mk_string(std::to_string(static_cast<Kind>(k - 2)).c_str());
 }
 
+extern "C" uint64_t kind_hash(uint8_t k)
+{
+  return std::hash<Kind>()(static_cast<Kind>(k));
+}
+
 extern "C" lean_obj_res sortKind_toString(uint8_t sk)
 {
   return lean_mk_string(std::to_string(static_cast<SortKind>(sk - 2)).c_str());
 }
 
+extern "C" uint64_t sortKind_hash(uint8_t sk)
+{
+  return std::hash<SortKind>()(static_cast<SortKind>(sk));
+}
+
 extern "C" lean_obj_res proofRule_toString(uint8_t pr)
 {
   return lean_mk_string(std::to_string(static_cast<ProofRule>(pr)).c_str());
+}
+
+extern "C" uint64_t proofRule_hash(uint8_t pr)
+{
+  return std::hash<ProofRule>()(static_cast<ProofRule>(pr));
 }
 
 extern "C" lean_obj_res proofRewriteRule_toString(uint16_t prr)
@@ -123,9 +140,19 @@ extern "C" lean_obj_res proofRewriteRule_toString(uint16_t prr)
       std::to_string(static_cast<ProofRewriteRule>(prr)).c_str());
 }
 
+extern "C" uint64_t proofRewriteRule_hash(uint16_t prr)
+{
+  return std::hash<ProofRewriteRule>()(static_cast<ProofRewriteRule>(prr));
+}
+
 extern "C" lean_obj_res skolemId_toString(uint8_t si)
 {
   return lean_mk_string(std::to_string(static_cast<SkolemId>(si)).c_str());
+}
+
+extern "C" uint64_t skolemId_hash(uint8_t si)
+{
+  return std::hash<SkolemId>()(static_cast<SkolemId>(si));
 }
 
 static void result_finalize(void* obj) { delete static_cast<Result*>(obj); }
@@ -874,9 +901,11 @@ extern "C" uint8_t proof_getRule(lean_obj_arg p)
   return static_cast<uint32_t>(proof_unbox(p)->getRule());
 }
 
-extern "C" uint16_t proof_getRewriteRule(lean_obj_arg p)
+extern "C" lean_obj_res proof_getRewriteRule(lean_obj_arg p)
 {
-  return static_cast<uint32_t>(proof_unbox(p)->getRewriteRule());
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  return except_ok_u16(static_cast<int>(proof_unbox(p)->getRewriteRule()));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
 extern "C" lean_obj_res proof_getResult(lean_obj_arg p)
@@ -1197,6 +1226,8 @@ extern "C" lean_obj_res termManager_mkTermOfOp(lean_obj_arg tm,
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
+// This function is not part of the *public* `lean-cvc5` API: it produces a different (fresh) term
+// every time it's called which is really bad for purity.
 extern "C" lean_obj_res termManager_mkConst(lean_obj_arg tm,
                                             lean_obj_arg sort,
                                             lean_obj_arg symbol)

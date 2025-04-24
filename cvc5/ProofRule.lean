@@ -2343,7 +2343,7 @@ inductive ProofRule where
   -/
   | ALETHE_RULE
   | UNKNOWN
-deriving Inhabited, Repr, BEq, Hashable
+deriving Inhabited, Repr, BEq
 
 namespace ProofRule
 
@@ -2352,6 +2352,12 @@ namespace ProofRule
 protected opaque toString : ProofRule → String
 
 instance : ToString ProofRule := ⟨ProofRule.toString⟩
+
+/-- Produces a hash. -/
+@[extern "proofRule_hash"]
+protected opaque hash : ProofRule → UInt64
+
+instance : Hashable ProofRule := ⟨ProofRule.hash⟩
 
 end ProofRule
 
@@ -5538,7 +5544,7 @@ inductive ProofRewriteRule where
   Auto-generated from RARE rule sets-card-emp 
   -/
   | SETS_CARD_EMP
-deriving Inhabited, Repr, BEq, Hashable
+deriving Inhabited, Repr, BEq
 
 namespace ProofRewriteRule
 
@@ -5547,5 +5553,11 @@ namespace ProofRewriteRule
 protected opaque toString : ProofRewriteRule → String
 
 instance : ToString ProofRewriteRule := ⟨ProofRewriteRule.toString⟩
+
+/-- Produces a hash. -/
+@[extern "proofRewriteRule_hash"]
+protected opaque hash : ProofRewriteRule → UInt64
+
+instance : Hashable ProofRewriteRule := ⟨ProofRewriteRule.hash⟩
 
 end ProofRewriteRule

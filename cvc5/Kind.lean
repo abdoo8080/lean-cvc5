@@ -5739,7 +5739,7 @@ inductive Kind where
     - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
   -/
   | INST_PATTERN_LIST
-deriving Inhabited, Repr, BEq, Hashable
+deriving Inhabited, Repr, BEq
 
 namespace Kind
 
@@ -5748,6 +5748,12 @@ namespace Kind
 protected opaque toString : Kind → String
 
 instance : ToString Kind := ⟨Kind.toString⟩
+
+/-- Produces a hash. -/
+@[extern "kind_hash"]
+protected opaque hash : Kind → UInt64
+
+instance : Hashable Kind := ⟨Kind.hash⟩
 
 end Kind
 
@@ -5958,7 +5964,7 @@ inductive SortKind where
     - Solver::mkUninterpretedSort(const std::optional<std::string>&) const
   -/
   | UNINTERPRETED_SORT
-deriving Inhabited, Repr, BEq, Hashable
+deriving Inhabited, Repr, BEq
 
 namespace SortKind
 
@@ -5967,5 +5973,11 @@ namespace SortKind
 protected opaque toString : SortKind → String
 
 instance : ToString SortKind := ⟨SortKind.toString⟩
+
+/-- Produces a hash. -/
+@[extern "sortKind_hash"]
+protected opaque hash : SortKind → UInt64
+
+instance : Hashable SortKind := ⟨SortKind.hash⟩
 
 end SortKind

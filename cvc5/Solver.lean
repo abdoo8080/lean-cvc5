@@ -144,6 +144,11 @@ private def mkExceptOkU32 : UInt32 → Except Error UInt32 :=
   .ok
 
 /-- Only used by FFI to inject values. -/
+@[export except_ok_u16]
+private def mkExceptOkU16 : UInt16 → Except Error UInt16 :=
+  .ok
+
+/-- Only used by FFI to inject values. -/
 @[export except_ok_u8]
 private def mkExceptOkU8 : UInt8 → Except Error UInt8 :=
   .ok
@@ -590,11 +595,14 @@ extern_def null : Unit → Proof
 
 instance : Inhabited Proof := ⟨null ()⟩
 
-/-- The proof rule used by the root step of the proof. -/
+/-- Get the proof rule used by the root step of the root. -/
 extern_def getRule : Proof → ProofRule
 
-/-- The proof rewrite rule used by the root step of the proof. -/
-extern_def getRewriteRule : Proof → ProofRewriteRule
+/-- Get the proof rewrite rule used by the root step of the proof.
+
+Requires that `getRule` does not return `ProofRule.DSL_REWRITE` or `ProofRule.REWRITE`.
+-/
+extern_def!? getRewriteRule : Proof → Except Error ProofRewriteRule
 
 /-- The conclusion of the root step of the proof. -/
 extern_def getResult : Proof → Term
@@ -841,6 +849,22 @@ Create operators with `mkOp`.
 -/
 extern_def!? mkTermOfOp : TermManager → (op : Op) → (children : Array Term := #[]) → Except Error Term
 
+/-- **THIS FUNCTION MUST NOT BE EXPOSED.**
+
+**It produces a different (fresh) term every time it's called which is really bad for purity.**
+
+Create a free constant.
+
+Note that the returned term is always fresh, even if the same arguments were provided on a
+previous call to `mkConst`.
+
+- `sort` The sort of the constant.
+- `symbol` The name of the constant (optional).
+-/
+private
+def mkConst (_ : TermManager) (_ : cvc5.Sort) (_ : String := "") : Term :=
+  panic! "illegal call to `cvc5.TermManager.mkConst"
+
 end TermManager
 
 namespace Solver
@@ -911,9 +935,8 @@ SMT-LIB:
 - `symbol`: The name of the function.
 - `sorts`: The sorts of the parameters to this function.
 - `sort`: The sort of the return value of this function.
-- `fresh`: If true, then this method always returns a new Term.
-           Otherwise, this method will always return the same Term
-           for each call with the given sorts and symbol where fresh is false.
+- `fresh`: If true, then this method always returns a new Term. Otherwise, this method will always
+  return the same Term for each call with the given sorts and symbol where fresh is false.
 -/
 extern_def declareFun (symbol : String) (sorts : Array cvc5.Sort) (sort : cvc5.Sort) (fresh := true) : SolverT m Term
 
@@ -990,10 +1013,11 @@ def run (tm : TermManager) (query : SolverT m α) : m (Except Error α) :=
   | (.error e, _) => .error e
 
 /-- Run a `query` given a term manager `tm`. -/
-def run! [Inhabited α] (tm : TermManager) (query : SolverT m α) : m α :=
-  return match ← ExceptT.run query (new tm) with
-  | (.ok x, _) => x
-  | (.error e, _) => panic! s!"{e}"
+def run! [Inhabited α] (tm : TermManager) (query : SolverT m α) : m α := do
+  match ← ExceptT.run query (new tm) with
+  | (.ok x, _) => return x
+  | (.error e, _) => do
+    panic! s!"{e}"
 
 end Solver
 
