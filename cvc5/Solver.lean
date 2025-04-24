@@ -935,6 +935,8 @@ SMT-LIB:
 - `symbol`: The name of the function.
 - `sorts`: The sorts of the parameters to this function.
 - `sort`: The sort of the return value of this function.
+- `fresh`: If true, then this method always returns a new Term. Otherwise, this method will always
+  return the same Term for each call with the given sorts and symbol where fresh is false.
 -/
 extern_def declareFun (symbol : String) (sorts : Array cvc5.Sort) (sort : cvc5.Sort) (fresh := true) : SolverT m Term
 
