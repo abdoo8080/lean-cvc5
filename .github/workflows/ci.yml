@@ -38,8 +38,6 @@ jobs:
       with:
         auto-config: false
         use-github-cache: false
-    - name: Download cvc5 Release
-      run: lake run init
     - name: Build and Test lean-cvc5
       uses: leanprover/lean-action@v1
       with:
