@@ -87,10 +87,6 @@ instance Solver.instNonemptySolver : Nonempty Solver := SolverImpl.property
 /-- Solver error/state-monad transformer. -/
 abbrev SolverT m := ExceptT Error (StateT Solver m)
 
-namespace SolverT
-
-end SolverT
-
 /-- Solver error/state-monad wrapped in `IO`. -/
 abbrev SolverM := SolverT IO
 
