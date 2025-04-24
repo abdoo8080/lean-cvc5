@@ -940,7 +940,7 @@ SMT-LIB:
 - `sorts`: The sorts of the parameters to this function.
 - `sort`: The sort of the return value of this function.
 -/
-extern_def declareFun (symbol : String) (sorts : Array cvc5.Sort) (sort : cvc5.Sort) : SolverT m Term
+extern_def declareFun (symbol : String) (sorts : Array cvc5.Sort) (sort : cvc5.Sort) (fresh := true) : SolverT m Term
 
 /-- Assert a formula.
 

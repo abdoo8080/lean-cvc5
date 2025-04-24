@@ -1354,6 +1354,7 @@ extern "C" lean_obj_res solver_declareFun(lean_obj_arg inst,
                                           lean_obj_arg symbol,
                                           lean_obj_arg sorts,
                                           lean_obj_arg sort,
+                                          uint8_t fresh,
                                           lean_obj_arg solver)
 {
   CVC5_LEAN_API_TRY_CATCH_SOLVER_BEGIN;
@@ -1364,7 +1365,7 @@ extern "C" lean_obj_res solver_declareFun(lean_obj_arg inst,
         lean_array_get(sort_box(new Sort()), sorts, lean_usize_to_nat(i))));
   }
   Term f = solver_unbox(solver)->declareFun(
-      lean_string_cstr(symbol), ss, *sort_unbox(sort), false);
+      lean_string_cstr(symbol), ss, *sort_unbox(sort), bool_unbox(fresh));
   return solver_val(
       lean_box(0), inst, lean_box(0), term_box(new Term(f)), solver);
   CVC5_LEAN_API_TRY_CATCH_SOLVER_END(inst, solver);
