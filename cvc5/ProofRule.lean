@@ -1300,18 +1300,6 @@ inductive ProofRule where
   | DT_SPLIT
   /--
   \verbatim embed:rst:leading-asterisk
-  **Datatypes -- Clash**
-  
-  .. math::
-  
-    \inferruleSC{\mathit{is}_{C_i}(t), \mathit{is}_{C_j}(t)\mid -}{\bot}
-    {if $i\neq j$}
-  
-  \endverbatim
-  -/
-  | DT_CLASH
-  /--
-  \verbatim embed:rst:leading-asterisk
   **Quantifiers -- Skolem introduction**
   
   .. math::
@@ -1387,6 +1375,22 @@ inductive ProofRule where
   \endverbatim
   -/
   | QUANT_VAR_REORDERING
+  /--
+  \verbatim embed:rst:leading-asterisk
+  **Quantifiers -- Exists string length**
+  
+  .. math::
+    \inferrule{-\mid T n i} {\mathit{len}(k) = n}
+  
+  where :math:`k` is a skolem of string or sequence type :math:`T` and
+  :math:`n` is a non-negative integer. The argument :math:`i` is an
+  identifier for :math:`k`. These three arguments are the indices of
+  :math:`k`, whose skolem identifier is
+  :cpp:enumerator:`WITNESS_STRING_LENGTH <cvc5::SkolemId::WITNESS_STRING_LENGTH>`.
+  
+  \endverbatim
+  -/
+  | EXISTS_STRING_LENGTH
   /--
   \verbatim embed:rst:leading-asterisk
   **Sets -- Singleton injectivity**
@@ -1473,42 +1477,6 @@ inductive ProofRule where
   | CONCAT_UNIFY
   /--
   \verbatim embed:rst:leading-asterisk
-  **Strings -- Core rules -- Concatenation conflict**
-  
-  .. math::
-    \inferrule{(c_1 \cdot t) = (c_2 \cdot s)\mid \bot}{\bot}
-  
-  Alternatively for the reverse:
-  
-  .. math::
-    \inferrule{(t \cdot c_1) = (s \cdot c_2)\mid \top}{\bot}
-  
-  where :math:`c_1,\,c_2` are distinct (non-empty) string constants of the same length.
-  
-  \endverbatim
-  -/
-  | CONCAT_CONFLICT
-  /--
-  \verbatim embed:rst:leading-asterisk
-  **Strings -- Core rules -- Concatenation conflict for disequal characters**
-  
-  .. math::
-    \inferrule{(t_1\cdot t) = (s_1 \cdot s), t_1 \neq s_1 \mid \bot}{\bot}
-  
-  Alternatively for the reverse:
-  
-  .. math::
-    \inferrule{(t\cdot t_1) = (s \cdot s_1), t_1 \neq s_1 \mid \top}{\bot}
-  
-  where :math:`t_1` and :math:`s_1` are applications of :math:`seq.unit`.
-  
-  This rule is used exclusively for sequences.
-  
-  \endverbatim
-  -/
-  | CONCAT_CONFLICT_DEQ
-  /--
-  \verbatim embed:rst:leading-asterisk
   **Strings -- Core rules -- Concatenation split**
   
   .. math::
@@ -1549,8 +1517,7 @@ inductive ProofRule where
   
   .. math::
   
-    \inferrule{(t_1\cdot \ldots \cdot t_n) = (c \cdot t_2 \ldots \cdot s_m),\,
-    \mathit{len}(t_1) \neq 0\mid \bot}{(t_1 = c\cdot r)}
+    \inferrule{(t_1\cdot \ldots \cdot t_n) = (c \cdot t_2 \ldots \cdot s_m),\,\mathit{len}(t_1) \neq 0\mid \bot}{(t_1 = c\cdot r)}
   
   where :math:`r` is the purification skolem for :math:`\mathit{suf}(t_1,1)`.
   
@@ -1558,8 +1525,7 @@ inductive ProofRule where
   
   .. math::
   
-    \inferrule{(t_1\cdot \ldots \cdot t_n = (s_1 \cdot \ldots s_{m-1} \cdot c),\,
-    \mathit{len}(t_n) \neq 0\mid \top}{(t_n = r\cdot c)}
+    \inferrule{(t_1\cdot \ldots \cdot t_n) = (s_1 \cdot \ldots s_{m-1} \cdot c),\,\mathit{len}(t_n) \neq 0\mid \top}{(t_n = r\cdot c)}
   
   where :math:`r` is the purification skolem for
   :math:`\mathit{pre}(t_n,\mathit{len}(t_n) - 1)`.
@@ -1883,7 +1849,7 @@ inductive ProofRule where
   
   If :math:`\diamond` is :math:`>`, then
   each :math:`F_i` is either :math:`\left| t_i \right| > \left| s_i \right|` or
-  :math:`\left| t_i \right| = \left| s_i \right| \land \left| t_i \right| \neq 0`,
+  :math:`\left| t_i \right| = \left| s_i \right| \land t_i \neq 0`,
   and :math:`F_1` is of the former form.
   
   \endverbatim
@@ -2408,14 +2374,14 @@ inductive ProofRewriteRule where
   **UF -- Bitvector to natural elimination**
   
   .. math::
-    \texttt{bv2nat}(t) = t_1 + \ldots + t_n
+    \texttt{ubv_to_int}(t) = t_1 + \ldots + t_n
   
   where for :math:`i=1, \ldots, n`, :math:`t_i` is
   :math:`\texttt{ite}(x[i-1, i-1] = 1, 2^i, 0)`.
   
   \endverbatim
   -/
-  | BV_TO_NAT_ELIM
+  | UBV_TO_INT_ELIM
   /--
   \verbatim embed:rst:leading-asterisk
   **UF -- Integer to bitvector elimination**
@@ -2561,8 +2527,7 @@ inductive ProofRewriteRule where
   **Equality -- Beta reduction**
   
   .. math::
-    ((\lambda x_1 \ldots x_n.\> t) \ t_1 \ldots t_n) = t\{x_1 \mapsto t_1,
-    \ldots, x_n \mapsto t_n\}
+    ((\lambda x_1 \ldots x_n.\> t) \ t_1 \ldots t_n) = t\{x_1 \mapsto t_1, \ldots, x_n \mapsto t_n\}
   
   or alternatively
   
@@ -3029,7 +2994,111 @@ inductive ProofRewriteRule where
   | DT_MATCH_ELIM
   /--
   \verbatim embed:rst:leading-asterisk
-  **Bitvectors -- Extract negations from multiplicands**
+  **Bitvectors -- Macro extract and concat **
+  
+  .. math::
+     a = b
+  
+  where :math:`a` is rewritten to :math:`b` by the internal rewrite
+  rule ExtractConcat.
+  
+  \endverbatim
+  -/
+  | MACRO_BV_EXTRACT_CONCAT
+  /--
+  \verbatim embed:rst:leading-asterisk
+  **Bitvectors -- Macro or simplify **
+  
+  .. math::
+     a = b
+  
+  where :math:`a` is rewritten to :math:`b` by the internal rewrite
+  rule OrSimplify.
+  
+  \endverbatim
+  -/
+  | MACRO_BV_OR_SIMPLIFY
+  /--
+  \verbatim embed:rst:leading-asterisk
+  **Bitvectors -- Macro and simplify **
+  
+  .. math::
+     a = b
+  
+  where :math:`a` is rewritten to :math:`b` by the internal rewrite
+  rule AndSimplify.
+  
+  \endverbatim
+  -/
+  | MACRO_BV_AND_SIMPLIFY
+  /--
+  \verbatim embed:rst:leading-asterisk
+  **Bitvectors -- Macro xor simplify **
+  
+  .. math::
+     a = b
+  
+  where :math:`a` is rewritten to :math:`b` by the internal rewrite
+  rule XorSimplify.
+  
+  \endverbatim
+  -/
+  | MACRO_BV_XOR_SIMPLIFY
+  /--
+  \verbatim embed:rst:leading-asterisk
+  **Bitvectors -- Macro and/or/xor concat pullup **
+  
+  .. math::
+     a = b
+  
+  where :math:`a` is rewritten to :math:`b` by the internal rewrite
+  rule AndOrXorConcatPullup.
+  
+  \endverbatim
+  -/
+  | MACRO_BV_AND_OR_XOR_CONCAT_PULLUP
+  /--
+  \verbatim embed:rst:leading-asterisk
+  **Bitvectors -- Macro multiply signed less than multiply **
+  
+  .. math::
+     a = b
+  
+  where :math:`a` is rewritten to :math:`b` by the internal rewrite
+  rule MultSltMult.
+  
+  \endverbatim
+  -/
+  | MACRO_BV_MULT_SLT_MULT
+  /--
+  \verbatim embed:rst:leading-asterisk
+  **Bitvectors -- Macro concat extract merge **
+  
+  .. math::
+     a = b
+  
+  where :math:`a` is rewritten to :math:`b` by the internal rewrite
+  rule ConcatExtractMerge.
+  
+  \endverbatim
+  -/
+  | MACRO_BV_CONCAT_EXTRACT_MERGE
+  /--
+  \verbatim embed:rst:leading-asterisk
+  **Bitvectors -- Macro concat constant merge **
+  
+  .. math::
+     a = b
+  
+  where :math:`a` is rewritten to :math:`b` by the internal rewrite
+  rule ConcatConstantMerge.
+  
+  \endverbatim
+  -/
+  | MACRO_BV_CONCAT_CONSTANT_MERGE
+  /--
+  \verbatim embed:rst:leading-asterisk
+  **Bitvectors -- Macro equality solve**
   
   .. math::
      (a = b) = \bot
@@ -3049,38 +3118,34 @@ inductive ProofRewriteRule where
   \verbatim embed:rst:leading-asterisk
   **Bitvectors -- Unsigned multiplication overflow detection elimination**
   
+  .. math::
+     \texttt{bvumulo}(x,y) = t
+  
+  where :math:`t` is the result of eliminating the application
+  of :math:`\texttt{bvumulo}`.
+  
   See M.Gok, M.J. Schulte, P.I. Balzola, "Efficient integer multiplication
   overflow detection circuits", 2001.
   http://ieeexplore.ieee.org/document/987767
   \endverbatim
   -/
-  | BV_UMULO_ELIMINATE
+  | BV_UMULO_ELIM
   /--
   \verbatim embed:rst:leading-asterisk
   **Bitvectors -- Unsigned multiplication overflow detection elimination**
   
+  .. math::
+     \texttt{bvsmulo}(x,y) = t
+  
+  where :math:`t` is the result of eliminating the application
+  of :math:`\texttt{bvsmulo}`.
+  
   See M.Gok, M.J. Schulte, P.I. Balzola, "Efficient integer multiplication
   overflow detection circuits", 2001.
   http://ieeexplore.ieee.org/document/987767
   \endverbatim
   -/
-  | BV_SMULO_ELIMINATE
-  /--
-  \verbatim embed:rst:leading-asterisk
-  **Bitvectors -- Combine like terms during addition by counting terms**
-  \endverbatim
-  -/
-  | BV_ADD_COMBINE_LIKE_TERMS
-  /--
-  \verbatim embed:rst:leading-asterisk
-  **Bitvectors -- Extract negations from multiplicands**
-  
-  .. math::
-     bvmul(bvneg(a),\ b,\ c) = bvneg(bvmul(a,\ b,\ c))
-  
-  \endverbatim
-  -/
-  | BV_MULT_SIMPLIFY
+  | BV_SMULO_ELIM
   /--
   \verbatim embed:rst:leading-asterisk
   **Bitvectors -- Extract continuous substrings of bitvectors**
@@ -3089,7 +3154,8 @@ inductive ProofRewriteRule where
      bvand(a,\ c) = concat(bvand(a[i_0:j_0],\ c_0) ... bvand(a[i_n:j_n],\ c_n))
   
   where c0,..., cn are maximally continuous substrings of 0 or 1 in the
-  constant c \endverbatim
+  constant c
+  \endverbatim
   -/
   | BV_BITWISE_SLICING
   /--
@@ -3108,7 +3174,7 @@ inductive ProofRewriteRule where
   **Strings -- String contains multiset subset**
   
   .. math::
-     contains(s,t) = \bot
+     \mathit{str}.contains(s,t) = \bot
   
   where the multiset overapproximation of :math:`s` can be shown to not
   contain the multiset abstraction of :math:`t` based on the reasoning
@@ -3513,42 +3579,13 @@ inductive ProofRewriteRule where
   | MACRO_SUBSTR_STRIP_SYM_LENGTH
   /--
   \verbatim embed:rst:leading-asterisk
-  **Sets -- sets intersection evaluate**
+  **Sets -- sets evaluate operator**
   
   .. math::
-    \mathit{set.inter}(t_1, t_2) = t
+    \mathit{f}(t_1, t_2) = t
   
-  where :math:`t_1` and :math:`t_2` are set values, that is,
-  the Node::isConst method returns true for both, and
-  where :math:`t` is an intersection of the component elements of
-  :math:`t_1` and :math:`t_2`.
-  
-  \endverbatim
-  -/
-  | MACRO_SETS_INTER_EVAL
-  /--
-  \verbatim embed:rst:leading-asterisk
-  **Sets -- sets minus evaluate**
-  
-  .. math::
-    \mathit{set.minus}(t_1, t_2) = t
-  
-  where :math:`t_1` and :math:`t_2` are set values, that is,
-  the Node::isConst method returns true for both, and
-  where :math:`t` is the difference of the component elements of
-  :math:`t_1` and :math:`t_2`.
-  
-  \endverbatim
-  -/
-  | MACRO_SETS_MINUS_EVAL
-  /--
-  \verbatim embed:rst:leading-asterisk
-  **Sets -- sets union normalize**
-  
-  .. math::
-    \mathit{set.union}(t_1, t_2) = t
-  
-  where :math:`t` is a union of the component elements of
+  where :math:`f` is one of :math:`\mathit{set.inter}, \mathit{set.minus}, \mathit{set.union}`,
+  and :math:`t` is the result of evaluating :math:`f` on
   :math:`t_1` and :math:`t_2`.
   
   Note we use this rule only when :math:`t_1` and :math:`t_2` are set values,
@@ -3556,42 +3593,17 @@ inductive ProofRewriteRule where
   
   \endverbatim
   -/
-  | SETS_UNION_NORM
-  /--
-  \verbatim embed:rst:leading-asterisk
-  **Sets -- empty tester evaluation**
-  
-  .. math::
-    \mathit{sets.is\_empty}(\epsilon) = \top
-  
-  where :math:`\epsilon` is the empty set, or alternatively:
-  
-  .. math::
-    \mathit{sets.is\_empty}(c) = \bot
-  
-  where :math:`c` is a constant set that is not the empty set.
-  
-  \endverbatim
-  -/
-  | SETS_IS_EMPTY_EVAL
+  | SETS_EVAL_OP
   /--
   \verbatim embed:rst:leading-asterisk
   **Sets -- sets insert elimination**
   
   .. math::
-    \mathit{sets.insert}(t_1, \ldots, t_n, S) = \texttt{set.union}(\texttt{sets.singleton}(t_1), \ldots, \texttt{sets.singleton}(t_n), S)
+    \mathit{set.insert}(t_1, \ldots, t_n, S) = \texttt{set.union}(\texttt{sets.singleton}(t_1), \ldots, \texttt{sets.singleton}(t_n), S)
   
   \endverbatim
   -/
   | SETS_INSERT_ELIM
-  /--
-  Auto-generated from RARE rule arith-div-total-real 
-  -/
-  | ARITH_DIV_TOTAL_REAL
-  /--
-  Auto-generated from RARE rule arith-div-total-int 
-  -/
-  | ARITH_DIV_TOTAL_INT
   /--
   Auto-generated from RARE rule arith-div-total-zero-real 
   -/
@@ -3669,26 +3681,6 @@ inductive ProofRewriteRule where
   -/
   | ARITH_GEQ_NORM1_REAL
   /--
-  Auto-generated from RARE rule arith-geq-norm2 
-  -/
-  | ARITH_GEQ_NORM2
-  /--
-  Auto-generated from RARE rule arith-refl-leq 
-  -/
-  | ARITH_REFL_LEQ
-  /--
-  Auto-generated from RARE rule arith-refl-lt 
-  -/
-  | ARITH_REFL_LT
-  /--
-  Auto-generated from RARE rule arith-refl-geq 
-  -/
-  | ARITH_REFL_GEQ
-  /--
-  Auto-generated from RARE rule arith-refl-gt 
-  -/
-  | ARITH_REFL_GT
-  /--
   Auto-generated from RARE rule arith-eq-elim-real 
   -/
   | ARITH_EQ_ELIM_REAL
@@ -3700,22 +3692,6 @@ inductive ProofRewriteRule where
   Auto-generated from RARE rule arith-plus-flatten 
   -/
   | ARITH_PLUS_FLATTEN
-  /--
-  Auto-generated from RARE rule arith-mult-flatten 
-  -/
-  | ARITH_MULT_FLATTEN
-  /--
-  Auto-generated from RARE rule arith-abs-elim-int 
-  -/
-  | ARITH_ABS_ELIM_INT
-  /--
-  Auto-generated from RARE rule arith-abs-elim-real 
-  -/
-  | ARITH_ABS_ELIM_REAL
-  /--
-  Auto-generated from RARE rule arith-to-real-elim 
-  -/
-  | ARITH_TO_REAL_ELIM
   /--
   Auto-generated from RARE rule arith-to-int-elim 
   -/
@@ -3865,17 +3841,9 @@ inductive ProofRewriteRule where
   -/
   | BOOL_DUAL_IMPL_EQ
   /--
-  Auto-generated from RARE rule bool-or-true 
-  -/
-  | BOOL_OR_TRUE
-  /--
   Auto-generated from RARE rule bool-or-flatten 
   -/
   | BOOL_OR_FLATTEN
-  /--
-  Auto-generated from RARE rule bool-and-false 
-  -/
-  | BOOL_AND_FALSE
   /--
   Auto-generated from RARE rule bool-and-flatten 
   -/
@@ -4101,34 +4069,6 @@ inductive ProofRewriteRule where
   -/
   | BV_EXTRACT_SIGN_EXTEND_3
   /--
-  Auto-generated from RARE rule bv-neg-mult 
-  -/
-  | BV_NEG_MULT
-  /--
-  Auto-generated from RARE rule bv-neg-add 
-  -/
-  | BV_NEG_ADD
-  /--
-  Auto-generated from RARE rule bv-mult-distrib-const-neg 
-  -/
-  | BV_MULT_DISTRIB_CONST_NEG
-  /--
-  Auto-generated from RARE rule bv-mult-distrib-const-add 
-  -/
-  | BV_MULT_DISTRIB_CONST_ADD
-  /--
-  Auto-generated from RARE rule bv-mult-distrib-const-sub 
-  -/
-  | BV_MULT_DISTRIB_CONST_SUB
-  /--
-  Auto-generated from RARE rule bv-mult-distrib-1 
-  -/
-  | BV_MULT_DISTRIB_1
-  /--
-  Auto-generated from RARE rule bv-mult-distrib-2 
-  -/
-  | BV_MULT_DISTRIB_2
-  /--
   Auto-generated from RARE rule bv-not-xor 
   -/
   | BV_NOT_XOR
@@ -4177,41 +4117,13 @@ inductive ProofRewriteRule where
   -/
   | BV_MULT_SLT_MULT_2
   /--
-  Auto-generated from RARE rule bv-commutative-and 
-  -/
-  | BV_COMMUTATIVE_AND
-  /--
-  Auto-generated from RARE rule bv-commutative-or 
-  -/
-  | BV_COMMUTATIVE_OR
-  /--
   Auto-generated from RARE rule bv-commutative-xor 
   -/
   | BV_COMMUTATIVE_XOR
   /--
-  Auto-generated from RARE rule bv-commutative-mul 
+  Auto-generated from RARE rule bv-commutative-comp 
   -/
-  | BV_COMMUTATIVE_MUL
-  /--
-  Auto-generated from RARE rule bv-or-zero 
-  -/
-  | BV_OR_ZERO
-  /--
-  Auto-generated from RARE rule bv-mul-one 
-  -/
-  | BV_MUL_ONE
-  /--
-  Auto-generated from RARE rule bv-mul-zero 
-  -/
-  | BV_MUL_ZERO
-  /--
-  Auto-generated from RARE rule bv-add-zero 
-  -/
-  | BV_ADD_ZERO
-  /--
-  Auto-generated from RARE rule bv-add-two 
-  -/
-  | BV_ADD_TWO
+  | BV_COMMUTATIVE_COMP
   /--
   Auto-generated from RARE rule bv-zero-extend-eliminate-0 
   -/
@@ -4229,21 +4141,9 @@ inductive ProofRewriteRule where
   -/
   | BV_ULT_ONES
   /--
-  Auto-generated from RARE rule bv-or-flatten 
-  -/
-  | BV_OR_FLATTEN
-  /--
   Auto-generated from RARE rule bv-xor-flatten 
   -/
   | BV_XOR_FLATTEN
-  /--
-  Auto-generated from RARE rule bv-and-flatten 
-  -/
-  | BV_AND_FLATTEN
-  /--
-  Auto-generated from RARE rule bv-mul-flatten 
-  -/
-  | BV_MUL_FLATTEN
   /--
   Auto-generated from RARE rule bv-concat-merge-const 
   -/
@@ -4253,17 +4153,25 @@ inductive ProofRewriteRule where
   -/
   | BV_COMMUTATIVE_ADD
   /--
-  Auto-generated from RARE rule bv-neg-sub 
-  -/
-  | BV_NEG_SUB
-  /--
-  Auto-generated from RARE rule bv-neg-idemp 
-  -/
-  | BV_NEG_IDEMP
-  /--
   Auto-generated from RARE rule bv-sub-eliminate 
   -/
   | BV_SUB_ELIMINATE
+  /--
+  Auto-generated from RARE rule bv-ite-width-one 
+  -/
+  | BV_ITE_WIDTH_ONE
+  /--
+  Auto-generated from RARE rule bv-ite-width-one-not 
+  -/
+  | BV_ITE_WIDTH_ONE_NOT
+  /--
+  Auto-generated from RARE rule bv-eq-xor-solve 
+  -/
+  | BV_EQ_XOR_SOLVE
+  /--
+  Auto-generated from RARE rule bv-eq-not-solve 
+  -/
+  | BV_EQ_NOT_SOLVE
   /--
   Auto-generated from RARE rule bv-ugt-eliminate 
   -/
@@ -4385,6 +4293,10 @@ inductive ProofRewriteRule where
   -/
   | BV_SSUBO_ELIMINATE
   /--
+  Auto-generated from RARE rule bv-nego-eliminate 
+  -/
+  | BV_NEGO_ELIMINATE
+  /--
   Auto-generated from RARE rule bv-ite-equal-children 
   -/
   | BV_ITE_EQUAL_CHILDREN
@@ -4473,25 +4385,29 @@ inductive ProofRewriteRule where
   -/
   | BV_XOR_CONCAT_PULLUP
   /--
-  Auto-generated from RARE rule bv-bitwise-idemp-1 
+  Auto-generated from RARE rule bv-and-concat-pullup2 
   -/
-  | BV_BITWISE_IDEMP_1
+  | BV_AND_CONCAT_PULLUP2
   /--
-  Auto-generated from RARE rule bv-bitwise-idemp-2 
+  Auto-generated from RARE rule bv-or-concat-pullup2 
   -/
-  | BV_BITWISE_IDEMP_2
+  | BV_OR_CONCAT_PULLUP2
   /--
-  Auto-generated from RARE rule bv-and-zero 
+  Auto-generated from RARE rule bv-xor-concat-pullup2 
   -/
-  | BV_AND_ZERO
+  | BV_XOR_CONCAT_PULLUP2
   /--
-  Auto-generated from RARE rule bv-and-one 
+  Auto-generated from RARE rule bv-and-concat-pullup3 
   -/
-  | BV_AND_ONE
+  | BV_AND_CONCAT_PULLUP3
   /--
-  Auto-generated from RARE rule bv-or-one 
+  Auto-generated from RARE rule bv-or-concat-pullup3 
   -/
-  | BV_OR_ONE
+  | BV_OR_CONCAT_PULLUP3
+  /--
+  Auto-generated from RARE rule bv-xor-concat-pullup3 
+  -/
+  | BV_XOR_CONCAT_PULLUP3
   /--
   Auto-generated from RARE rule bv-xor-duplicate 
   -/
@@ -4500,18 +4416,6 @@ inductive ProofRewriteRule where
   Auto-generated from RARE rule bv-xor-ones 
   -/
   | BV_XOR_ONES
-  /--
-  Auto-generated from RARE rule bv-xor-zero 
-  -/
-  | BV_XOR_ZERO
-  /--
-  Auto-generated from RARE rule bv-bitwise-not-and 
-  -/
-  | BV_BITWISE_NOT_AND
-  /--
-  Auto-generated from RARE rule bv-bitwise-not-or 
-  -/
-  | BV_BITWISE_NOT_OR
   /--
   Auto-generated from RARE rule bv-xor-not 
   -/
@@ -4560,14 +4464,6 @@ inductive ProofRewriteRule where
   Auto-generated from RARE rule bv-not-ult 
   -/
   | BV_NOT_ULT
-  /--
-  Auto-generated from RARE rule bv-not-ule 
-  -/
-  | BV_NOT_ULE
-  /--
-  Auto-generated from RARE rule bv-not-sle 
-  -/
-  | BV_NOT_SLE
   /--
   Auto-generated from RARE rule bv-mult-pow2-1 
   -/
@@ -4640,10 +4536,6 @@ inductive ProofRewriteRule where
   Auto-generated from RARE rule bv-merge-sign-extend-2 
   -/
   | BV_MERGE_SIGN_EXTEND_2
-  /--
-  Auto-generated from RARE rule bv-merge-sign-extend-3 
-  -/
-  | BV_MERGE_SIGN_EXTEND_3
   /--
   Auto-generated from RARE rule bv-sign-extend-eq-const-1 
   -/
@@ -4777,18 +4669,6 @@ inductive ProofRewriteRule where
   -/
   | STR_EQ_LEN_FALSE
   /--
-  Auto-generated from RARE rule str-concat-flatten 
-  -/
-  | STR_CONCAT_FLATTEN
-  /--
-  Auto-generated from RARE rule str-concat-flatten-eq 
-  -/
-  | STR_CONCAT_FLATTEN_EQ
-  /--
-  Auto-generated from RARE rule str-concat-flatten-eq-rev 
-  -/
-  | STR_CONCAT_FLATTEN_EQ_REV
-  /--
   Auto-generated from RARE rule str-substr-empty-str 
   -/
   | STR_SUBSTR_EMPTY_STR
@@ -4805,9 +4685,21 @@ inductive ProofRewriteRule where
   -/
   | STR_SUBSTR_EMPTY_START_NEG
   /--
+  Auto-generated from RARE rule str-substr-substr-start-geq-len 
+  -/
+  | STR_SUBSTR_SUBSTR_START_GEQ_LEN
+  /--
   Auto-generated from RARE rule str-substr-eq-empty 
   -/
   | STR_SUBSTR_EQ_EMPTY
+  /--
+  Auto-generated from RARE rule str-substr-z-eq-empty-leq 
+  -/
+  | STR_SUBSTR_Z_EQ_EMPTY_LEQ
+  /--
+  Auto-generated from RARE rule str-substr-eq-empty-leq-len 
+  -/
+  | STR_SUBSTR_EQ_EMPTY_LEQ_LEN
   /--
   Auto-generated from RARE rule str-len-replace-inv 
   -/
@@ -4828,14 +4720,6 @@ inductive ProofRewriteRule where
   Auto-generated from RARE rule str-len-substr-in-range 
   -/
   | STR_LEN_SUBSTR_IN_RANGE
-  /--
-  Auto-generated from RARE rule str-len-substr-ub1 
-  -/
-  | STR_LEN_SUBSTR_UB1
-  /--
-  Auto-generated from RARE rule str-len-substr-ub2 
-  -/
-  | STR_LEN_SUBSTR_UB2
   /--
   Auto-generated from RARE rule str-concat-clash 
   -/
@@ -4869,14 +4753,6 @@ inductive ProofRewriteRule where
   -/
   | STR_CONCAT_UNIFY_BASE_REV
   /--
-  Auto-generated from RARE rule str-concat-clash-char 
-  -/
-  | STR_CONCAT_CLASH_CHAR
-  /--
-  Auto-generated from RARE rule str-concat-clash-char-rev 
-  -/
-  | STR_CONCAT_CLASH_CHAR_REV
-  /--
   Auto-generated from RARE rule str-prefixof-elim 
   -/
   | STR_PREFIXOF_ELIM
@@ -4884,6 +4760,14 @@ inductive ProofRewriteRule where
   Auto-generated from RARE rule str-suffixof-elim 
   -/
   | STR_SUFFIXOF_ELIM
+  /--
+  Auto-generated from RARE rule str-prefixof-eq 
+  -/
+  | STR_PREFIXOF_EQ
+  /--
+  Auto-generated from RARE rule str-suffixof-eq 
+  -/
+  | STR_SUFFIXOF_EQ
   /--
   Auto-generated from RARE rule str-prefixof-one 
   -/
@@ -4917,6 +4801,10 @@ inductive ProofRewriteRule where
   -/
   | STR_SUBSTR_CONCAT2
   /--
+  Auto-generated from RARE rule str-substr-replace 
+  -/
+  | STR_SUBSTR_REPLACE
+  /--
   Auto-generated from RARE rule str-substr-full 
   -/
   | STR_SUBSTR_FULL
@@ -4941,10 +4829,6 @@ inductive ProofRewriteRule where
   -/
   | STR_CONTAINS_SPLIT_CHAR
   /--
-  Auto-generated from RARE rule str-contains-lt-len 
-  -/
-  | STR_CONTAINS_LT_LEN
-  /--
   Auto-generated from RARE rule str-contains-leq-len-eq 
   -/
   | STR_CONTAINS_LEQ_LEN_EQ
@@ -4953,9 +4837,9 @@ inductive ProofRewriteRule where
   -/
   | STR_CONTAINS_EMP
   /--
-  Auto-generated from RARE rule str-contains-is-emp 
+  Auto-generated from RARE rule str-contains-char 
   -/
-  | STR_CONTAINS_IS_EMP
+  | STR_CONTAINS_CHAR
   /--
   Auto-generated from RARE rule str-at-elim 
   -/
@@ -4964,6 +4848,10 @@ inductive ProofRewriteRule where
   Auto-generated from RARE rule str-replace-self 
   -/
   | STR_REPLACE_SELF
+  /--
+  Auto-generated from RARE rule str-replace-id 
+  -/
+  | STR_REPLACE_ID
   /--
   Auto-generated from RARE rule str-replace-prefix 
   -/
@@ -4985,13 +4873,13 @@ inductive ProofRewriteRule where
   -/
   | STR_REPLACE_EMPTY
   /--
-  Auto-generated from RARE rule str-replace-contains-pre 
-  -/
-  | STR_REPLACE_CONTAINS_PRE
-  /--
   Auto-generated from RARE rule str-replace-one-pre 
   -/
   | STR_REPLACE_ONE_PRE
+  /--
+  Auto-generated from RARE rule str-replace-find-pre 
+  -/
+  | STR_REPLACE_FIND_PRE
   /--
   Auto-generated from RARE rule str-replace-all-no-contains 
   -/
@@ -5009,6 +4897,14 @@ inductive ProofRewriteRule where
   -/
   | STR_LEN_CONCAT_REC
   /--
+  Auto-generated from RARE rule str-len-eq-zero-concat-rec 
+  -/
+  | STR_LEN_EQ_ZERO_CONCAT_REC
+  /--
+  Auto-generated from RARE rule str-len-eq-zero-base 
+  -/
+  | STR_LEN_EQ_ZERO_BASE
+  /--
   Auto-generated from RARE rule str-indexof-self 
   -/
   | STR_INDEXOF_SELF
@@ -5017,21 +4913,33 @@ inductive ProofRewriteRule where
   -/
   | STR_INDEXOF_NO_CONTAINS
   /--
+  Auto-generated from RARE rule str-indexof-oob 
+  -/
+  | STR_INDEXOF_OOB
+  /--
+  Auto-generated from RARE rule str-indexof-oob2 
+  -/
+  | STR_INDEXOF_OOB2
+  /--
   Auto-generated from RARE rule str-indexof-contains-pre 
   -/
   | STR_INDEXOF_CONTAINS_PRE
-  /--
-  Auto-generated from RARE rule str-indexof-find 
-  -/
-  | STR_INDEXOF_FIND
   /--
   Auto-generated from RARE rule str-indexof-find-emp 
   -/
   | STR_INDEXOF_FIND_EMP
   /--
+  Auto-generated from RARE rule str-indexof-eq-irr 
+  -/
+  | STR_INDEXOF_EQ_IRR
+  /--
   Auto-generated from RARE rule str-indexof-re-none 
   -/
   | STR_INDEXOF_RE_NONE
+  /--
+  Auto-generated from RARE rule str-indexof-re-emp-re 
+  -/
+  | STR_INDEXOF_RE_EMP_RE
   /--
   Auto-generated from RARE rule str-to-lower-concat 
   -/
@@ -5101,6 +5009,10 @@ inductive ProofRewriteRule where
   -/
   | STR_FROM_INT_NO_CTN_NONDIGIT
   /--
+  Auto-generated from RARE rule str-substr-ctn-contra 
+  -/
+  | STR_SUBSTR_CTN_CONTRA
+  /--
   Auto-generated from RARE rule str-substr-ctn 
   -/
   | STR_SUBSTR_CTN
@@ -5108,6 +5020,86 @@ inductive ProofRewriteRule where
   Auto-generated from RARE rule str-replace-dual-ctn 
   -/
   | STR_REPLACE_DUAL_CTN
+  /--
+  Auto-generated from RARE rule str-replace-dual-ctn-false 
+  -/
+  | STR_REPLACE_DUAL_CTN_FALSE
+  /--
+  Auto-generated from RARE rule str-replace-self-ctn-simp 
+  -/
+  | STR_REPLACE_SELF_CTN_SIMP
+  /--
+  Auto-generated from RARE rule str-replace-emp-ctn-src 
+  -/
+  | STR_REPLACE_EMP_CTN_SRC
+  /--
+  Auto-generated from RARE rule str-substr-char-start-eq-len 
+  -/
+  | STR_SUBSTR_CHAR_START_EQ_LEN
+  /--
+  Auto-generated from RARE rule str-contains-repl-char 
+  -/
+  | STR_CONTAINS_REPL_CHAR
+  /--
+  Auto-generated from RARE rule str-contains-repl-self-tgt-char 
+  -/
+  | STR_CONTAINS_REPL_SELF_TGT_CHAR
+  /--
+  Auto-generated from RARE rule str-contains-repl-self 
+  -/
+  | STR_CONTAINS_REPL_SELF
+  /--
+  Auto-generated from RARE rule str-contains-repl-tgt 
+  -/
+  | STR_CONTAINS_REPL_TGT
+  /--
+  Auto-generated from RARE rule str-repl-repl-len-id 
+  -/
+  | STR_REPL_REPL_LEN_ID
+  /--
+  Auto-generated from RARE rule str-repl-repl-src-tgt-no-ctn 
+  -/
+  | STR_REPL_REPL_SRC_TGT_NO_CTN
+  /--
+  Auto-generated from RARE rule str-repl-repl-tgt-self 
+  -/
+  | STR_REPL_REPL_TGT_SELF
+  /--
+  Auto-generated from RARE rule str-repl-repl-tgt-no-ctn 
+  -/
+  | STR_REPL_REPL_TGT_NO_CTN
+  /--
+  Auto-generated from RARE rule str-repl-repl-src-self 
+  -/
+  | STR_REPL_REPL_SRC_SELF
+  /--
+  Auto-generated from RARE rule str-repl-repl-src-inv-no-ctn1 
+  -/
+  | STR_REPL_REPL_SRC_INV_NO_CTN1
+  /--
+  Auto-generated from RARE rule str-repl-repl-src-inv-no-ctn2 
+  -/
+  | STR_REPL_REPL_SRC_INV_NO_CTN2
+  /--
+  Auto-generated from RARE rule str-repl-repl-src-inv-no-ctn3 
+  -/
+  | STR_REPL_REPL_SRC_INV_NO_CTN3
+  /--
+  Auto-generated from RARE rule str-repl-repl-dual-self 
+  -/
+  | STR_REPL_REPL_DUAL_SELF
+  /--
+  Auto-generated from RARE rule str-repl-repl-dual-ite1 
+  -/
+  | STR_REPL_REPL_DUAL_ITE1
+  /--
+  Auto-generated from RARE rule str-repl-repl-dual-ite2 
+  -/
+  | STR_REPL_REPL_DUAL_ITE2
+  /--
+  Auto-generated from RARE rule str-repl-repl-lookahead-id-simp 
+  -/
+  | STR_REPL_REPL_LOOKAHEAD_ID_SIMP
   /--
   Auto-generated from RARE rule re-all-elim 
   -/
@@ -5124,18 +5116,6 @@ inductive ProofRewriteRule where
   Auto-generated from RARE rule re-plus-elim 
   -/
   | RE_PLUS_ELIM
-  /--
-  Auto-generated from RARE rule re-concat-emp 
-  -/
-  | RE_CONCAT_EMP
-  /--
-  Auto-generated from RARE rule re-concat-none 
-  -/
-  | RE_CONCAT_NONE
-  /--
-  Auto-generated from RARE rule re-concat-flatten 
-  -/
-  | RE_CONCAT_FLATTEN
   /--
   Auto-generated from RARE rule re-concat-star-swap 
   -/
@@ -5161,33 +5141,13 @@ inductive ProofRewriteRule where
   -/
   | RE_UNION_ALL
   /--
-  Auto-generated from RARE rule re-union-none 
+  Auto-generated from RARE rule re-union-const-elim 
   -/
-  | RE_UNION_NONE
-  /--
-  Auto-generated from RARE rule re-union-flatten 
-  -/
-  | RE_UNION_FLATTEN
-  /--
-  Auto-generated from RARE rule re-union-dup 
-  -/
-  | RE_UNION_DUP
+  | RE_UNION_CONST_ELIM
   /--
   Auto-generated from RARE rule re-inter-all 
   -/
   | RE_INTER_ALL
-  /--
-  Auto-generated from RARE rule re-inter-none 
-  -/
-  | RE_INTER_NONE
-  /--
-  Auto-generated from RARE rule re-inter-flatten 
-  -/
-  | RE_INTER_FLATTEN
-  /--
-  Auto-generated from RARE rule re-inter-dup 
-  -/
-  | RE_INTER_DUP
   /--
   Auto-generated from RARE rule re-star-none 
   -/
@@ -5225,10 +5185,6 @@ inductive ProofRewriteRule where
   -/
   | STR_SUBSTR_LEN_INCLUDE_PRE
   /--
-  Auto-generated from RARE rule str-substr-len-skip 
-  -/
-  | STR_SUBSTR_LEN_SKIP
-  /--
   Auto-generated from RARE rule str-substr-len-norm 
   -/
   | STR_SUBSTR_LEN_NORM
@@ -5253,9 +5209,25 @@ inductive ProofRewriteRule where
   -/
   | STR_EQ_REPL_NO_CHANGE
   /--
+  Auto-generated from RARE rule str-eq-repl-tgt-eq-len 
+  -/
+  | STR_EQ_REPL_TGT_EQ_LEN
+  /--
   Auto-generated from RARE rule str-eq-repl-len-one-emp-prefix 
   -/
   | STR_EQ_REPL_LEN_ONE_EMP_PREFIX
+  /--
+  Auto-generated from RARE rule str-eq-repl-emp-tgt-nemp 
+  -/
+  | STR_EQ_REPL_EMP_TGT_NEMP
+  /--
+  Auto-generated from RARE rule str-eq-repl-nemp-src-emp 
+  -/
+  | STR_EQ_REPL_NEMP_SRC_EMP
+  /--
+  Auto-generated from RARE rule str-eq-repl-self-src 
+  -/
+  | STR_EQ_REPL_SELF_SRC
   /--
   Auto-generated from RARE rule seq-len-unit 
   -/
@@ -5309,145 +5281,13 @@ inductive ProofRewriteRule where
   -/
   | STR_IN_RE_CONTAINS
   /--
-  Auto-generated from RARE rule str-in-re-strip-prefix 
+  Auto-generated from RARE rule str-in-re-from-int-nemp-dig-range 
   -/
-  | STR_IN_RE_STRIP_PREFIX
+  | STR_IN_RE_FROM_INT_NEMP_DIG_RANGE
   /--
-  Auto-generated from RARE rule str-in-re-strip-prefix-neg 
+  Auto-generated from RARE rule str-in-re-from-int-dig-range 
   -/
-  | STR_IN_RE_STRIP_PREFIX_NEG
-  /--
-  Auto-generated from RARE rule str-in-re-strip-prefix-sr-single 
-  -/
-  | STR_IN_RE_STRIP_PREFIX_SR_SINGLE
-  /--
-  Auto-generated from RARE rule str-in-re-strip-prefix-sr-single-neg 
-  -/
-  | STR_IN_RE_STRIP_PREFIX_SR_SINGLE_NEG
-  /--
-  Auto-generated from RARE rule str-in-re-strip-prefix-srs-single 
-  -/
-  | STR_IN_RE_STRIP_PREFIX_SRS_SINGLE
-  /--
-  Auto-generated from RARE rule str-in-re-strip-prefix-srs-single-neg 
-  -/
-  | STR_IN_RE_STRIP_PREFIX_SRS_SINGLE_NEG
-  /--
-  Auto-generated from RARE rule str-in-re-strip-prefix-s-single 
-  -/
-  | STR_IN_RE_STRIP_PREFIX_S_SINGLE
-  /--
-  Auto-generated from RARE rule str-in-re-strip-prefix-s-single-neg 
-  -/
-  | STR_IN_RE_STRIP_PREFIX_S_SINGLE_NEG
-  /--
-  Auto-generated from RARE rule str-in-re-strip-prefix-base 
-  -/
-  | STR_IN_RE_STRIP_PREFIX_BASE
-  /--
-  Auto-generated from RARE rule str-in-re-strip-prefix-base-neg 
-  -/
-  | STR_IN_RE_STRIP_PREFIX_BASE_NEG
-  /--
-  Auto-generated from RARE rule str-in-re-strip-prefix-base-s-single 
-  -/
-  | STR_IN_RE_STRIP_PREFIX_BASE_S_SINGLE
-  /--
-  Auto-generated from RARE rule str-in-re-strip-prefix-base-s-single-neg 
-  -/
-  | STR_IN_RE_STRIP_PREFIX_BASE_S_SINGLE_NEG
-  /--
-  Auto-generated from RARE rule str-in-re-strip-char 
-  -/
-  | STR_IN_RE_STRIP_CHAR
-  /--
-  Auto-generated from RARE rule str-in-re-strip-char-s-single 
-  -/
-  | STR_IN_RE_STRIP_CHAR_S_SINGLE
-  /--
-  Auto-generated from RARE rule str-in-re-strip-prefix-rev 
-  -/
-  | STR_IN_RE_STRIP_PREFIX_REV
-  /--
-  Auto-generated from RARE rule str-in-re-strip-prefix-neg-rev 
-  -/
-  | STR_IN_RE_STRIP_PREFIX_NEG_REV
-  /--
-  Auto-generated from RARE rule str-in-re-strip-prefix-sr-single-rev 
-  -/
-  | STR_IN_RE_STRIP_PREFIX_SR_SINGLE_REV
-  /--
-  Auto-generated from RARE rule str-in-re-strip-prefix-sr-single-neg-rev 
-  -/
-  | STR_IN_RE_STRIP_PREFIX_SR_SINGLE_NEG_REV
-  /--
-  Auto-generated from RARE rule str-in-re-strip-prefix-srs-single-rev 
-  -/
-  | STR_IN_RE_STRIP_PREFIX_SRS_SINGLE_REV
-  /--
-  Auto-generated from RARE rule str-in-re-strip-prefix-srs-single-neg-rev 
-  -/
-  | STR_IN_RE_STRIP_PREFIX_SRS_SINGLE_NEG_REV
-  /--
-  Auto-generated from RARE rule str-in-re-strip-prefix-s-single-rev 
-  -/
-  | STR_IN_RE_STRIP_PREFIX_S_SINGLE_REV
-  /--
-  Auto-generated from RARE rule str-in-re-strip-prefix-s-single-neg-rev 
-  -/
-  | STR_IN_RE_STRIP_PREFIX_S_SINGLE_NEG_REV
-  /--
-  Auto-generated from RARE rule str-in-re-strip-prefix-base-rev 
-  -/
-  | STR_IN_RE_STRIP_PREFIX_BASE_REV
-  /--
-  Auto-generated from RARE rule str-in-re-strip-prefix-base-neg-rev 
-  -/
-  | STR_IN_RE_STRIP_PREFIX_BASE_NEG_REV
-  /--
-  Auto-generated from RARE rule str-in-re-strip-prefix-base-s-single-rev 
-  -/
-  | STR_IN_RE_STRIP_PREFIX_BASE_S_SINGLE_REV
-  /--
-  Auto-generated from RARE rule str-in-re-strip-prefix-base-s-single-neg-rev 
-  -/
-  | STR_IN_RE_STRIP_PREFIX_BASE_S_SINGLE_NEG_REV
-  /--
-  Auto-generated from RARE rule str-in-re-strip-char-rev 
-  -/
-  | STR_IN_RE_STRIP_CHAR_REV
-  /--
-  Auto-generated from RARE rule str-in-re-strip-char-s-single-rev 
-  -/
-  | STR_IN_RE_STRIP_CHAR_S_SINGLE_REV
-  /--
-  Auto-generated from RARE rule str-in-re-req-unfold 
-  -/
-  | STR_IN_RE_REQ_UNFOLD
-  /--
-  Auto-generated from RARE rule str-in-re-req-unfold-rev 
-  -/
-  | STR_IN_RE_REQ_UNFOLD_REV
-  /--
-  Auto-generated from RARE rule str-in-re-skip-unfold 
-  -/
-  | STR_IN_RE_SKIP_UNFOLD
-  /--
-  Auto-generated from RARE rule str-in-re-skip-unfold-rev 
-  -/
-  | STR_IN_RE_SKIP_UNFOLD_REV
-  /--
-  Auto-generated from RARE rule str-in-re-test-unfold 
-  -/
-  | STR_IN_RE_TEST_UNFOLD
-  /--
-  Auto-generated from RARE rule str-in-re-test-unfold-rev 
-  -/
-  | STR_IN_RE_TEST_UNFOLD_REV
-  /--
-  Auto-generated from RARE rule str-in-re-concat-emp 
-  -/
-  | STR_IN_RE_CONCAT_EMP
+  | STR_IN_RE_FROM_INT_DIG_RANGE
   /--
   Auto-generated from RARE rule eq-refl 
   -/
@@ -5496,6 +5336,10 @@ inductive ProofRewriteRule where
   Auto-generated from RARE rule uf-int2bv-bvule-equiv 
   -/
   | UF_INT2BV_BVULE_EQUIV
+  /--
+  Auto-generated from RARE rule uf-sbv-to-int-elim 
+  -/
+  | UF_SBV_TO_INT_ELIM
   /--
   Auto-generated from RARE rule arith-sine-zero 
   -/

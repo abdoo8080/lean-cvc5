@@ -1998,8 +1998,48 @@ inductive Kind where
   - Create Op of this kind with:
   
     - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+  
+  \rst
+  .. note::  This kind is deprecated and replaced by
+             `BITVECTOR_UBV_TO_INT`. It will be removed in a future
+             release.
+  \endrst
   -/
   | BITVECTOR_TO_NAT
+  /--
+  Bit-vector conversion, unsigned bit-vector to integer.
+  
+  - Arity: ``1``
+  
+    - ``1:`` Term of bit-vector Sort
+  
+  - Create Term of this Kind with:
+  
+    - Solver::mkTerm(Kind, const std::vector<Term>&) const
+    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+  
+  - Create Op of this kind with:
+  
+    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+  -/
+  | BITVECTOR_UBV_TO_INT
+  /--
+  Bit-vector conversion, signed bit-vector to integer.
+  
+  - Arity: ``1``
+  
+    - ``1:`` Term of bit-vector Sort
+  
+  - Create Term of this Kind with:
+  
+    - Solver::mkTerm(Kind, const std::vector<Term>&) const
+    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+  
+  - Create Op of this kind with:
+  
+    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+  -/
+  | BITVECTOR_SBV_TO_INT
   /--
   Converts a list of Bool terms to a bit-vector.
   
@@ -3513,7 +3553,7 @@ inductive Kind where
   - Arity: ``2``
   
     - ``1:`` Term of function Sort :math:`(\rightarrow T \; Bool)`
-    - ``2:`` Term of bag Sort (Set :math:`T`)
+    - ``2:`` Term of set Sort (Set :math:`T`)
   \endrst
   
   - Create Term of this Kind with:
@@ -3540,7 +3580,7 @@ inductive Kind where
   - Arity: ``2``
   
     - ``1:`` Term of function Sort :math:`(\rightarrow T \; Bool)`
-    - ``2:`` Term of bag Sort (Set :math:`T`)
+    - ``2:`` Term of set Sort (Set :math:`T`)
   \endrst
   
   - Create Term of this Kind with:
@@ -4112,6 +4152,60 @@ inductive Kind where
   \endrst
   -/
   | BAG_FILTER
+  /--
+  Bag all.
+  
+  \rst
+  This operator checks whether all elements of a bag satisfy a predicate. 
+  (bag.all :math:`p \; A`) takes a predicate :math:`p` of Sort
+  :math:`(\rightarrow T \; Bool)` as a first argument, and a bag :math:`A`
+  of Sort (Bag :math:`T`) as a second argument, and returns true iff all 
+  elements of :math:`A` satisfy predicate :math:`p`. 
+  
+  - Arity: ``2``
+  
+    - ``1:`` Term of function Sort :math:`(\rightarrow T \; Bool)`
+    - ``2:`` Term of bag Sort (Bag :math:`T`)
+  \endrst
+  
+  - Create Term of this Kind with:
+  
+    - Solver::mkTerm(Kind, const std::vector<Term>&) const
+    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+  
+  \rst
+  .. warning:: This kind is experimental and may be changed or removed in
+               future versions.
+  \endrst
+  -/
+  | BAG_ALL
+  /--
+  Bag some.
+  
+  \rst
+  This operator checks whether at least one element of a bag satisfies a predicate. 
+  (bag.some :math:`p \; A`) takes a predicate :math:`p` of Sort
+  :math:`(\rightarrow T \; Bool)` as a first argument, and a bag :math:`A`
+  of Sort (Bag :math:`T`) as a second argument, and returns true iff at least  
+  one element of :math:`A` satisfies predicate :math:`p`. 
+  
+  - Arity: ``2``
+  
+    - ``1:`` Term of function Sort :math:`(\rightarrow T \; Bool)`
+    - ``2:`` Term of bag Sort (Bag :math:`T`)
+  \endrst
+  
+  - Create Term of this Kind with:
+  
+    - Solver::mkTerm(Kind, const std::vector<Term>&) const
+    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+  
+  \rst
+  .. warning:: This kind is experimental and may be changed or removed in
+               future versions.
+  \endrst
+  -/
+  | BAG_SOME
   /--
   Bag fold.
   
