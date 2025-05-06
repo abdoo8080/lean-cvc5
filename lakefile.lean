@@ -6,13 +6,6 @@ package cvc5 where
   precompileModules := true
   preferReleaseBuild := true
 
-@[default_target]
-lean_lib cvc5
-
-@[test_driver]
-lean_lib cvc5Test where
-  globs := #[Glob.submodules `cvc5Test]
-
 def Lake.unzip (file : FilePath) (dir : FilePath) : LogIO PUnit := do
   IO.FS.createDirAll dir
   proc (quiet := true) {
@@ -41,7 +34,7 @@ def generateEnums (cppDir : FilePath) (pkg : NPackage _package.name) : IO Unit :
     cmd := "lean"
     args := #[
       "--run", (pkg.srcDir / "PreBuild.lean").toString,
-      "--", -- arguments for `PreBuild.lean` binary: C++ source dir and lean target dir
+      -- arguments for `PreBuild.lean` binary: C++ source dir and lean target dir
       cppDir.toString, (pkg.srcDir / "cvc5").toString
     ]
   }
@@ -85,25 +78,31 @@ script init do
 
 def Lake.compileStaticLib'
   (libFile : FilePath) (oFiles : Array FilePath)
-  (ar : FilePath := "ar")
+  (ar : FilePath := "ar") (thin := false)
 : LogIO Unit := do
   createParentDirs libFile
-  proc {
-    cmd := ar.toString
-    args := #["csqL", libFile.toString] ++ oFiles.map toString
-  }
+  let args := #["csqL"]
+  let args := if thin then args.push "--thin" else args
+  let args := args.push libFile.toString ++ (← mkArgs libFile <| oFiles.map toString)
+  proc {cmd := ar.toString, args}
 
-/-- Build a static library from object file jobs using the `ar` packaged with Lean. -/
+/-- Build a static library from object file jobs using the Lean toolchain's `ar`. -/
 def Lake.buildStaticLib'
-  (libFile : FilePath) (oFileJobs : Array (Job FilePath))
+  (libFile : FilePath) (oFileJobs : Array (Job FilePath)) (thin :=  false)
 : SpawnM (Job FilePath) :=
-  buildFileAfterDep libFile (.collectArray oFileJobs) fun oFiles => do
-    compileStaticLib' libFile oFiles (← getLeanAr)
+  (Job.collectArray oFileJobs).mapM fun oFiles => do
+    buildFileUnlessUpToDate' libFile do
+      compileStaticLib' libFile oFiles (← getLeanAr) thin
+    return libFile
+
+input_file ffi.cpp where
+  path := "ffi" / "ffi.cpp"
+  text := true
 
 target ffi.o pkg : FilePath := do
   pkg.afterBuildCacheAsync do
+    let srcJob ← ffi.cpp.fetch
     let oFile := pkg.buildDir / "ffi" / "ffi.o"
-    let srcJob ← inputBinFile <| pkg.dir / "ffi" / "ffi.cpp"
     let flags := #[
       "-std=c++17",
       "-stdlib=libc++",
@@ -115,8 +114,16 @@ target ffi.o pkg : FilePath := do
 
 def libs := #["cadical", "cvc5", "cvc5parser", "gmp", "gmpxx", "picpoly", "picpolyxx"]
 
-extern_lib libffi pkg := do
-  let ffiO ← fetch (pkg.target ``ffi.o)
+target libffi pkg : FilePath := do
+  let ffiO ← ffi.o.fetch
   let libs := libs.map (pure <| pkg.buildDir / s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib ·)
   let libFile := pkg.staticLibDir / nameToStaticLib "ffi"
   buildStaticLib' libFile (libs.push ffiO)
+
+@[default_target]
+lean_lib cvc5 where
+  moreLinkObjs := #[libffi]
+
+@[test_driver]
+lean_lib cvc5Test where
+  globs := #[Glob.submodules `cvc5Test]
