@@ -118,5 +118,5 @@ def libs := #["cadical", "cvc5", "cvc5parser", "gmp", "gmpxx", "picpoly", "picpo
 extern_lib libffi pkg := do
   let ffiO ← fetch (pkg.target ``ffi.o)
   let libs := libs.map (pure <| pkg.buildDir / s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib ·)
-  let libFile := pkg.nativeLibDir / nameToStaticLib "ffi"
+  let libFile := pkg.staticLibDir / nameToStaticLib "ffi"
   buildStaticLib' libFile (libs.push ffiO)
