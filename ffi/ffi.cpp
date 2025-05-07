@@ -10,11 +10,11 @@ extern "C" lean_obj_res except_ok(lean_obj_arg alpha, lean_obj_arg val);
 
 extern "C" lean_obj_res except_ok_bool(uint8_t val);
 
-extern "C" lean_obj_res except_ok_u32(uint32_t val);
-
-extern "C" lean_obj_res except_ok_u16(uint8_t val);
-
 extern "C" lean_obj_res except_ok_u8(uint8_t val);
+
+extern "C" lean_obj_res except_ok_u16(uint16_t val);
+
+extern "C" lean_obj_res except_ok_u32(uint32_t val);
 
 extern "C" lean_obj_res except_err(lean_obj_arg alpha, lean_obj_arg msg);
 
