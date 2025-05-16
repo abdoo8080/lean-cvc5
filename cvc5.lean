@@ -108,6 +108,11 @@ end Error
 
 namespace Result
 
+/-- Comparison for structural equality. -/
+protected extern_def beq : Result → Result → Bool
+
+instance : BEq Result := ⟨Result.beq⟩
+
 /-- True if this result is from a satisfiable `checkSat` or `checkSatAssuming` query. -/
 extern_def isSat : Result → Bool
 

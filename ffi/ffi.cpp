@@ -179,6 +179,11 @@ static inline const Result* result_unbox(b_lean_obj_arg r)
   return static_cast<Result*>(lean_get_external_data(r));
 }
 
+extern "C" uint8_t result_beq(lean_obj_arg l, lean_obj_arg r)
+{
+  return bool_box(*result_unbox(l) == *result_unbox(r));
+}
+
 extern "C" uint8_t result_isSat(lean_obj_arg r)
 {
   return bool_box(result_unbox(r)->isSat());
