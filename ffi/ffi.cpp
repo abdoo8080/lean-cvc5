@@ -155,6 +155,86 @@ extern "C" uint64_t skolemId_hash(uint8_t si)
   return std::hash<SkolemId>()(static_cast<SkolemId>(si));
 }
 
+extern "C" lean_obj_res unknownExplanation_toString(uint8_t ue)
+{
+  return lean_mk_string(std::to_string(static_cast<UnknownExplanation>(ue)).c_str());
+}
+
+extern "C" uint64_t unknownExplanation_hash(uint8_t ue)
+{
+  return std::hash<UnknownExplanation>()(static_cast<UnknownExplanation>(ue));
+}
+
+extern "C" lean_obj_res roundingMode_toString(uint8_t rm)
+{
+  return lean_mk_string(std::to_string(static_cast<RoundingMode>(rm)).c_str());
+}
+
+extern "C" uint64_t roundingMode_hash(uint8_t rm)
+{
+  return std::hash<RoundingMode>()(static_cast<RoundingMode>(rm));
+}
+
+extern "C" lean_obj_res blockModelsMode_toString(uint8_t bmm)
+{
+  return lean_mk_string(std::to_string(static_cast<cvc5::modes::BlockModelsMode>(bmm)).c_str());
+}
+
+extern "C" uint64_t blockModelsMode_hash(uint8_t bmm)
+{
+  return std::hash<cvc5::modes::BlockModelsMode>()(static_cast<cvc5::modes::BlockModelsMode>(bmm));
+}
+
+extern "C" lean_obj_res learnedLitType_toString(uint8_t llt)
+{
+  return lean_mk_string(std::to_string(static_cast<cvc5::modes::LearnedLitType>(llt)).c_str());
+}
+
+extern "C" uint64_t learnedLitType_hash(uint8_t llt)
+{
+  return std::hash<cvc5::modes::LearnedLitType>()(static_cast<cvc5::modes::LearnedLitType>(llt));
+}
+
+extern "C" lean_obj_res proofComponent_toString(uint8_t pc)
+{
+  return lean_mk_string(std::to_string(static_cast<cvc5::modes::ProofComponent>(pc)).c_str());
+}
+
+extern "C" uint64_t proofComponent_hash(uint8_t pc)
+{
+  return std::hash<cvc5::modes::ProofComponent>()(static_cast<cvc5::modes::ProofComponent>(pc));
+}
+
+extern "C" lean_obj_res proofFormat_toString(uint8_t pf)
+{
+  return lean_mk_string(std::to_string(static_cast<cvc5::modes::ProofFormat>(pf)).c_str());
+}
+
+extern "C" uint64_t proofFormat_hash(uint8_t pf)
+{
+  return std::hash<cvc5::modes::ProofFormat>()(static_cast<cvc5::modes::ProofFormat>(pf));
+}
+
+extern "C" lean_obj_res findSynthTarget_toString(uint8_t fst)
+{
+  return lean_mk_string(std::to_string(static_cast<cvc5::modes::FindSynthTarget>(fst)).c_str());
+}
+
+extern "C" uint64_t findSynthTarget_hash(uint8_t fst)
+{
+  return std::hash<cvc5::modes::FindSynthTarget>()(static_cast<cvc5::modes::FindSynthTarget>(fst));
+}
+
+extern "C" lean_obj_res inputLanguage_toString(uint8_t il)
+{
+  return lean_mk_string(std::to_string(static_cast<cvc5::modes::InputLanguage>(il)).c_str());
+}
+
+extern "C" uint64_t inputLanguage_hash(uint8_t il)
+{
+  return std::hash<cvc5::modes::InputLanguage>()(static_cast<cvc5::modes::InputLanguage>(il));
+}
+
 static void result_finalize(void* obj) { delete static_cast<Result*>(obj); }
 
 static void result_foreach(void*, b_lean_obj_arg)
@@ -202,6 +282,11 @@ extern "C" uint8_t result_isUnsat(lean_obj_arg r)
 extern "C" uint8_t result_isUnknown(lean_obj_arg r)
 {
   return bool_box(result_unbox(r)->isUnknown());
+}
+
+extern "C" uint8_t result_getUnknownExplanation(lean_obj_arg r)
+{
+  return static_cast<int32_t>(result_unbox(r)->getUnknownExplanation());
 }
 
 extern "C" lean_obj_res result_toString(lean_obj_arg r)

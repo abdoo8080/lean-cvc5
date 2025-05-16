@@ -130,6 +130,16 @@ determine (un)satisfiability.
 -/
 extern_def isUnknown : Result → Bool
 
+/-- An explanation for an unknown query result.
+
+Note that if the result is (un)sat, this function returns `UnknownExplanation.UNKNOWN_REASON`.
+-/
+extern_def getUnknownExplanation : Result → UnknownExplanation
+with
+  /-- An explanation for an unknown query result, `none` if the result in not unknown. -/
+  getUnknownExplanation? (res : Result) : Option UnknownExplanation :=
+    if ¬ res.isUnknown then none else res.getUnknownExplanation
+
 /-- A string representation of this result. -/
 protected extern_def toString : Result → String
 
