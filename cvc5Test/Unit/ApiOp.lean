@@ -158,8 +158,8 @@ test! tm => do
   -- operators with n indices
   let indices := #[0, 3, 2, 0, 1, 2];
   let tupleProject ← tm.mkOp Kind.TUPLE_PROJECT indices;
-  for idx in [0 : indices.size] do
-    check tupleProject idx (indices.get! idx)
+  for _h : idx in [0 : indices.size] do
+    check tupleProject idx (indices[idx])
 
 /-
 Not sure what to do for the end of the test below. Original test is

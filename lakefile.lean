@@ -163,5 +163,5 @@ extern_lib cvc5ffi pkg := do
   let ffiO ← fetch (pkg.target ``ffi.o)
   logV s!"building FFI static library"
   let libs := libs.map (pure <| srcDir / "lib" / nameToStaticLib ·)
-  let libFile := pkg.nativeLibDir / nameToStaticLib cvc5.libFfiName
+  let libFile := pkg.staticLibDir / nameToStaticLib cvc5.libFfiName
   buildStaticLib' libFile (libs.push ffiO)
