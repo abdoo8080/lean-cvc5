@@ -184,6 +184,11 @@ extern "C" uint8_t result_beq(lean_obj_arg l, lean_obj_arg r)
   return bool_box(*result_unbox(l) == *result_unbox(r));
 }
 
+extern "C" uint64_t result_hash(lean_obj_arg s)
+{
+  return std::hash<Result>()(*result_unbox(s));
+}
+
 extern "C" uint8_t result_isSat(lean_obj_arg r)
 {
   return bool_box(result_unbox(r)->isSat());

@@ -113,6 +113,11 @@ protected extern_def beq : Result → Result → Bool
 
 instance : BEq Result := ⟨Result.beq⟩
 
+/-- Hash function for cvc5 sorts. -/
+protected extern_def hash : Result → UInt64
+
+instance : Hashable Result := ⟨Result.hash⟩
+
 /-- True if this result is from a satisfiable `checkSat` or `checkSatAssuming` query. -/
 extern_def isSat : Result → Bool
 
