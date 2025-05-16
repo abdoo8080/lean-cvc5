@@ -11,6 +11,7 @@ import cvc5.Init
 import cvc5.Kind
 import cvc5.ProofRule
 import cvc5.SkolemId
+import cvc5.Types
 
 namespace cvc5
 
