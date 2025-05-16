@@ -573,13 +573,30 @@ def getChildren (t : Term) : Array Term := Id.run do
   cts
 
 /-- Boolean negation. -/
-protected extern_def!? not : Term → Except Error Term
+protected extern_def!? not : (t : Term) → Except Error Term
 
 /-- Boolean and. -/
-protected extern_def!? and : Term → Term → Except Error Term
+protected extern_def!? and : (lft rgt : Term) → Except Error Term
 
 /-- Boolean or. -/
-protected extern_def!? or : Term → Term → Except Error Term
+protected extern_def!? or : (lft rgt : Term) → Except Error Term
+
+/-- Boolean exclusive or. -/
+protected extern_def!? xor : (lft rgt : Term) → Except Error Term
+
+/-- Equality. -/
+protected extern_def!? eq : (lft rgt : Term) → Except Error Term
+
+/-- Boolean implication. -/
+protected extern_def!? imp : (lft rgt : Term) → Except Error Term
+
+/-- If-then-else.
+
+- `cnd`: condition, must be a Boolean term;
+- `thn`: then-branch of some sort `S`;
+- `els`: else-branch of *the same* sort `S`.
+-/
+protected extern_def!? ite : (cnd thn els : Term) → Except Error Term
 
 /-- A string representation of this term. -/
 protected extern_def toString : Term → String

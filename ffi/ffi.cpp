@@ -739,6 +739,38 @@ extern "C" lean_obj_res term_or(lean_obj_arg t1, lean_obj_arg t2)
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
+extern "C" lean_obj_res term_xor(lean_obj_arg t1, lean_obj_arg t2)
+{
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  return except_ok(lean_box(0),
+                   term_box(new Term(term_unbox(t1)->xorTerm(*term_unbox(t2)))));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
+}
+
+extern "C" lean_obj_res term_eq(lean_obj_arg t1, lean_obj_arg t2)
+{
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  return except_ok(lean_box(0),
+                   term_box(new Term(term_unbox(t1)->eqTerm(*term_unbox(t2)))));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
+}
+
+extern "C" lean_obj_res term_imp(lean_obj_arg t1, lean_obj_arg t2)
+{
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  return except_ok(lean_box(0),
+                   term_box(new Term(term_unbox(t1)->impTerm(*term_unbox(t2)))));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
+}
+
+extern "C" lean_obj_res term_ite(lean_obj_arg t1, lean_obj_arg t2, lean_obj_arg t3)
+{
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  return except_ok(lean_box(0),
+                   term_box(new Term(term_unbox(t1)->iteTerm(*term_unbox(t2), *term_unbox(t3)))));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
+}
+
 extern "C" lean_obj_res term_toString(lean_obj_arg t)
 {
   return lean_mk_string(term_unbox(t)->toString().c_str());
