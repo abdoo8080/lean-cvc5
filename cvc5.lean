@@ -807,11 +807,26 @@ extern_def mkParamSort : TermManager → (symbol : String) → cvc5.Sort
 -/
 extern_def mkBoolean : TermManager → (b : Bool) → Term
 
-/-- Create an integer-value term. -/
-private extern_def mkIntegerFromString : TermManager → String → Except Error Term
+/-- Create an integer-value term.
+
+- `s`: the string representation of the constant, may represent an integer such as (`"123"`).
+-/
+private extern_def mkIntegerFromString : TermManager → (s : String) → Except Error Term
 with
+  /-- Create an integer-value term. -/
   mkInteger (tm : TermManager) : Int → Term :=
     Error.unwrap! ∘ tm.mkIntegerFromString ∘ toString
+
+/-- Create a real-value term.
+
+- `s`: the string representation of the constant, may represent an integer (`"123"`) or a real
+  constant (`"12.34"`, `"12/34"`).
+-/
+private extern_def mkRealFromString : TermManager → (s : String) → Except Error Term
+with
+  /-- Create a real-value term from numerator/denominator `Int`-s. -/
+  mkReal (tm : TermManager) (num : Int) (den : Int := 1) : Term :=
+    tm.mkRealFromString s!"{num}/{den}" |> Error.unwrap!
 
 /-- Create operator of Kind:
 

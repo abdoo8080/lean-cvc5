@@ -1234,6 +1234,16 @@ extern "C" lean_obj_res termManager_mkIntegerFromString(lean_obj_arg tm,
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
+extern "C" lean_obj_res termManager_mkRealFromString(lean_obj_arg tm,
+                                                        lean_obj_arg val)
+{
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  return except_ok(
+      lean_box(0),
+      term_box(new Term(mut_tm_unbox(tm)->mkReal(lean_string_cstr(val)))));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
+}
+
 extern "C" lean_obj_res termManager_mkTerm(lean_obj_arg tm,
                                            uint16_t kind,
                                            lean_obj_arg children)
