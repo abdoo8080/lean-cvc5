@@ -835,7 +835,7 @@ with
 -/
 private extern_def mkRealFromString : TermManager → (s : String) → Except Error Term
 with
-  /-- Create a real-value term from numerator/denominator `Int`-s. -/
+  /-- Create a real-value term from a `Std.Internal.Rat`. -/
   mkRealOfRat (tm : TermManager) (rat : Std.Internal.Rat) : Term :=
     tm.mkRealFromString s!"{rat.num}/{rat.den}" |> Error.unwrap!
   /-- Create a real-value term from numerator/denominator `Int`-s. -/
