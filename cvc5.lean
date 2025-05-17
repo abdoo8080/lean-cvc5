@@ -836,8 +836,18 @@ with
 private extern_def mkRealFromString : TermManager → (s : String) → Except Error Term
 with
   /-- Create a real-value term from numerator/denominator `Int`-s. -/
-  mkReal (tm : TermManager) (num : Int) (den : Int := 1) : Term :=
-    tm.mkRealFromString s!"{num}/{den}" |> Error.unwrap!
+  mkRealOfRat (tm : TermManager) (rat : Std.Internal.Rat) : Term :=
+    tm.mkRealFromString s!"{rat.num}/{rat.den}" |> Error.unwrap!
+  /-- Create a real-value term from numerator/denominator `Int`-s. -/
+  mkReal (tm : TermManager)
+    (num : Int) (den : Int := 1) (den_ne_0 : den ≠ 0 := by simp <;> omega)
+  : Term :=
+    let (num, den) :=
+      match h : den with
+      | .ofNat 0 => by contradiction
+      | .ofNat den => (num, den)
+      | .negSucc denMinus1 => (-num, denMinus1.succ)
+    tm.mkRealOfRat <| Std.Internal.mkRat num den
 
 /-- Create operator of Kind:
 
