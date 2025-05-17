@@ -157,7 +157,8 @@ extern "C" uint64_t skolemId_hash(uint8_t si)
 
 extern "C" lean_obj_res unknownExplanation_toString(uint8_t ue)
 {
-  return lean_mk_string(std::to_string(static_cast<UnknownExplanation>(ue)).c_str());
+  return lean_mk_string(
+      std::to_string(static_cast<UnknownExplanation>(ue)).c_str());
 }
 
 extern "C" uint64_t unknownExplanation_hash(uint8_t ue)
@@ -177,62 +178,74 @@ extern "C" uint64_t roundingMode_hash(uint8_t rm)
 
 extern "C" lean_obj_res blockModelsMode_toString(uint8_t bmm)
 {
-  return lean_mk_string(std::to_string(static_cast<cvc5::modes::BlockModelsMode>(bmm)).c_str());
+  return lean_mk_string(
+      std::to_string(static_cast<cvc5::modes::BlockModelsMode>(bmm)).c_str());
 }
 
 extern "C" uint64_t blockModelsMode_hash(uint8_t bmm)
 {
-  return std::hash<cvc5::modes::BlockModelsMode>()(static_cast<cvc5::modes::BlockModelsMode>(bmm));
+  return std::hash<cvc5::modes::BlockModelsMode>()(
+      static_cast<cvc5::modes::BlockModelsMode>(bmm));
 }
 
 extern "C" lean_obj_res learnedLitType_toString(uint8_t llt)
 {
-  return lean_mk_string(std::to_string(static_cast<cvc5::modes::LearnedLitType>(llt)).c_str());
+  return lean_mk_string(
+      std::to_string(static_cast<cvc5::modes::LearnedLitType>(llt)).c_str());
 }
 
 extern "C" uint64_t learnedLitType_hash(uint8_t llt)
 {
-  return std::hash<cvc5::modes::LearnedLitType>()(static_cast<cvc5::modes::LearnedLitType>(llt));
+  return std::hash<cvc5::modes::LearnedLitType>()(
+      static_cast<cvc5::modes::LearnedLitType>(llt));
 }
 
 extern "C" lean_obj_res proofComponent_toString(uint8_t pc)
 {
-  return lean_mk_string(std::to_string(static_cast<cvc5::modes::ProofComponent>(pc)).c_str());
+  return lean_mk_string(
+      std::to_string(static_cast<cvc5::modes::ProofComponent>(pc)).c_str());
 }
 
 extern "C" uint64_t proofComponent_hash(uint8_t pc)
 {
-  return std::hash<cvc5::modes::ProofComponent>()(static_cast<cvc5::modes::ProofComponent>(pc));
+  return std::hash<cvc5::modes::ProofComponent>()(
+      static_cast<cvc5::modes::ProofComponent>(pc));
 }
 
 extern "C" lean_obj_res proofFormat_toString(uint8_t pf)
 {
-  return lean_mk_string(std::to_string(static_cast<cvc5::modes::ProofFormat>(pf)).c_str());
+  return lean_mk_string(
+      std::to_string(static_cast<cvc5::modes::ProofFormat>(pf)).c_str());
 }
 
 extern "C" uint64_t proofFormat_hash(uint8_t pf)
 {
-  return std::hash<cvc5::modes::ProofFormat>()(static_cast<cvc5::modes::ProofFormat>(pf));
+  return std::hash<cvc5::modes::ProofFormat>()(
+      static_cast<cvc5::modes::ProofFormat>(pf));
 }
 
 extern "C" lean_obj_res findSynthTarget_toString(uint8_t fst)
 {
-  return lean_mk_string(std::to_string(static_cast<cvc5::modes::FindSynthTarget>(fst)).c_str());
+  return lean_mk_string(
+      std::to_string(static_cast<cvc5::modes::FindSynthTarget>(fst)).c_str());
 }
 
 extern "C" uint64_t findSynthTarget_hash(uint8_t fst)
 {
-  return std::hash<cvc5::modes::FindSynthTarget>()(static_cast<cvc5::modes::FindSynthTarget>(fst));
+  return std::hash<cvc5::modes::FindSynthTarget>()(
+      static_cast<cvc5::modes::FindSynthTarget>(fst));
 }
 
 extern "C" lean_obj_res inputLanguage_toString(uint8_t il)
 {
-  return lean_mk_string(std::to_string(static_cast<cvc5::modes::InputLanguage>(il)).c_str());
+  return lean_mk_string(
+      std::to_string(static_cast<cvc5::modes::InputLanguage>(il)).c_str());
 }
 
 extern "C" uint64_t inputLanguage_hash(uint8_t il)
 {
-  return std::hash<cvc5::modes::InputLanguage>()(static_cast<cvc5::modes::InputLanguage>(il));
+  return std::hash<cvc5::modes::InputLanguage>()(
+      static_cast<cvc5::modes::InputLanguage>(il));
 }
 
 static void result_finalize(void* obj) { delete static_cast<Result*>(obj); }
@@ -837,8 +850,9 @@ extern "C" lean_obj_res term_or(lean_obj_arg t1, lean_obj_arg t2)
 extern "C" lean_obj_res term_xor(lean_obj_arg t1, lean_obj_arg t2)
 {
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
-  return except_ok(lean_box(0),
-                   term_box(new Term(term_unbox(t1)->xorTerm(*term_unbox(t2)))));
+  return except_ok(
+      lean_box(0),
+      term_box(new Term(term_unbox(t1)->xorTerm(*term_unbox(t2)))));
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
@@ -853,16 +867,20 @@ extern "C" lean_obj_res term_eq(lean_obj_arg t1, lean_obj_arg t2)
 extern "C" lean_obj_res term_imp(lean_obj_arg t1, lean_obj_arg t2)
 {
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
-  return except_ok(lean_box(0),
-                   term_box(new Term(term_unbox(t1)->impTerm(*term_unbox(t2)))));
+  return except_ok(
+      lean_box(0),
+      term_box(new Term(term_unbox(t1)->impTerm(*term_unbox(t2)))));
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
-extern "C" lean_obj_res term_ite(lean_obj_arg t1, lean_obj_arg t2, lean_obj_arg t3)
+extern "C" lean_obj_res term_ite(lean_obj_arg t1,
+                                 lean_obj_arg t2,
+                                 lean_obj_arg t3)
 {
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
   return except_ok(lean_box(0),
-                   term_box(new Term(term_unbox(t1)->iteTerm(*term_unbox(t2), *term_unbox(t3)))));
+                   term_box(new Term(term_unbox(t1)->iteTerm(
+                       *term_unbox(t2), *term_unbox(t3)))));
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
@@ -1320,7 +1338,7 @@ extern "C" lean_obj_res termManager_mkIntegerFromString(lean_obj_arg tm,
 }
 
 extern "C" lean_obj_res termManager_mkRealFromString(lean_obj_arg tm,
-                                                        lean_obj_arg val)
+                                                     lean_obj_arg val)
 {
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
   return except_ok(
@@ -1363,8 +1381,8 @@ extern "C" lean_obj_res termManager_mkTermOfOp(lean_obj_arg tm,
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
-// This function is not part of the *public* `lean-cvc5` API: it produces a different (fresh) term
-// every time it's called which is really bad for purity.
+// This function is not part of the *public* `lean-cvc5` API: it produces a
+// different (fresh) term every time it's called which is really bad for purity.
 extern "C" lean_obj_res termManager_mkConst(lean_obj_arg tm,
                                             lean_obj_arg sort,
                                             lean_obj_arg symbol)
