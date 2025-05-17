@@ -109,7 +109,7 @@ extern "C" lean_obj_res kind_toString(uint16_t k)
   return lean_mk_string(std::to_string(static_cast<Kind>(k - 2)).c_str());
 }
 
-extern "C" uint64_t kind_hash(uint8_t k)
+extern "C" uint64_t kind_hash(uint16_t k)
 {
   return std::hash<Kind>()(static_cast<Kind>(k));
 }
