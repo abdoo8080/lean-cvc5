@@ -109,7 +109,7 @@ extern "C" lean_obj_res kind_toString(uint16_t k)
   return lean_mk_string(std::to_string(static_cast<Kind>(k - 2)).c_str());
 }
 
-extern "C" uint64_t kind_hash(uint8_t k)
+extern "C" uint64_t kind_hash(uint16_t k)
 {
   return std::hash<Kind>()(static_cast<Kind>(k));
 }
@@ -155,6 +155,99 @@ extern "C" uint64_t skolemId_hash(uint8_t si)
   return std::hash<SkolemId>()(static_cast<SkolemId>(si));
 }
 
+extern "C" lean_obj_res unknownExplanation_toString(uint8_t ue)
+{
+  return lean_mk_string(
+      std::to_string(static_cast<UnknownExplanation>(ue)).c_str());
+}
+
+extern "C" uint64_t unknownExplanation_hash(uint8_t ue)
+{
+  return std::hash<UnknownExplanation>()(static_cast<UnknownExplanation>(ue));
+}
+
+extern "C" lean_obj_res roundingMode_toString(uint8_t rm)
+{
+  return lean_mk_string(std::to_string(static_cast<RoundingMode>(rm)).c_str());
+}
+
+extern "C" uint64_t roundingMode_hash(uint8_t rm)
+{
+  return std::hash<RoundingMode>()(static_cast<RoundingMode>(rm));
+}
+
+extern "C" lean_obj_res blockModelsMode_toString(uint8_t bmm)
+{
+  return lean_mk_string(
+      std::to_string(static_cast<cvc5::modes::BlockModelsMode>(bmm)).c_str());
+}
+
+extern "C" uint64_t blockModelsMode_hash(uint8_t bmm)
+{
+  return std::hash<cvc5::modes::BlockModelsMode>()(
+      static_cast<cvc5::modes::BlockModelsMode>(bmm));
+}
+
+extern "C" lean_obj_res learnedLitType_toString(uint8_t llt)
+{
+  return lean_mk_string(
+      std::to_string(static_cast<cvc5::modes::LearnedLitType>(llt)).c_str());
+}
+
+extern "C" uint64_t learnedLitType_hash(uint8_t llt)
+{
+  return std::hash<cvc5::modes::LearnedLitType>()(
+      static_cast<cvc5::modes::LearnedLitType>(llt));
+}
+
+extern "C" lean_obj_res proofComponent_toString(uint8_t pc)
+{
+  return lean_mk_string(
+      std::to_string(static_cast<cvc5::modes::ProofComponent>(pc)).c_str());
+}
+
+extern "C" uint64_t proofComponent_hash(uint8_t pc)
+{
+  return std::hash<cvc5::modes::ProofComponent>()(
+      static_cast<cvc5::modes::ProofComponent>(pc));
+}
+
+extern "C" lean_obj_res proofFormat_toString(uint8_t pf)
+{
+  return lean_mk_string(
+      std::to_string(static_cast<cvc5::modes::ProofFormat>(pf)).c_str());
+}
+
+extern "C" uint64_t proofFormat_hash(uint8_t pf)
+{
+  return std::hash<cvc5::modes::ProofFormat>()(
+      static_cast<cvc5::modes::ProofFormat>(pf));
+}
+
+extern "C" lean_obj_res findSynthTarget_toString(uint8_t fst)
+{
+  return lean_mk_string(
+      std::to_string(static_cast<cvc5::modes::FindSynthTarget>(fst)).c_str());
+}
+
+extern "C" uint64_t findSynthTarget_hash(uint8_t fst)
+{
+  return std::hash<cvc5::modes::FindSynthTarget>()(
+      static_cast<cvc5::modes::FindSynthTarget>(fst));
+}
+
+extern "C" lean_obj_res inputLanguage_toString(uint8_t il)
+{
+  return lean_mk_string(
+      std::to_string(static_cast<cvc5::modes::InputLanguage>(il)).c_str());
+}
+
+extern "C" uint64_t inputLanguage_hash(uint8_t il)
+{
+  return std::hash<cvc5::modes::InputLanguage>()(
+      static_cast<cvc5::modes::InputLanguage>(il));
+}
+
 static void result_finalize(void* obj) { delete static_cast<Result*>(obj); }
 
 static void result_foreach(void*, b_lean_obj_arg)
@@ -179,6 +272,16 @@ static inline const Result* result_unbox(b_lean_obj_arg r)
   return static_cast<Result*>(lean_get_external_data(r));
 }
 
+extern "C" uint8_t result_beq(lean_obj_arg l, lean_obj_arg r)
+{
+  return bool_box(*result_unbox(l) == *result_unbox(r));
+}
+
+extern "C" uint64_t result_hash(lean_obj_arg s)
+{
+  return std::hash<Result>()(*result_unbox(s));
+}
+
 extern "C" uint8_t result_isSat(lean_obj_arg r)
 {
   return bool_box(result_unbox(r)->isSat());
@@ -192,6 +295,11 @@ extern "C" uint8_t result_isUnsat(lean_obj_arg r)
 extern "C" uint8_t result_isUnknown(lean_obj_arg r)
 {
   return bool_box(result_unbox(r)->isUnknown());
+}
+
+extern "C" uint8_t result_getUnknownExplanation(lean_obj_arg r)
+{
+  return static_cast<int32_t>(result_unbox(r)->getUnknownExplanation());
 }
 
 extern "C" lean_obj_res result_toString(lean_obj_arg r)
@@ -739,6 +847,43 @@ extern "C" lean_obj_res term_or(lean_obj_arg t1, lean_obj_arg t2)
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
+extern "C" lean_obj_res term_xor(lean_obj_arg t1, lean_obj_arg t2)
+{
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  return except_ok(
+      lean_box(0),
+      term_box(new Term(term_unbox(t1)->xorTerm(*term_unbox(t2)))));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
+}
+
+extern "C" lean_obj_res term_eq(lean_obj_arg t1, lean_obj_arg t2)
+{
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  return except_ok(lean_box(0),
+                   term_box(new Term(term_unbox(t1)->eqTerm(*term_unbox(t2)))));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
+}
+
+extern "C" lean_obj_res term_imp(lean_obj_arg t1, lean_obj_arg t2)
+{
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  return except_ok(
+      lean_box(0),
+      term_box(new Term(term_unbox(t1)->impTerm(*term_unbox(t2)))));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
+}
+
+extern "C" lean_obj_res term_ite(lean_obj_arg t1,
+                                 lean_obj_arg t2,
+                                 lean_obj_arg t3)
+{
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  return except_ok(lean_box(0),
+                   term_box(new Term(term_unbox(t1)->iteTerm(
+                       *term_unbox(t2), *term_unbox(t3)))));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
+}
+
 extern "C" lean_obj_res term_toString(lean_obj_arg t)
 {
   return lean_mk_string(term_unbox(t)->toString().c_str());
@@ -1192,6 +1337,16 @@ extern "C" lean_obj_res termManager_mkIntegerFromString(lean_obj_arg tm,
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
+extern "C" lean_obj_res termManager_mkRealFromString(lean_obj_arg tm,
+                                                     lean_obj_arg val)
+{
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  return except_ok(
+      lean_box(0),
+      term_box(new Term(mut_tm_unbox(tm)->mkReal(lean_string_cstr(val)))));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
+}
+
 extern "C" lean_obj_res termManager_mkTerm(lean_obj_arg tm,
                                            uint16_t kind,
                                            lean_obj_arg children)
@@ -1226,8 +1381,8 @@ extern "C" lean_obj_res termManager_mkTermOfOp(lean_obj_arg tm,
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
-// This function is not part of the *public* `lean-cvc5` API: it produces a different (fresh) term
-// every time it's called which is really bad for purity.
+// This function is not part of the *public* `lean-cvc5` API: it produces a
+// different (fresh) term every time it's called which is really bad for purity.
 extern "C" lean_obj_res termManager_mkConst(lean_obj_arg tm,
                                             lean_obj_arg sort,
                                             lean_obj_arg symbol)

@@ -327,21 +327,34 @@ def pvariant (ifdef? : Option String) : Parser Variant := do
   wsCmt
   discard $ pstring "EVALUE"
   wsCmt
-  let (ident, offset) ←
+  let (ident, offset1?) ←
     delimited do
       let ident ← pident
       wsCmt
-      let offset ←
+      let offset? ←
         if ← ptest $ pchar '=' then
           wsCmt
           let i ← pint
           pure (some i)
         else pure none
       wsCmt
-      pure (ident, offset)
+      pure (ident, offset?)
   wsCmt
+  let offset2? ←
+    if ← ptest $ pchar '=' then
+      wsCmt
+      let i ← pint
+      pure (some i)
+    else pure none
+  wsCmt
+  let offset? ←
+    match (offset1?, offset2?) with
+    | (none, o?)| (o?, none) => pure o?
+    | (some o1, some o2) =>
+      if o1 = o2 then pure <| some o1
+      else fail s!"variant `{ident}` has two incompatible offsets: `{o1}` / `{o2}`"
   discard $ pchar? ','
-  return ⟨doc?, ident, offset, ifdef?⟩
+  return ⟨doc?, ident, offset?, ifdef?⟩
 
 partial def pvariants : Parser Variants := do
   loop 0 #[] none
@@ -358,15 +371,17 @@ where loop (i : Nat) (acc : Variants) (ifdef? : Option String) : Parser Variants
       fail s!"found `#ifdef {ident}`, but currently inside `#ifdef {ident'}`"
     loop i acc ident
   else if ← ptest $ pstring "#endif" then
+    if ifdef?.isNone then
+      fail s!"found `#endif`, but currently not inside an `#ifdef`"
     loop i acc none
   else if ← isEof then
     return acc
   else
     let variant ← pvariant ifdef?
-    let acc := if variant.ident.startsWith "LAST_" then acc else acc.push variant
+    let acc := if variant.ident.startsWith "LAST" then acc else acc.push variant
     loop i.succ acc ifdef?
 
-partial def penum : Parser Enum := do
+partial def penumHead : Parser (Doc × String) := do
   wsCmt
   let doc ← pdoc
   wsCmt
@@ -376,6 +391,9 @@ partial def penum : Parser Enum := do
   wsCmt
   let ident ← delimited pident
   wsCmt
+  return (doc, ident)
+
+partial def penumTail (doc : Doc) (ident : String) : Parser Enum := do
   if ← ptest $ pchar ':' then
     wsCmt
     discard $ pchar? 'u'
@@ -387,16 +405,16 @@ partial def penum : Parser Enum := do
   return ⟨doc, ident, variants⟩
 
 partial def penums (acc : Enums := #[]) : Parser Enums := do
-  match ← skipUntil penum with
-  | none => return acc
-  | some enum => acc.push enum |> penums
+  if let some (doc, ident) ← skipUntil penumHead then
+    let enum ← penumTail doc ident
+    acc.push enum |> penums
+  else return acc
 
 def pfile : Parser Enums := do
   discard $ ptry header
   let enums ← penums
   wsCmt
-  if ← isEof then
-    return enums
+  if ← isEof then return enums
   else fail s!"parsed {enums.size} enum(s), but there is some text left"
 
 def prettyError
@@ -521,6 +539,7 @@ def updateLean (cppDir leanDir : FilePath) : IO Unit := do
     ("cvc5_kind.h", "Kind.lean"),
     ("cvc5_proof_rule.h", "ProofRule.lean"),
     ("cvc5_skolem_id.h", "SkolemId.lean"),
+    ("cvc5_types.h", "Types.lean"),
   ]
   for (cpp, lean) in pairs do
     updateLeanFile (cppDir / cpp) (leanDir / lean)

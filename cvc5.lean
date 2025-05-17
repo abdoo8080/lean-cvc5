@@ -11,6 +11,7 @@ import cvc5.Init
 import cvc5.Kind
 import cvc5.ProofRule
 import cvc5.SkolemId
+import cvc5.Types
 
 namespace cvc5
 
@@ -108,6 +109,16 @@ end Error
 
 namespace Result
 
+/-- Comparison for structural equality. -/
+protected extern_def beq : Result → Result → Bool
+
+instance : BEq Result := ⟨Result.beq⟩
+
+/-- Hash function for cvc5 sorts. -/
+protected extern_def hash : Result → UInt64
+
+instance : Hashable Result := ⟨Result.hash⟩
+
 /-- True if this result is from a satisfiable `checkSat` or `checkSatAssuming` query. -/
 extern_def isSat : Result → Bool
 
@@ -118,6 +129,16 @@ extern_def isUnsat : Result → Bool
 determine (un)satisfiability.
 -/
 extern_def isUnknown : Result → Bool
+
+/-- An explanation for an unknown query result.
+
+Note that if the result is (un)sat, this function returns `UnknownExplanation.UNKNOWN_REASON`.
+-/
+extern_def getUnknownExplanation : Result → UnknownExplanation
+with
+  /-- An explanation for an unknown query result, `none` if the result in not unknown. -/
+  getUnknownExplanation? (res : Result) : Option UnknownExplanation :=
+    if ¬ res.isUnknown then none else res.getUnknownExplanation
 
 /-- A string representation of this result. -/
 protected extern_def toString : Result → String
@@ -573,13 +594,30 @@ def getChildren (t : Term) : Array Term := Id.run do
   cts
 
 /-- Boolean negation. -/
-protected extern_def!? not : Term → Except Error Term
+protected extern_def!? not : (t : Term) → Except Error Term
 
 /-- Boolean and. -/
-protected extern_def!? and : Term → Term → Except Error Term
+protected extern_def!? and : (lft rgt : Term) → Except Error Term
 
 /-- Boolean or. -/
-protected extern_def!? or : Term → Term → Except Error Term
+protected extern_def!? or : (lft rgt : Term) → Except Error Term
+
+/-- Boolean exclusive or. -/
+protected extern_def!? xor : (lft rgt : Term) → Except Error Term
+
+/-- Equality. -/
+protected extern_def!? eq : (lft rgt : Term) → Except Error Term
+
+/-- Boolean implication. -/
+protected extern_def!? imp : (lft rgt : Term) → Except Error Term
+
+/-- If-then-else.
+
+- `cnd`: condition, must be a Boolean term;
+- `thn`: then-branch of some sort `S`;
+- `els`: else-branch of *the same* sort `S`.
+-/
+protected extern_def!? ite : (cnd thn els : Term) → Except Error Term
 
 /-- A string representation of this term. -/
 protected extern_def toString : Term → String
@@ -780,11 +818,36 @@ extern_def mkParamSort : TermManager → (symbol : String) → cvc5.Sort
 -/
 extern_def mkBoolean : TermManager → (b : Bool) → Term
 
-/-- Create an integer-value term. -/
-private extern_def mkIntegerFromString : TermManager → String → Except Error Term
+/-- Create an integer-value term.
+
+- `s`: the string representation of the constant, may represent an integer such as (`"123"`).
+-/
+private extern_def mkIntegerFromString : TermManager → (s : String) → Except Error Term
 with
+  /-- Create an integer-value term. -/
   mkInteger (tm : TermManager) : Int → Term :=
     Error.unwrap! ∘ tm.mkIntegerFromString ∘ toString
+
+/-- Create a real-value term.
+
+- `s`: the string representation of the constant, may represent an integer (`"123"`) or a real
+  constant (`"12.34"`, `"12/34"`).
+-/
+private extern_def mkRealFromString : TermManager → (s : String) → Except Error Term
+with
+  /-- Create a real-value term from a `Std.Internal.Rat`. -/
+  mkRealOfRat (tm : TermManager) (rat : Std.Internal.Rat) : Term :=
+    tm.mkRealFromString s!"{rat.num}/{rat.den}" |> Error.unwrap!
+  /-- Create a real-value term from numerator/denominator `Int`-s. -/
+  mkReal (tm : TermManager)
+    (num : Int) (den : Int := 1) (den_ne_0 : den ≠ 0 := by simp <;> omega)
+  : Term :=
+    let (num, den) :=
+      match h : den with
+      | .ofNat 0 => by contradiction
+      | .ofNat den => (num, den)
+      | .negSucc denMinus1 => (-num, denMinus1.succ)
+    tm.mkRealOfRat <| Std.Internal.mkRat num den
 
 /-- Create operator of Kind:
 
