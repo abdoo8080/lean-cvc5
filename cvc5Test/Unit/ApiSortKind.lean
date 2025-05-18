@@ -16,6 +16,6 @@ test![TestApiSortKind, sortKindToString] _tm => do
     else if sk = SortKind.UNDEFINED_SORT_KIND then
       assertEq skStr "UNDEFINED_SORT_KIND"
     else
+      -- if this assertion fails, `s_kinds` in `cvc5.cpp` is missing kind `sk`.
       assertNe skStr "UNDEFINED_SORT_KIND"
       assertNe skStr "INTERNAL_SORT_KIND"
-  assertTrue true
