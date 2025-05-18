@@ -13,5 +13,6 @@ test![TestApiBlackSkolemId, skolemIdToString] _tm => do
     assertNe si.toString "?"
 
 test![TestApiBlackSkolemId, skolemIdHash] _tm => do
-  assertEq SkolemId.PURIFY.hash SkolemId.PURIFY.toCtorIdx
-  assertNe SkolemId.INTERNAL.hash SkolemId.PURIFY.toCtorIdx
+  for si in SkolemId.listAll do
+    assertEq si.hash si.toCtorIdx
+  assertNe SkolemId.PURIFY.hash SkolemId.INTERNAL.hash
