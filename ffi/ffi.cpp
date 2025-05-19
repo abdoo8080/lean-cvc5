@@ -111,7 +111,7 @@ extern "C" lean_obj_res kind_toString(uint16_t k)
 
 extern "C" uint64_t kind_hash(uint16_t k)
 {
-  return std::hash<Kind>()(static_cast<Kind>(k));
+  return std::hash<Kind>()(static_cast<Kind>(k - 2));
 }
 
 extern "C" lean_obj_res sortKind_toString(uint8_t sk)

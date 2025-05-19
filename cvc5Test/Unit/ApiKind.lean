@@ -11,3 +11,13 @@ test![TestApiKind, kindToString] _tm => do
   for k in Kind.listAll do
     -- if this assertion fails, `s_kinds` in `cvc5.cpp` is missing kind `k`.
     assertNe k.toString "?"
+
+test![TestApiKind, kindHash] _tm => do
+  -- assertion failures here indicate a problem in lean-to-cpp conversion
+  for k in Kind.listAll do
+    if k = Kind.INTERNAL_KIND then
+      assertEq (k.hash + 2) UInt64.size
+    else if k  = Kind.UNDEFINED_KIND then
+      assertEq (k.hash + 1) UInt64.size
+    else
+      assertEq (k.hash + 2) k.toCtorIdx
