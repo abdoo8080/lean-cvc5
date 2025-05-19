@@ -83,7 +83,7 @@ def {listAll} : List {e.ident} := [\
     -- ignore variants inside `#ifdef`?
     if skipIfDefs ∧ v.ifdef.isSome then continue
     -- write variant as part of the type's definition
-    v.writeToLean h pref
+    v.writeToLean h (pref ++ "  ")
     -- write the part of `listAllDef` dealing with this variant
     listAllDef := s!"{listAllDef}\n  {e.ident}.{v.ident},"
   -- finalize `listAll`'s definition
