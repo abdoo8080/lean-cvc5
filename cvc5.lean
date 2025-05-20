@@ -15,6 +15,214 @@ import cvc5.Types
 
 namespace cvc5
 
+namespace Kind
+
+/-- Produces a string representation. -/
+@[extern "kind_toString"]
+protected opaque toString : Kind → String
+
+instance : ToString Kind := ⟨Kind.toString⟩
+
+/-- Produces a hash. -/
+@[extern "kind_hash"]
+protected opaque hash : Kind → UInt64
+
+instance : Hashable Kind := ⟨Kind.hash⟩
+
+end Kind
+
+namespace SortKind
+
+/-- Produces a string representation. -/
+@[extern "sortKind_toString"]
+protected opaque toString : SortKind → String
+
+instance : ToString SortKind := ⟨SortKind.toString⟩
+
+/-- Produces a hash. -/
+@[extern "sortKind_hash"]
+protected opaque hash : SortKind → UInt64
+
+instance : Hashable SortKind := ⟨SortKind.hash⟩
+
+end SortKind
+
+namespace ProofRule
+
+/-- Produces a string representation. -/
+@[extern "proofRule_toString"]
+protected opaque toString : ProofRule → String
+
+instance : ToString ProofRule := ⟨ProofRule.toString⟩
+
+/-- Produces a hash. -/
+@[extern "proofRule_hash"]
+protected opaque hash : ProofRule → UInt64
+
+instance : Hashable ProofRule := ⟨ProofRule.hash⟩
+
+end ProofRule
+
+namespace SkolemId
+
+/-- Produces a string representation. -/
+@[extern "skolemId_toString"]
+protected opaque toString : SkolemId → String
+
+instance : ToString SkolemId := ⟨SkolemId.toString⟩
+
+/-- Produces a hash. -/
+@[extern "skolemId_hash"]
+protected opaque hash : SkolemId → UInt64
+
+instance : Hashable SkolemId := ⟨SkolemId.hash⟩
+
+end SkolemId
+
+namespace ProofRewriteRule
+
+/-- Produces a string representation. -/
+@[extern "proofRewriteRule_toString"]
+protected opaque toString : ProofRewriteRule → String
+
+instance : ToString ProofRewriteRule := ⟨ProofRewriteRule.toString⟩
+
+/-- Produces a hash. -/
+@[extern "proofRewriteRule_hash"]
+protected opaque hash : ProofRewriteRule → UInt64
+
+instance : Hashable ProofRewriteRule := ⟨ProofRewriteRule.hash⟩
+
+end ProofRewriteRule
+
+namespace UnknownExplanation
+
+/-- Produces a string representation. -/
+@[extern "unknownExplanation_toString"]
+protected opaque toString : UnknownExplanation → String
+
+instance : ToString UnknownExplanation := ⟨UnknownExplanation.toString⟩
+
+/-- Produces a hash. -/
+@[extern "unknownExplanation_hash"]
+protected opaque hash : UnknownExplanation → UInt64
+
+instance : Hashable UnknownExplanation := ⟨UnknownExplanation.hash⟩
+
+end UnknownExplanation
+
+namespace RoundingMode
+
+/-- Produces a string representation. -/
+@[extern "roundingMode_toString"]
+protected opaque toString : RoundingMode → String
+
+instance : ToString RoundingMode := ⟨RoundingMode.toString⟩
+
+/-- Produces a hash. -/
+@[extern "roundingMode_hash"]
+protected opaque hash : RoundingMode → UInt64
+
+instance : Hashable RoundingMode := ⟨RoundingMode.hash⟩
+
+end RoundingMode
+
+namespace BlockModelsMode
+
+/-- Produces a string representation. -/
+@[extern "blockModelsMode_toString"]
+protected opaque toString : BlockModelsMode → String
+
+instance : ToString BlockModelsMode := ⟨BlockModelsMode.toString⟩
+
+/-- Produces a hash. -/
+@[extern "blockModelsMode_hash"]
+protected opaque hash : BlockModelsMode → UInt64
+
+instance : Hashable BlockModelsMode := ⟨BlockModelsMode.hash⟩
+
+end BlockModelsMode
+
+namespace LearnedLitType
+
+/-- Produces a string representation. -/
+@[extern "learnedLitType_toString"]
+protected opaque toString : LearnedLitType → String
+
+instance : ToString LearnedLitType := ⟨LearnedLitType.toString⟩
+
+/-- Produces a hash. -/
+@[extern "learnedLitType_hash"]
+protected opaque hash : LearnedLitType → UInt64
+
+instance : Hashable LearnedLitType := ⟨LearnedLitType.hash⟩
+
+end LearnedLitType
+
+namespace ProofComponent
+
+/-- Produces a string representation. -/
+@[extern "proofComponent_toString"]
+protected opaque toString : ProofComponent → String
+
+instance : ToString ProofComponent := ⟨ProofComponent.toString⟩
+
+/-- Produces a hash. -/
+@[extern "proofComponent_hash"]
+protected opaque hash : ProofComponent → UInt64
+
+instance : Hashable ProofComponent := ⟨ProofComponent.hash⟩
+
+end ProofComponent
+
+namespace ProofFormat
+
+/-- Produces a string representation. -/
+@[extern "proofFormat_toString"]
+protected opaque toString : ProofFormat → String
+
+instance : ToString ProofFormat := ⟨ProofFormat.toString⟩
+
+/-- Produces a hash. -/
+@[extern "proofFormat_hash"]
+protected opaque hash : ProofFormat → UInt64
+
+instance : Hashable ProofFormat := ⟨ProofFormat.hash⟩
+
+end ProofFormat
+
+namespace FindSynthTarget
+
+/-- Produces a string representation. -/
+@[extern "findSynthTarget_toString"]
+protected opaque toString : FindSynthTarget → String
+
+instance : ToString FindSynthTarget := ⟨FindSynthTarget.toString⟩
+
+/-- Produces a hash. -/
+@[extern "findSynthTarget_hash"]
+protected opaque hash : FindSynthTarget → UInt64
+
+instance : Hashable FindSynthTarget := ⟨FindSynthTarget.hash⟩
+
+end FindSynthTarget
+
+namespace InputLanguage
+
+/-- Produces a string representation. -/
+@[extern "inputLanguage_toString"]
+protected opaque toString : InputLanguage → String
+
+instance : ToString InputLanguage := ⟨InputLanguage.toString⟩
+
+/-- Produces a hash. -/
+@[extern "inputLanguage_hash"]
+protected opaque hash : InputLanguage → UInt64
+
+instance : Hashable InputLanguage := ⟨InputLanguage.hash⟩
+
+end InputLanguage
+
 private opaque ResultImpl : NonemptyType.{0}
 
 /-- Encapsulation of a three-valued solver result, with explanations. -/

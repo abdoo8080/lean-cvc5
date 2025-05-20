@@ -2311,22 +2311,6 @@ inductive ProofRule where
   | UNKNOWN
 deriving Inhabited, Repr, BEq, DecidableEq
 
-namespace ProofRule
-
-/-- Produces a string representation. -/
-@[extern "proofRule_toString"]
-protected opaque toString : ProofRule → String
-
-instance : ToString ProofRule := ⟨ProofRule.toString⟩
-
-/-- Produces a hash. -/
-@[extern "proofRule_hash"]
-protected opaque hash : ProofRule → UInt64
-
-instance : Hashable ProofRule := ⟨ProofRule.hash⟩
-
-end ProofRule
-
 /--
 \verbatim embed:rst:leading-asterisk
 This enumeration represents the rewrite rules used in a rewrite proof. Some
@@ -3689,10 +3673,6 @@ inductive ProofRewriteRule where
   -/
   | ARITH_EQ_ELIM_INT
   /--
-  Auto-generated from RARE rule arith-plus-flatten 
-  -/
-  | ARITH_PLUS_FLATTEN
-  /--
   Auto-generated from RARE rule arith-to-int-elim 
   -/
   | ARITH_TO_INT_ELIM
@@ -3741,17 +3721,9 @@ inductive ProofRewriteRule where
   -/
   | ARITH_GEQ_ITE_LIFT
   /--
-  Auto-generated from RARE rule arith-gt-ite-lift 
-  -/
-  | ARITH_GT_ITE_LIFT
-  /--
   Auto-generated from RARE rule arith-leq-ite-lift 
   -/
   | ARITH_LEQ_ITE_LIFT
-  /--
-  Auto-generated from RARE rule arith-lt-ite-lift 
-  -/
-  | ARITH_LT_ITE_LIFT
   /--
   Auto-generated from RARE rule arith-min-lt1 
   -/
@@ -3840,14 +3812,6 @@ inductive ProofRewriteRule where
   Auto-generated from RARE rule bool-dual-impl-eq 
   -/
   | BOOL_DUAL_IMPL_EQ
-  /--
-  Auto-generated from RARE rule bool-or-flatten 
-  -/
-  | BOOL_OR_FLATTEN
-  /--
-  Auto-generated from RARE rule bool-and-flatten 
-  -/
-  | BOOL_AND_FLATTEN
   /--
   Auto-generated from RARE rule bool-and-conf 
   -/
@@ -3997,10 +3961,6 @@ inductive ProofRewriteRule where
   -/
   | ITE_ELSE_NEG_LOOKAHEAD
   /--
-  Auto-generated from RARE rule bv-concat-flatten 
-  -/
-  | BV_CONCAT_FLATTEN
-  /--
   Auto-generated from RARE rule bv-concat-extract-merge 
   -/
   | BV_CONCAT_EXTRACT_MERGE
@@ -4140,10 +4100,6 @@ inductive ProofRewriteRule where
   Auto-generated from RARE rule bv-ult-ones 
   -/
   | BV_ULT_ONES
-  /--
-  Auto-generated from RARE rule bv-xor-flatten 
-  -/
-  | BV_XOR_FLATTEN
   /--
   Auto-generated from RARE rule bv-concat-merge-const 
   -/
@@ -5389,19 +5345,3 @@ inductive ProofRewriteRule where
   -/
   | SETS_CARD_EMP
 deriving Inhabited, Repr, BEq, DecidableEq
-
-namespace ProofRewriteRule
-
-/-- Produces a string representation. -/
-@[extern "proofRewriteRule_toString"]
-protected opaque toString : ProofRewriteRule → String
-
-instance : ToString ProofRewriteRule := ⟨ProofRewriteRule.toString⟩
-
-/-- Produces a hash. -/
-@[extern "proofRewriteRule_hash"]
-protected opaque hash : ProofRewriteRule → UInt64
-
-instance : Hashable ProofRewriteRule := ⟨ProofRewriteRule.hash⟩
-
-end ProofRewriteRule

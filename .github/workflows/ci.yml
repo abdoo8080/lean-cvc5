@@ -14,6 +14,9 @@ jobs:
   build:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: ${{ matrix.shell || 'bash -e {0}' }}
     strategy:
       matrix:
         include:
@@ -25,14 +28,26 @@ jobs:
           os: macos-14
         - name: macOS-x86_64
           os: macos-13
+        - name: Windows-x86_64
+          os: windows-latest
+          shell: msys2 {0}
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-    - name: Install Dependencies
+    - name: Install Dependencies (Linux)
       if: runner.os == 'Linux'
       run: |
         sudo apt-get install -y clang-15 lld-15 libc++-15-dev libc++abi-15-dev
         sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang-15 100
+    - name: Install Dependencies (Windows)
+      if: runner.os == 'Windows'
+      uses: msys2/setup-msys2@v2
+      id: setup-msys2
+      with:
+        update: true
+        msystem: CLANG64
+        path-type: inherit
+        install: mingw-w64-clang-x86_64-clang
     - name: Setup Lean Environment
       uses: leanprover/lean-action@v1
       with:
@@ -41,9 +56,7 @@ jobs:
     - name: Download cvc5 Release
       run: lake run init
     - name: Build and Test lean-cvc5
-      uses: leanprover/lean-action@v1
-      with:
-        use-github-cache: false 
+      run: lake test
     - name: Purge Disk Cache # https://github.com/actions/runner-images/issues/2619
       if: github.event_name == 'release' && runner.os == 'macOS'
       run: sudo /usr/sbin/purge
