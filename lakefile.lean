@@ -110,7 +110,7 @@ target ffi.o pkg : FilePath := do
       "-I", (pkg.buildDir / s!"cvc5-{cvc5.target}" / "include").toString,
       "-fPIC"
     ]
-    buildO oFile srcJob flags
+    buildO (compiler := "clang") oFile srcJob flags
 
 def libs := #["cadical", "cvc5", "cvc5parser", "gmp", "gmpxx", "picpoly", "picpolyxx"]
 
