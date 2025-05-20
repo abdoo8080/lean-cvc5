@@ -15,7 +15,7 @@ def Lake.unzip (file : FilePath) (dir : FilePath) : LogIO PUnit := do
 
 def cvc5.url := "https://github.com/abdoo8080/cvc5/releases/download"
 
-def cvc5.version := "e852a84"
+def cvc5.version := "8aeaa19"
 
 def cvc5.os :=
   if System.Platform.isWindows then "Win64"
@@ -62,12 +62,12 @@ script init do
   let v := if args.contains "-v" || args.contains "--verbose" then Verbosity.verbose else v
   let exitCode ← LoggerIO.toBaseIO (minLv := v.minLogLv) <| ws.runLakeT do
     if let some pkg ← findPackage? _package.name then
-      let cvc5Dir := pkg.buildDir / s!"cvc5-{cvc5.target}"
+      let cvc5Dir := pkg.dir / s!"cvc5-{cvc5.target}"
       let zipPath := cvc5Dir.addExtension "zip"
       if ← cvc5Dir.pathExists then
         IO.FS.removeDirAll cvc5Dir
       download s!"{cvc5.url}/{cvc5.version}/cvc5-{cvc5.target}.zip" zipPath
-      unzip zipPath pkg.buildDir
+      unzip zipPath pkg.dir
       IO.FS.removeFile zipPath
       generateEnums (cvc5Dir / "include" / "cvc5") pkg
       return 0
@@ -75,25 +75,6 @@ script init do
       logError "package not found"
       return 1
   return ⟨exitCode.getD 1⟩
-
-def Lake.compileStaticLib'
-  (libFile : FilePath) (oFiles : Array FilePath)
-  (ar : FilePath := "ar") (thin := false)
-: LogIO Unit := do
-  createParentDirs libFile
-  let args := #["csqL"]
-  let args := if thin then args.push "--thin" else args
-  let args := args.push libFile.toString ++ (← mkArgs libFile <| oFiles.map toString)
-  proc {cmd := ar.toString, args}
-
-/-- Build a static library from object file jobs using the Lean toolchain's `ar`. -/
-def Lake.buildStaticLib'
-  (libFile : FilePath) (oFileJobs : Array (Job FilePath)) (thin :=  false)
-: SpawnM (Job FilePath) :=
-  (Job.collectArray oFileJobs).mapM fun oFiles => do
-    buildFileUnlessUpToDate' libFile do
-      compileStaticLib' libFile oFiles (← getLeanAr) thin
-    return libFile
 
 input_file ffi.cpp where
   path := "ffi" / "ffi.cpp"
@@ -106,23 +87,47 @@ target ffi.o pkg : FilePath := do
     let flags := #[
       "-std=c++17",
       "-stdlib=libc++",
+      "-DCVC5_STATIC_DEFINE",
+      "-DLEAN_EXPORTING",
       "-I", (← getLeanIncludeDir).toString,
-      "-I", (pkg.buildDir / s!"cvc5-{cvc5.target}" / "include").toString,
+      "-I", (pkg.dir / s!"cvc5-{cvc5.target}" / "include").toString,
       "-fPIC"
     ]
-    buildO (compiler := "clang") oFile srcJob flags
+    buildO oFile srcJob flags
 
-def libs := #["cadical", "cvc5", "cvc5parser", "gmp", "gmpxx", "picpoly", "picpolyxx"]
+input_file libcadical where
+  path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "cadical"
 
-target libffi pkg : FilePath := do
-  let ffiO ← ffi.o.fetch
-  let libs := libs.map (pure <| pkg.buildDir / s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib ·)
-  let libFile := pkg.staticLibDir / nameToStaticLib "ffi"
-  buildStaticLib' libFile (libs.push ffiO)
+input_file libcvc5 where
+  path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "cvc5"
+
+input_file libcvc5parser where
+  path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "cvc5parser"
+
+input_file libgmp where
+  path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "gmp"
+
+input_file libgmpxx where
+  path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "gmpxx"
+
+input_file libpicpoly where
+  path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "picpoly"
+
+input_file libpicpolyxx where
+  path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "picpolyxx"
+
+input_file libucrt where
+  path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "ucrt"
+
+def libs : Array (Target FilePath) :=
+  if System.Platform.isWindows then
+    #[ffi.o, libcadical, libcvc5, libcvc5parser, libgmp, libgmpxx, libpicpoly, libpicpolyxx, libucrt]
+  else
+    #[ffi.o, libcadical, libcvc5, libcvc5parser, libgmp, libgmpxx, libpicpoly, libpicpolyxx]
 
 @[default_target]
 lean_lib cvc5 where
-  moreLinkObjs := #[libffi]
+  moreLinkObjs := libs
 
 @[test_driver]
 lean_lib cvc5Test where

@@ -54,22 +54,6 @@ inductive UnknownExplanation where
   | UNKNOWN_REASON
 deriving Inhabited, Repr, BEq, DecidableEq
 
-namespace UnknownExplanation
-
-/-- Produces a string representation. -/
-@[extern "unknownExplanation_toString"]
-protected opaque toString : UnknownExplanation → String
-
-instance : ToString UnknownExplanation := ⟨UnknownExplanation.toString⟩
-
-/-- Produces a hash. -/
-@[extern "unknownExplanation_hash"]
-protected opaque hash : UnknownExplanation → UInt64
-
-instance : Hashable UnknownExplanation := ⟨UnknownExplanation.hash⟩
-
-end UnknownExplanation
-
 /--
 Rounding modes for floating-point numbers.
 
@@ -124,22 +108,6 @@ inductive RoundingMode where
   | ROUND_NEAREST_TIES_TO_AWAY
 deriving Inhabited, Repr, BEq, DecidableEq
 
-namespace RoundingMode
-
-/-- Produces a string representation. -/
-@[extern "roundingMode_toString"]
-protected opaque toString : RoundingMode → String
-
-instance : ToString RoundingMode := ⟨RoundingMode.toString⟩
-
-/-- Produces a hash. -/
-@[extern "roundingMode_hash"]
-protected opaque hash : RoundingMode → UInt64
-
-instance : Hashable RoundingMode := ⟨RoundingMode.hash⟩
-
-end RoundingMode
-
 /--
 Mode for blocking models.
 
@@ -156,22 +124,6 @@ inductive BlockModelsMode where
   -/
   | VALUES
 deriving Inhabited, Repr, BEq, DecidableEq
-
-namespace BlockModelsMode
-
-/-- Produces a string representation. -/
-@[extern "blockModelsMode_toString"]
-protected opaque toString : BlockModelsMode → String
-
-instance : ToString BlockModelsMode := ⟨BlockModelsMode.toString⟩
-
-/-- Produces a hash. -/
-@[extern "blockModelsMode_hash"]
-protected opaque hash : BlockModelsMode → UInt64
-
-instance : Hashable BlockModelsMode := ⟨BlockModelsMode.hash⟩
-
-end BlockModelsMode
 
 /--
 Types of learned literals.
@@ -232,22 +184,6 @@ inductive LearnedLitType where
   | UNKNOWN
 deriving Inhabited, Repr, BEq, DecidableEq
 
-namespace LearnedLitType
-
-/-- Produces a string representation. -/
-@[extern "learnedLitType_toString"]
-protected opaque toString : LearnedLitType → String
-
-instance : ToString LearnedLitType := ⟨LearnedLitType.toString⟩
-
-/-- Produces a hash. -/
-@[extern "learnedLitType_hash"]
-protected opaque hash : LearnedLitType → UInt64
-
-instance : Hashable LearnedLitType := ⟨LearnedLitType.hash⟩
-
-end LearnedLitType
-
 /--
 Components to include in a proof.
 -/
@@ -304,22 +240,6 @@ inductive ProofComponent where
   | FULL
 deriving Inhabited, Repr, BEq, DecidableEq
 
-namespace ProofComponent
-
-/-- Produces a string representation. -/
-@[extern "proofComponent_toString"]
-protected opaque toString : ProofComponent → String
-
-instance : ToString ProofComponent := ⟨ProofComponent.toString⟩
-
-/-- Produces a hash. -/
-@[extern "proofComponent_hash"]
-protected opaque hash : ProofComponent → UInt64
-
-instance : Hashable ProofComponent := ⟨ProofComponent.hash⟩
-
-end ProofComponent
-
 /--
 Proof format used for proof printing.
 -/
@@ -349,22 +269,6 @@ inductive ProofFormat where
   -/
   | DEFAULT
 deriving Inhabited, Repr, BEq, DecidableEq
-
-namespace ProofFormat
-
-/-- Produces a string representation. -/
-@[extern "proofFormat_toString"]
-protected opaque toString : ProofFormat → String
-
-instance : ToString ProofFormat := ⟨ProofFormat.toString⟩
-
-/-- Produces a hash. -/
-@[extern "proofFormat_hash"]
-protected opaque hash : ProofFormat → UInt64
-
-instance : Hashable ProofFormat := ⟨ProofFormat.hash⟩
-
-end ProofFormat
 
 /--
 Find synthesis targets, used as an argument to Solver::findSynth. These
@@ -416,22 +320,6 @@ inductive FindSynthTarget where
   | QUERY
 deriving Inhabited, Repr, BEq, DecidableEq
 
-namespace FindSynthTarget
-
-/-- Produces a string representation. -/
-@[extern "findSynthTarget_toString"]
-protected opaque toString : FindSynthTarget → String
-
-instance : ToString FindSynthTarget := ⟨FindSynthTarget.toString⟩
-
-/-- Produces a hash. -/
-@[extern "findSynthTarget_hash"]
-protected opaque hash : FindSynthTarget → UInt64
-
-instance : Hashable FindSynthTarget := ⟨FindSynthTarget.hash⟩
-
-end FindSynthTarget
-
 /--
 The different reasons for returning an "unknown" result.
 -/
@@ -449,19 +337,3 @@ inductive InputLanguage where
   -/
   | UNKNOWN
 deriving Inhabited, Repr, BEq, DecidableEq
-
-namespace InputLanguage
-
-/-- Produces a string representation. -/
-@[extern "inputLanguage_toString"]
-protected opaque toString : InputLanguage → String
-
-instance : ToString InputLanguage := ⟨InputLanguage.toString⟩
-
-/-- Produces a hash. -/
-@[extern "inputLanguage_hash"]
-protected opaque hash : InputLanguage → UInt64
-
-instance : Hashable InputLanguage := ⟨InputLanguage.hash⟩
-
-end InputLanguage

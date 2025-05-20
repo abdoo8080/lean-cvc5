@@ -5839,22 +5839,6 @@ inductive Kind where
   | LAST_KIND
 deriving Inhabited, Repr, BEq, DecidableEq
 
-namespace Kind
-
-/-- Produces a string representation. -/
-@[extern "kind_toString"]
-protected opaque toString : Kind → String
-
-instance : ToString Kind := ⟨Kind.toString⟩
-
-/-- Produces a hash. -/
-@[extern "kind_hash"]
-protected opaque hash : Kind → UInt64
-
-instance : Hashable Kind := ⟨Kind.hash⟩
-
-end Kind
-
 /--
 The kind of a cvc5 Sort.
 
@@ -6067,19 +6051,3 @@ inductive SortKind where
   -/
   | LAST_SORT_KIND
 deriving Inhabited, Repr, BEq, DecidableEq
-
-namespace SortKind
-
-/-- Produces a string representation. -/
-@[extern "sortKind_toString"]
-protected opaque toString : SortKind → String
-
-instance : ToString SortKind := ⟨SortKind.toString⟩
-
-/-- Produces a hash. -/
-@[extern "sortKind_hash"]
-protected opaque hash : SortKind → UInt64
-
-instance : Hashable SortKind := ⟨SortKind.hash⟩
-
-end SortKind
