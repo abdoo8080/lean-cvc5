@@ -66,12 +66,6 @@ def Variant.writeToLean (v : Variant) : IO Unit := do
   writeln h pref ["| ", v.ident]
 
 def Enum.writeToLean (e : Enum) (skipIfDefs := true) : IO Unit := do
-  -- prepare the definition of `listAll`, populated when iterating over the variants
-  let listAll := "listAll"
-  let mut listAllDef := s!"\
-/-- The list of all variants. -/
-def {listAll} : List {e.ident} := [\
-  "
   let wln := writeln h pref
   let wlns := writelns h pref
   -- write the type's doc
@@ -84,10 +78,6 @@ def {listAll} : List {e.ident} := [\
     if skipIfDefs ∧ v.ifdef.isSome then continue
     -- write variant as part of the type's definition
     v.writeToLean h (pref ++ "  ")
-    -- write the part of `listAllDef` dealing with this variant
-    listAllDef := s!"{listAllDef}\n  {e.ident}.{v.ident},"
-  -- finalize `listAll`'s definition
-  listAllDef := s!"{listAllDef}\n]"
   wlns [
     ["deriving Inhabited, Repr, BEq, DecidableEq"],
     [],
@@ -104,8 +94,6 @@ def {listAll} : List {e.ident} := [\
     ["protected opaque hash : ", e.ident, " → UInt64"],
     [],
     ["instance : Hashable ", e.ident, " := ⟨", e.ident, ".hash⟩"],
-    [],
-    [listAllDef],
     [],
     ["end ", e.ident],
   ]

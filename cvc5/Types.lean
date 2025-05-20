@@ -68,20 +68,6 @@ protected opaque hash : UnknownExplanation → UInt64
 
 instance : Hashable UnknownExplanation := ⟨UnknownExplanation.hash⟩
 
-/-- The list of all variants. -/
-def listAll : List UnknownExplanation := [
-  UnknownExplanation.REQUIRES_FULL_CHECK,
-  UnknownExplanation.INCOMPLETE,
-  UnknownExplanation.TIMEOUT,
-  UnknownExplanation.RESOURCEOUT,
-  UnknownExplanation.MEMOUT,
-  UnknownExplanation.INTERRUPTED,
-  UnknownExplanation.UNSUPPORTED,
-  UnknownExplanation.OTHER,
-  UnknownExplanation.REQUIRES_CHECK_AGAIN,
-  UnknownExplanation.UNKNOWN_REASON,
-]
-
 end UnknownExplanation
 
 /--
@@ -152,15 +138,6 @@ protected opaque hash : RoundingMode → UInt64
 
 instance : Hashable RoundingMode := ⟨RoundingMode.hash⟩
 
-/-- The list of all variants. -/
-def listAll : List RoundingMode := [
-  RoundingMode.ROUND_NEAREST_TIES_TO_EVEN,
-  RoundingMode.ROUND_TOWARD_POSITIVE,
-  RoundingMode.ROUND_TOWARD_NEGATIVE,
-  RoundingMode.ROUND_TOWARD_ZERO,
-  RoundingMode.ROUND_NEAREST_TIES_TO_AWAY,
-]
-
 end RoundingMode
 
 /--
@@ -193,12 +170,6 @@ instance : ToString BlockModelsMode := ⟨BlockModelsMode.toString⟩
 protected opaque hash : BlockModelsMode → UInt64
 
 instance : Hashable BlockModelsMode := ⟨BlockModelsMode.hash⟩
-
-/-- The list of all variants. -/
-def listAll : List BlockModelsMode := [
-  BlockModelsMode.LITERALS,
-  BlockModelsMode.VALUES,
-]
 
 end BlockModelsMode
 
@@ -275,17 +246,6 @@ protected opaque hash : LearnedLitType → UInt64
 
 instance : Hashable LearnedLitType := ⟨LearnedLitType.hash⟩
 
-/-- The list of all variants. -/
-def listAll : List LearnedLitType := [
-  LearnedLitType.PREPROCESS_SOLVED,
-  LearnedLitType.PREPROCESS,
-  LearnedLitType.INPUT,
-  LearnedLitType.SOLVABLE,
-  LearnedLitType.CONSTANT_PROP,
-  LearnedLitType.INTERNAL,
-  LearnedLitType.UNKNOWN,
-]
-
 end LearnedLitType
 
 /--
@@ -358,15 +318,6 @@ protected opaque hash : ProofComponent → UInt64
 
 instance : Hashable ProofComponent := ⟨ProofComponent.hash⟩
 
-/-- The list of all variants. -/
-def listAll : List ProofComponent := [
-  ProofComponent.RAW_PREPROCESS,
-  ProofComponent.PREPROCESS,
-  ProofComponent.SAT,
-  ProofComponent.THEORY_LEMMAS,
-  ProofComponent.FULL,
-]
-
 end ProofComponent
 
 /--
@@ -412,16 +363,6 @@ instance : ToString ProofFormat := ⟨ProofFormat.toString⟩
 protected opaque hash : ProofFormat → UInt64
 
 instance : Hashable ProofFormat := ⟨ProofFormat.hash⟩
-
-/-- The list of all variants. -/
-def listAll : List ProofFormat := [
-  ProofFormat.NONE,
-  ProofFormat.DOT,
-  ProofFormat.LFSC,
-  ProofFormat.ALETHE,
-  ProofFormat.CPC,
-  ProofFormat.DEFAULT,
-]
 
 end ProofFormat
 
@@ -489,15 +430,6 @@ protected opaque hash : FindSynthTarget → UInt64
 
 instance : Hashable FindSynthTarget := ⟨FindSynthTarget.hash⟩
 
-/-- The list of all variants. -/
-def listAll : List FindSynthTarget := [
-  FindSynthTarget.ENUM,
-  FindSynthTarget.REWRITE,
-  FindSynthTarget.REWRITE_UNSOUND,
-  FindSynthTarget.REWRITE_INPUT,
-  FindSynthTarget.QUERY,
-]
-
 end FindSynthTarget
 
 /--
@@ -531,12 +463,5 @@ instance : ToString InputLanguage := ⟨InputLanguage.toString⟩
 protected opaque hash : InputLanguage → UInt64
 
 instance : Hashable InputLanguage := ⟨InputLanguage.hash⟩
-
-/-- The list of all variants. -/
-def listAll : List InputLanguage := [
-  InputLanguage.SMT_LIB_2_6,
-  InputLanguage.SYGUS_2_1,
-  InputLanguage.UNKNOWN,
-]
 
 end InputLanguage
