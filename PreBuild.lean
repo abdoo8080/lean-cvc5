@@ -394,7 +394,7 @@ where loop (i : Nat) (acc : Variants) (ifdef? : Option String) : Parser Variants
     return acc
   else
     let variant ← pvariant ifdef?
-    let acc := if variant.ident.startsWith "LAST" then acc else acc.push variant
+    let acc := acc.push variant
     loop i.succ acc ifdef?
 
 partial def penumHead : Parser (Doc × String) := do

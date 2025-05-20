@@ -5833,6 +5833,10 @@ inductive Kind where
     - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
   -/
   | INST_PATTERN_LIST
+  /--
+  Marks the upper-bound of this enumeration. 
+  -/
+  | LAST_KIND
 deriving Inhabited, Repr, BEq, DecidableEq
 
 namespace Kind
@@ -6145,6 +6149,7 @@ def listAll : List Kind := [
   Kind.SKOLEM_ADD_TO_POOL,
   Kind.INST_ATTRIBUTE,
   Kind.INST_PATTERN_LIST,
+  Kind.LAST_KIND,
 ]
 
 end Kind
@@ -6356,6 +6361,10 @@ inductive SortKind where
     - Solver::mkUninterpretedSort(const std::optional<std::string>&) const
   -/
   | UNINTERPRETED_SORT
+  /--
+  Marks the upper-bound of this enumeration. 
+  -/
+  | LAST_SORT_KIND
 deriving Inhabited, Repr, BEq, DecidableEq
 
 namespace SortKind
@@ -6396,6 +6405,7 @@ def listAll : List SortKind := [
   SortKind.TUPLE_SORT,
   SortKind.NULLABLE_SORT,
   SortKind.UNINTERPRETED_SORT,
+  SortKind.LAST_SORT_KIND,
 ]
 
 end SortKind

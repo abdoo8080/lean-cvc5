@@ -9,7 +9,8 @@ namespace cvc5.Test
 
 test![TestApiSortKind, sortKindToString] _tm => do
   let mut skStr := ""
-  for sk in SortKind.listAll do
+  for idx in [SortKind.INTERNAL_SORT_KIND.toCtorIdx : SortKind.LAST_SORT_KIND.toCtorIdx] do
+    let sk := SortKind.ofNat idx
     skStr := toString sk
     if sk = SortKind.INTERNAL_SORT_KIND then
       assertEq skStr "INTERNAL_SORT_KIND"
