@@ -778,7 +778,7 @@ inductive SkolemId where
   Indicates this is not a skolem. 
   -/
   | NONE
-deriving Inhabited, Repr, BEq
+deriving Inhabited, Repr, BEq, DecidableEq
 
 namespace SkolemId
 

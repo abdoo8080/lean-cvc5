@@ -5833,7 +5833,11 @@ inductive Kind where
     - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
   -/
   | INST_PATTERN_LIST
-deriving Inhabited, Repr, BEq
+  /--
+  Marks the upper-bound of this enumeration. 
+  -/
+  | LAST_KIND
+deriving Inhabited, Repr, BEq, DecidableEq
 
 namespace Kind
 
@@ -6058,7 +6062,11 @@ inductive SortKind where
     - Solver::mkUninterpretedSort(const std::optional<std::string>&) const
   -/
   | UNINTERPRETED_SORT
-deriving Inhabited, Repr, BEq
+  /--
+  Marks the upper-bound of this enumeration. 
+  -/
+  | LAST_SORT_KIND
+deriving Inhabited, Repr, BEq, DecidableEq
 
 namespace SortKind
 

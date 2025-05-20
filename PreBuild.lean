@@ -68,14 +68,18 @@ def Variant.writeToLean (v : Variant) : IO Unit := do
 def Enum.writeToLean (e : Enum) (skipIfDefs := true) : IO Unit := do
   let wln := writeln h pref
   let wlns := writelns h pref
+  -- write the type's doc
   e.doc.writeToLean h pref
+  -- type definition
   wln ["inductive ", e.ident, " where"]
+  -- write each variant (and its doc), populate `listAll`'s definition
   for v in e.variants do
-    if skipIfDefs ∧ v.ifdef.isSome then
-      continue
+    -- ignore variants inside `#ifdef`?
+    if skipIfDefs ∧ v.ifdef.isSome then continue
+    -- write variant as part of the type's definition
     v.writeToLean h (pref ++ "  ")
   wlns [
-    ["deriving Inhabited, Repr, BEq"],
+    ["deriving Inhabited, Repr, BEq, DecidableEq"],
     [],
     ["namespace ", e.ident],
     [],
@@ -378,7 +382,7 @@ where loop (i : Nat) (acc : Variants) (ifdef? : Option String) : Parser Variants
     return acc
   else
     let variant ← pvariant ifdef?
-    let acc := if variant.ident.startsWith "LAST" then acc else acc.push variant
+    let acc := acc.push variant
     loop i.succ acc ifdef?
 
 partial def penumHead : Parser (Doc × String) := do

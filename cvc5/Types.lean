@@ -52,7 +52,7 @@ inductive UnknownExplanation where
   No specific reason given. 
   -/
   | UNKNOWN_REASON
-deriving Inhabited, Repr, BEq
+deriving Inhabited, Repr, BEq, DecidableEq
 
 namespace UnknownExplanation
 
@@ -122,7 +122,7 @@ inductive RoundingMode where
   will be selected.
   -/
   | ROUND_NEAREST_TIES_TO_AWAY
-deriving Inhabited, Repr, BEq
+deriving Inhabited, Repr, BEq, DecidableEq
 
 namespace RoundingMode
 
@@ -155,7 +155,7 @@ inductive BlockModelsMode where
   Block models based on the concrete model values for the free variables. 
   -/
   | VALUES
-deriving Inhabited, Repr, BEq
+deriving Inhabited, Repr, BEq, DecidableEq
 
 namespace BlockModelsMode
 
@@ -230,7 +230,7 @@ inductive LearnedLitType where
   Special case for when produce-learned-literals is not set.  
   -/
   | UNKNOWN
-deriving Inhabited, Repr, BEq
+deriving Inhabited, Repr, BEq, DecidableEq
 
 namespace LearnedLitType
 
@@ -302,7 +302,7 @@ inductive ProofComponent where
   Only valid immediately after an unsat response.
   -/
   | FULL
-deriving Inhabited, Repr, BEq
+deriving Inhabited, Repr, BEq, DecidableEq
 
 namespace ProofComponent
 
@@ -348,7 +348,7 @@ inductive ProofFormat where
   Use the proof format mode set in the solver options. 
   -/
   | DEFAULT
-deriving Inhabited, Repr, BEq
+deriving Inhabited, Repr, BEq, DecidableEq
 
 namespace ProofFormat
 
@@ -414,7 +414,7 @@ inductive FindSynthTarget where
   filtered by the option --sygus-query-gen-filter-solved.
   -/
   | QUERY
-deriving Inhabited, Repr, BEq
+deriving Inhabited, Repr, BEq, DecidableEq
 
 namespace FindSynthTarget
 
@@ -448,7 +448,7 @@ inductive InputLanguage where
   No language given. 
   -/
   | UNKNOWN
-deriving Inhabited, Repr, BEq
+deriving Inhabited, Repr, BEq, DecidableEq
 
 namespace InputLanguage
 

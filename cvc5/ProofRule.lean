@@ -2309,7 +2309,7 @@ inductive ProofRule where
   -/
   | ALETHE_RULE
   | UNKNOWN
-deriving Inhabited, Repr, BEq
+deriving Inhabited, Repr, BEq, DecidableEq
 
 namespace ProofRule
 
@@ -5388,7 +5388,7 @@ inductive ProofRewriteRule where
   Auto-generated from RARE rule sets-card-emp 
   -/
   | SETS_CARD_EMP
-deriving Inhabited, Repr, BEq
+deriving Inhabited, Repr, BEq, DecidableEq
 
 namespace ProofRewriteRule
 
