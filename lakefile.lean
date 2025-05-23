@@ -74,18 +74,19 @@ input_file ffi.cpp where
   text := true
 
 target ffi.o pkg : FilePath := do
-  let srcJob ← ffi.cpp.fetch
-  let oFile := pkg.buildDir / "ffi" / "ffi.o"
-  let flags := #[
-    "-std=c++17",
-    "-stdlib=libc++",
-    "-DCVC5_STATIC_DEFINE",
-    "-DLEAN_EXPORTING",
-    "-I", (← getLeanIncludeDir).toString,
-    "-I", (pkg.dir / s!"cvc5-{cvc5.target}" / "include").toString,
-    "-fPIC"
-  ]
-  buildO oFile srcJob flags
+  Job.nop.bindM $ fun _ =>  pkg.afterBuildCacheAsync do
+    let srcJob ← ffi.cpp.fetch
+    let oFile := pkg.buildDir / "ffi" / "ffi.o"
+    let flags := #[
+      "-std=c++17",
+      "-stdlib=libc++",
+      "-DCVC5_STATIC_DEFINE",
+      "-DLEAN_EXPORTING",
+      "-I", (← getLeanIncludeDir).toString,
+      "-I", (pkg.dir / s!"cvc5-{cvc5.target}" / "include").toString,
+      "-fPIC"
+    ]
+    buildO oFile srcJob flags
 
 input_file libcadical where
   path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "cadical"
