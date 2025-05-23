@@ -3,7 +3,6 @@ import Lake
 open Lake DSL System
 
 package cvc5 where
-  precompileModules := true
   preferReleaseBuild := true
 
 def Lake.unzip (file : FilePath) (dir : FilePath) : LogIO PUnit := do
@@ -81,19 +80,18 @@ input_file ffi.cpp where
   text := true
 
 target ffi.o pkg : FilePath := do
-  pkg.afterBuildCacheAsync do
-    let srcJob ← ffi.cpp.fetch
-    let oFile := pkg.buildDir / "ffi" / "ffi.o"
-    let flags := #[
-      "-std=c++17",
-      "-stdlib=libc++",
-      "-DCVC5_STATIC_DEFINE",
-      "-DLEAN_EXPORTING",
-      "-I", (← getLeanIncludeDir).toString,
-      "-I", (pkg.dir / s!"cvc5-{cvc5.target}" / "include").toString,
-      "-fPIC"
-    ]
-    buildO oFile srcJob flags
+  let srcJob ← ffi.cpp.fetch
+  let oFile := pkg.buildDir / "ffi" / "ffi.o"
+  let flags := #[
+    "-std=c++17",
+    "-stdlib=libc++",
+    "-DCVC5_STATIC_DEFINE",
+    "-DLEAN_EXPORTING",
+    "-I", (← getLeanIncludeDir).toString,
+    "-I", (pkg.dir / s!"cvc5-{cvc5.target}" / "include").toString,
+    "-fPIC"
+  ]
+  buildO oFile srcJob flags
 
 input_file libcadical where
   path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "cadical"
@@ -127,6 +125,7 @@ def libs : Array (Target FilePath) :=
 
 @[default_target]
 lean_lib cvc5 where
+  precompileModules := true
   moreLinkObjs := libs
 
 @[test_driver]
