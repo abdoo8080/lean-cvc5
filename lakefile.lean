@@ -12,17 +12,23 @@ def Lake.unzip (file : FilePath) (dir : FilePath) : LogIO PUnit := do
     args := #["-d", dir.toString, file.toString]
   }
 
+def uncompress (file : FilePath) (dir : FilePath) : LogIO PUnit := do
+  if Platform.isWindows || Platform.isOSX then
+    untar file dir
+  else
+    unzip file dir
+
 def cvc5.url := "https://github.com/abdoo8080/cvc5/releases/download"
 
 def cvc5.version := "8aeaa19"
 
 def cvc5.os :=
-  if System.Platform.isWindows then "Win64"
-  else if System.Platform.isOSX then "macOS"
+  if Platform.isWindows then "Win64"
+  else if Platform.isOSX then "macOS"
   else "Linux"
 
 def cvc5.arch :=
-  if System.Platform.target.startsWith "x86_64" then "x86_64"
+  if Platform.target.startsWith "x86_64" then "x86_64"
   else "arm64"
 
 def cvc5.target := s!"{os}-{arch}-static"
@@ -48,32 +54,20 @@ def generateEnums (cppDir : FilePath) (pkg : NPackage _package.name) : IO Unit :
 ```\
     "
 
-/-- Initialization script.
+/-- Post update hook.
 
 - download cvc5 release files;
 - generate/update lean-enumerations.
 -/
-script init do
-  let ws ← getWorkspace
-  let args := ws.lakeArgs?.getD #[]
-  let v := Verbosity.normal
-  let v := if args.contains "-q" || args.contains "--quiet" then Verbosity.quiet else v
-  let v := if args.contains "-v" || args.contains "--verbose" then Verbosity.verbose else v
-  let exitCode ← LoggerIO.toBaseIO (minLv := v.minLogLv) <| ws.runLakeT do
-    if let some pkg ← findPackage? _package.name then
-      let cvc5Dir := pkg.dir / s!"cvc5-{cvc5.target}"
-      let zipPath := cvc5Dir.addExtension "zip"
-      if ← cvc5Dir.pathExists then
-        IO.FS.removeDirAll cvc5Dir
-      download s!"{cvc5.url}/{cvc5.version}/cvc5-{cvc5.target}.zip" zipPath
-      unzip zipPath pkg.dir
-      IO.FS.removeFile zipPath
-      generateEnums (cvc5Dir / "include" / "cvc5") pkg
-      return 0
-    else
-      logError "package not found"
-      return 1
-  return ⟨exitCode.getD 1⟩
+post_update pkg do
+  let cvc5Dir := pkg.dir / s!"cvc5-{cvc5.target}"
+  let zipPath := cvc5Dir.addExtension "zip"
+  if ← cvc5Dir.pathExists then
+    IO.FS.removeDirAll cvc5Dir
+  download s!"{cvc5.url}/{cvc5.version}/cvc5-{cvc5.target}.zip" zipPath
+  uncompress zipPath pkg.dir
+  IO.FS.removeFile zipPath
+  generateEnums (cvc5Dir / "include" / "cvc5") pkg
 
 input_file ffi.cpp where
   path := "ffi" / "ffi.cpp"
@@ -118,7 +112,7 @@ input_file libucrt where
   path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "ucrt"
 
 def libs : Array (Target FilePath) :=
-  if System.Platform.isWindows then
+  if Platform.isWindows then
     #[ffi.o, libcadical, libcvc5, libcvc5parser, libgmp, libgmpxx, libpicpoly, libpicpolyxx, libucrt]
   else
     #[ffi.o, libcadical, libcvc5, libcvc5parser, libgmp, libgmpxx, libpicpoly, libpicpolyxx]
