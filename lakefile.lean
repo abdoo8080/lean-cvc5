@@ -54,20 +54,28 @@ def generateEnums (cppDir : FilePath) (pkg : NPackage _package.name) : IO Unit :
 ```\
     "
 
-/-- Post update hook.
-
+/--
 - download cvc5 release files;
 - generate/update lean-enumerations.
 -/
-post_update pkg do
+target cvc5Enums pkg : Unit := do
+  let traceFile := pkg.buildDir / "cvc5Enums.trace"
   let cvc5Dir := pkg.dir / s!"cvc5-{cvc5.target}"
   let zipPath := cvc5Dir.addExtension "zip"
-  if ← cvc5Dir.pathExists then
-    IO.FS.removeDirAll cvc5Dir
-  download s!"{cvc5.url}/{cvc5.version}/cvc5-{cvc5.target}.zip" zipPath
-  uncompress zipPath pkg.dir
-  IO.FS.removeFile zipPath
-  generateEnums (cvc5Dir / "include" / "cvc5") pkg
+  let url := s!"{cvc5.url}/{cvc5.version}/cvc5-{cvc5.target}.zip"
+  addPureTrace #["url"] url
+  -- NOTE: it is intentional that we RUN the job in the "computing build
+  -- jobs" phase, since otherwise we run into a potential race condition due
+  -- to the expected `input_file`s not actually existing.
+  let _ ← buildUnlessUpToDate traceFile (← getTrace) traceFile do
+    download url zipPath
+    if ← cvc5Dir.pathExists then
+      IO.FS.removeDirAll cvc5Dir
+    uncompress zipPath pkg.dir
+    IO.FS.removeFile zipPath
+    let includeDir := (cvc5Dir / "include" / "cvc5")
+    generateEnums includeDir pkg
+  return Job.nil
 
 input_file ffi.cpp where
   path := "ffi" / "ffi.cpp"
@@ -121,6 +129,7 @@ def libs : Array (Target FilePath) :=
 @[default_target]
 lean_lib cvc5 where
   precompileModules := true
+  needs := #[cvc5Enums]
   moreLinkObjs := libs
 
 @[test_driver]
