@@ -94,7 +94,8 @@ target ffi.o pkg : FilePath := do
       "-I", (pkg.dir / s!"cvc5-{cvc5.target}" / "include").toString,
       "-fPIC"
     ]
-    buildO oFile srcJob flags
+    let compiler := if Platform.isWindows then "cc" else "clang"
+    buildO (compiler := compiler) oFile srcJob flags
 
 input_file libcadical where
   path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "cadical"
