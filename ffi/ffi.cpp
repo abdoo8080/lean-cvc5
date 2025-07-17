@@ -1380,14 +1380,19 @@ LEAN_EXPORT lean_obj_res termManager_mkTermOfOp(lean_obj_arg tm,
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
-// This function is not part of the *public* `lean-cvc5` API: it produces a
-// different (fresh) term every time it's called which is really bad for purity.
-LEAN_EXPORT lean_obj_res termManager_mkConst(lean_obj_arg tm,
-                                             lean_obj_arg sort,
-                                             lean_obj_arg symbol)
+extern "C" lean_obj_res termManager_mkConst(lean_obj_arg tm,
+                                            lean_obj_arg sort,
+                                            lean_obj_arg symbol)
 {
   return term_box(new Term(
       mut_tm_unbox(tm)->mkConst(*sort_unbox(sort), lean_string_cstr(symbol))));
+}
+extern "C" lean_obj_res termManager_mkVar(lean_obj_arg tm,
+                                            lean_obj_arg sort,
+                                            lean_obj_arg symbol)
+{
+  return term_box(new Term(
+      mut_tm_unbox(tm)->mkVar(*sort_unbox(sort), lean_string_cstr(symbol))));
 }
 
 LEAN_EXPORT lean_obj_res termManager_mkOpOfIndices(lean_obj_arg tm,
