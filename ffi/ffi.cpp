@@ -1525,6 +1525,25 @@ LEAN_EXPORT lean_obj_res solver_declareFun(lean_obj_arg inst,
   CVC5_LEAN_API_TRY_CATCH_SOLVER_END(inst, solver);
 }
 
+LEAN_EXPORT lean_obj_res Solver_declareFun(lean_obj_arg solver,
+                                           lean_obj_arg symbol,
+                                           lean_obj_arg sorts,
+                                           lean_obj_arg sort,
+                                           uint8_t fresh)
+{
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  std::vector<Sort> ss;
+  for (size_t i = 0, n = lean_array_size(sorts); i < n; ++i)
+  {
+    ss.push_back(*sort_unbox(
+        lean_array_get(sort_box(new Sort()), sorts, lean_usize_to_nat(i))));
+  }
+  Term f = solver_unbox(solver)->declareFun(
+      lean_string_cstr(symbol), ss, *sort_unbox(sort), bool_unbox(fresh));
+  return except_ok(lean_box(0), term_box(new Term(f)));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
+}
+
 LEAN_EXPORT lean_obj_res solver_assertFormula(lean_obj_arg inst,
                                               lean_object* term,
                                               lean_obj_arg solver)

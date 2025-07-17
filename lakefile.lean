@@ -125,4 +125,4 @@ lean_lib cvc5 where
 
 @[test_driver]
 lean_lib cvc5Test where
-  globs := #[Glob.submodules `cvc5Test]
+  globs := #[Glob.submodules `cvcTests]
