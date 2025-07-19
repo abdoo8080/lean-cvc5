@@ -349,7 +349,7 @@ scoped syntax (name := externdef)
   withPosition(
     externKw'
     ("in " str)?
-    ident declSig (defsItemTail')?
+    ident ("as " str)? declSig (defsItemTail')?
   )
 : command
 
@@ -357,7 +357,7 @@ scoped syntax (name := externdef)
 unsafe def externdefImpl : CommandElab
 | `(command|
   $mods:declModifiers
-  $externKw' $[in $path:str]? $ident $sig $[$tail]?
+  $externKw' $[in $path:str]? $ident $[as $altIdent?:str]? $sig $[$tail]?
 ) => do
   let defMod ←
     match externKw' with
@@ -370,6 +370,7 @@ unsafe def externdefImpl : CommandElab
   let stx ← `(
     external! $[in $path]?
       $mods:declModifiers
+      $[ @[force $altIdent?] ]?
       def $[$defMod]? $ident $sig $[$tail:defsItemTail']?
   )
   Command.elabCommand stx

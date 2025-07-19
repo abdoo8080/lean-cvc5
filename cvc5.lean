@@ -47,7 +47,7 @@ namespace Error
 
 def toIO : Error → IO.Error
   | .missingValue => IO.Error.userError "missing value"
-  | .error msg => IO.Error.userError s!"[error] {msg}"
+  | .error msg => IO.Error.userError s!"{msg}"
   | .recoverable msg => IO.Error.userError s!"[recoverable] {msg}"
   | .unsupported msg => IO.Error.userError s!"[unsupported] {msg}"
   | .option msg => IO.Error.userError s!"[option] {msg}"
@@ -427,7 +427,83 @@ private def managerDo (f : TermManager → Env ω α) : Env ω α :=
 private def managerDo? (f : TermManager → Except Error α) : Env ω α :=
   managerDo (liftM ∘ f)
 
+
+
+/-!
+helpers for C++ to produce `Env ω _` values.
+-/
+
+@[export ffi_env_pure]
+private def ffi_env_pure (a : α) : Env ω α :=
+  pure a
+
+@[export ffi_env_pure_string]
+private def ffi_env_pure_string (a : String) : Env ω String :=
+  pure a
+
+@[export ffi_env_throw]
+private def ffi_env_throw (cppError : String) : Env ω α :=
+  throw <| .error s!"[ffi] {cppError}"
+
 end Env
+
+
+
+private opaque SolverImpl : NonemptyType.{0}
+
+/-- A cvc5 solver. -/
+private def Solver.Raw : Type := SolverImpl.type
+
+namespace Solver.Raw
+
+instance : Nonempty Solver.Raw := SolverImpl.property
+
+end Solver.Raw
+
+structure Solver (ω : Type) where
+private mk' ::
+  /-- Underlying raw solver. -/
+  private toRaw : Solver.Raw
+  /-- Parser placeholder. -/
+  private parser : IO.Ref (Option Unit)
+
+namespace Solver
+
+/-- Constructor.
+
+Constructs solver instance from a given term manager instance.
+
+- `tm`: The associated term manager.
+-/
+@[extern "solver_new"]
+private opaque Raw.new : TermManager → Solver.Raw
+
+private def ofManager (tm : TermManager) : BaseIO (Solver ω) := do
+  let parser ← IO.mkRef none
+  return {toRaw := Raw.new tm, parser}
+
+def new : Env ω (Solver ω) := Env.managerDo (liftM ∘ ofManager)
+
+section variable (solver : Solver ω)
+
+private def rawSolverDo (f : Solver.Raw → Env ω α) : Env ω α :=
+  f solver.toRaw
+
+private def rawSolverDo? (f : Solver.Raw → Except Error α) : Env ω α :=
+  solver.rawSolverDo (liftM ∘ f)
+
+end
+
+
+
+/-!
+helpers for C++ to work with `Solver ω` values.
+-/
+
+@[export ffi_solver_to_raw]
+private def ffi_solver_to_raw : Solver ω → Solver.Raw := toRaw
+
+end Solver
 
 
 private opaque SrtImpl : NonemptyType.{0}
@@ -617,55 +693,6 @@ extern_def null : Unit → Proof ω
 instance : Inhabited (Proof ω) := ⟨null ()⟩
 
 end Proof
-
-
-
-private opaque SolverImpl : NonemptyType.{0}
-
-/-- A cvc5 solver. -/
-private def Solver.Raw : Type := SolverImpl.type
-
-namespace Solver.Raw
-
-instance : Nonempty Solver.Raw := SolverImpl.property
-
-end Solver.Raw
-
-structure Solver (ω : Type) where
-private mk' ::
-  /-- Underlying raw solver. -/
-  private toRaw : Solver.Raw
-  /-- Parser placeholder. -/
-  private parser : IO.Ref (Option Unit)
-
-namespace Solver
-
-/-- Constructor.
-
-Constructs solver instance from a given term manager instance.
-
-- `tm`: The associated term manager.
--/
-@[extern "solver_new"]
-private opaque Raw.new : TermManager → Solver.Raw
-
-private def ofManager (tm : TermManager) : BaseIO (Solver ω) := do
-  let parser ← IO.mkRef none
-  return {toRaw := Raw.new tm, parser}
-
-def new : Env ω (Solver ω) := Env.managerDo (liftM ∘ ofManager)
-
-section variable (solver : Solver ω)
-
-private def rawSolverDo (f : Solver.Raw → Env ω α) : Env ω α :=
-  f solver.toRaw
-
-private def rawSolverDo? (f : Solver.Raw → Except Error α) : Env ω α :=
-  solver.rawSolverDo (liftM ∘ f)
-
-end
-
-end Solver
 
 
 
@@ -879,7 +906,7 @@ See `cvc5.Kind` for a description of the parameters.
 - `args` The arguments (indices) of the operator.
 
 If `args` is empty, the `Op` simply wraps the `cvc5.Kind`. The `Kind` can be used in
-`Solver.mkTerm` directly without creating an `Op` first.
+`Term.mk` directly without creating an `Op` first.
 -/
 extern_def!? mkOpOfIndices
 : TermManager → (kind : Kind) → (args : Array Nat := #[]) → Except Error (Op ω)
@@ -907,8 +934,17 @@ extern_def!? mkOpOfString : TermManager → (kind : Kind) → (arg : String) →
 - `kind` The kind of the term.
 - `children` The children of the term.
 -/
-extern_def!? mkTerm
-: TermManager → (kind : Kind) → (children : Array (Term ω) := #[]) → Except Error (Term ω)
+extern_def!? mkTerm (tm : TermManager) (kind : Kind) (children : Array (Term ω) := #[])
+: Except Error (Term ω)
+
+/-- Create n-ary term of given kind.
+
+- `kind` The kind of the term.
+- `children` The children of the term.
+-/
+extern_def!? mkTermInto (tm : TermManager)
+  (term : Term ω) (kind : Kind) (children : Array (Term ω) := #[])
+: Except Error (Term ω)
 
 /-- Create n-ary term of given kind from a given operator.
 
@@ -1191,8 +1227,31 @@ instance : GetElem (Op ω) Nat (Term ω) fun op i => i < op.getNumIndices where
 end Op
 
 
-
 namespace Term
+
+/-- Create n-ary term of given kind.
+
+- `kind` The kind of the term.
+- `children` The children of the term.
+-/
+private extern_def in "termManager" mkTerm (tm : TermManager) :
+  (kind : Kind) → (children : Array (Term ω) := #[]) → Except Error (Term ω)
+with
+  mk (kind : Kind) (children : Array (Term ω) := #[]) : Env ω (Term ω) :=
+    Env.managerDo? fun tm => mkTerm tm kind children
+
+
+/-- Create n-ary term of given kind.
+
+- `term` The head of the argument list.
+- `kind` The kind of the term.
+- `tail` The tail of the argument list.
+-/
+private extern_def in "termManager" mkTermInto (tm : TermManager)
+  (term : Term ω) (kind : Kind) (tail : Array (Term ω) := #[]) : Except Error (Term ω)
+with
+  mkInto (term : Term ω) (kind : Kind) (tail : Array (Term ω) := #[]) : Env ω (Term ω) :=
+    Env.managerDo? fun tm => mkTermInto tm term kind tail
 
 /-- Get the kind of this term. -/
 extern_def getKind : Term ω → Kind
@@ -1368,14 +1427,34 @@ end Proof
 
 namespace Solver variable (solver : Solver ω)
 
-@[extern "Solver_declareFun"]
-private opaque Raw.declareFun : (solver : Raw)
-→ (symbol : String) → (sorts : Array (Srt ω)) → (sort : Srt ω) → (fresh : Bool)
-→ Except Error (Term ω)
+@[extern "Solver_getVersion"]
+opaque getVersion (solver : Solver ω) : Env ω String
 
-def declareFun (symbol : String)
+-- @[extern "Solver_setOption"]
+-- private opaque Raw.setOption : (solver : Raw) → (option value : String) → Except Error Unit
+
+-- def setOption (option value : String) : Env ω Unit :=
+--   solver.toRaw.setOption option value
+
+-- @[extern "Solver_resetAssertions"]
+-- private opaque Raw.resetAssertions : (solver : Raw) → Except Error Unit
+
+-- def resetAssertions : Env ω Unit :=
+--   solver.toRaw.resetAssertions
+
+-- @[extern "Solver_declareFun"]
+-- private opaque Raw.declareFun : (solver : Raw)
+-- → (symbol : String) → (sorts : Array (Srt ω)) → (sort : Srt ω) → (fresh : Bool)
+-- → Except Error (Term ω)
+
+-- def declareFun (symbol : String)
+--   (sorts : Array (Srt ω)) (sort : Srt ω) (fresh : Bool := false)
+-- : Env ω (Term ω) :=
+--   solver.toRaw.declareFun symbol sorts sort fresh
+
+@[extern "Solver_declareFun"]
+opaque declareFun (solver : Solver ω) (symbol : String)
   (sorts : Array (Srt ω)) (sort : Srt ω) (fresh : Bool := false)
-: Env ω (Term ω) :=
-  solver.toRaw.declareFun symbol sorts sort fresh
+: Env ω (Term ω)
 
 end Solver
