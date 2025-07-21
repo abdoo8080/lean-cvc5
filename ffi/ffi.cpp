@@ -1411,9 +1411,9 @@ LEAN_EXPORT lean_obj_res termManager_mkRealFromString(lean_obj_arg tm,
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
-LEAN_EXPORT lean_obj_res termManager_mkTerm(lean_obj_arg tm,
-                                            uint16_t kind,
-                                            lean_obj_arg children)
+LEAN_EXPORT lean_obj_res termManager_mkTerm(uint16_t kind,
+                                            lean_obj_arg children,
+                                            lean_obj_arg tm)
 {
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
   Kind k = static_cast<Kind>(static_cast<int32_t>(kind) - 2);
@@ -1428,10 +1428,10 @@ LEAN_EXPORT lean_obj_res termManager_mkTerm(lean_obj_arg tm,
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
-LEAN_EXPORT lean_obj_res termManager_mkTermInto(lean_obj_arg tm,
+LEAN_EXPORT lean_obj_res termManager_mkTermInto(uint16_t kind,
                                                 lean_obj_arg children_head,
-                                                uint16_t kind,
-                                                lean_obj_arg children_tail)
+                                                lean_obj_arg children_tail,
+                                                lean_obj_arg tm)
 {
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
   Kind k = static_cast<Kind>(static_cast<int32_t>(kind) - 2);

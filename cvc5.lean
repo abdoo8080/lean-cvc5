@@ -421,11 +421,14 @@ instance : MonadLift IO (Env ω) where
 -- sanity
 example : MonadLiftT BaseIO (Env ω) := inferInstance
 
-private def managerDo (f : TermManager → Env ω α) : Env ω α :=
+private def managerDoM (f : TermManager → Env ω α) : Env ω α :=
   ofRaw fun tm => (f tm |>.toRaw tm)
 
 private def managerDo? (f : TermManager → Except Error α) : Env ω α :=
-  managerDo (liftM ∘ f)
+  managerDoM (liftM ∘ f)
+
+private def managerDo (f : TermManager → α) : Env ω α :=
+  managerDoM (pure ∘ f)
 
 
 
@@ -482,7 +485,7 @@ private def ofManager (tm : TermManager) : BaseIO (Solver ω) := do
   let parser ← IO.mkRef none
   return {toRaw := Raw.new tm, parser}
 
-def new : Env ω (Solver ω) := Env.managerDo (liftM ∘ ofManager)
+def new : Env ω (Solver ω) := Env.managerDoM (liftM ∘ ofManager)
 
 section variable (solver : Solver ω)
 
@@ -929,22 +932,22 @@ See `cvc5.Kind` for a description of the parameters.
 -/
 extern_def!? mkOpOfString : TermManager → (kind : Kind) → (arg : String) → Except Error (Op ω)
 
-/-- Create n-ary term of given kind.
+-- /-- Create n-ary term of given kind.
 
-- `kind` The kind of the term.
-- `children` The children of the term.
--/
-extern_def!? mkTerm (tm : TermManager) (kind : Kind) (children : Array (Term ω) := #[])
-: Except Error (Term ω)
+-- - `kind` The kind of the term.
+-- - `children` The children of the term.
+-- -/
+-- extern_def!? mkTerm (tm : TermManager) (kind : Kind) (children : Array (Term ω) := #[])
+-- : Except Error (Term ω)
 
-/-- Create n-ary term of given kind.
+-- /-- Create n-ary term of given kind.
 
-- `kind` The kind of the term.
-- `children` The children of the term.
--/
-extern_def!? mkTermInto (tm : TermManager)
-  (term : Term ω) (kind : Kind) (children : Array (Term ω) := #[])
-: Except Error (Term ω)
+-- - `kind` The kind of the term.
+-- - `children` The children of the term.
+-- -/
+-- extern_def!? mkTermInto (tm : TermManager)
+--   (term : Term ω) (kind : Kind) (children : Array (Term ω) := #[])
+-- : Except Error (Term ω)
 
 /-- Create n-ary term of given kind from a given operator.
 
@@ -980,22 +983,22 @@ extern_def mkVar : TermManager → Srt ω → String → Term ω
 end TermManager
 
 @[inherit_doc TermManager.getBooleanSort]
-def getBooleanSort : Env ω (Srt ω) := Env.managerDo (return TermManager.getBooleanSort ·)
+def getBooleanSort : Env ω (Srt ω) := Env.managerDoM (return TermManager.getBooleanSort ·)
 
 @[inherit_doc TermManager.getIntegerSort]
-def getIntegerSort : Env ω (Srt ω) := Env.managerDo (return TermManager.getIntegerSort ·)
+def getIntegerSort : Env ω (Srt ω) := Env.managerDoM (return TermManager.getIntegerSort ·)
 
 @[inherit_doc TermManager.getRealSort]
-def getRealSort : Env ω (Srt ω) := Env.managerDo (return TermManager.getRealSort ·)
+def getRealSort : Env ω (Srt ω) := Env.managerDoM (return TermManager.getRealSort ·)
 
 @[inherit_doc TermManager.getRegExpSort]
-def getRegExpSort : Env ω (Srt ω) := Env.managerDo (return TermManager.getRegExpSort ·)
+def getRegExpSort : Env ω (Srt ω) := Env.managerDoM (return TermManager.getRegExpSort ·)
 
 @[inherit_doc TermManager.getRoundingModeSort]
-def getRoundingModeSort : Env ω (Srt ω) := Env.managerDo (return TermManager.getRoundingModeSort ·)
+def getRoundingModeSort : Env ω (Srt ω) := Env.managerDoM (return TermManager.getRoundingModeSort ·)
 
 @[inherit_doc TermManager.getStringSort]
-def getStringSort : Env ω (Srt ω) := Env.managerDo (return TermManager.getStringSort ·)
+def getStringSort : Env ω (Srt ω) := Env.managerDoM (return TermManager.getStringSort ·)
 
 
 
@@ -1234,24 +1237,17 @@ namespace Term
 - `kind` The kind of the term.
 - `children` The children of the term.
 -/
-private extern_def in "termManager" mkTerm (tm : TermManager) :
-  (kind : Kind) → (children : Array (Term ω) := #[]) → Except Error (Term ω)
-with
-  mk (kind : Kind) (children : Array (Term ω) := #[]) : Env ω (Term ω) :=
-    Env.managerDo? fun tm => mkTerm tm kind children
-
+extern_env_def? [ω] in "termManager" mk as "mkTerm"
+: (kind : Kind) → (children : Array (Term ω) := #[]) → Term ω
 
 /-- Create n-ary term of given kind.
 
-- `term` The head of the argument list.
 - `kind` The kind of the term.
-- `tail` The tail of the argument list.
+- `term` The head of the children list.
+- `tail` The tail of the children list.
 -/
-private extern_def in "termManager" mkTermInto (tm : TermManager)
-  (term : Term ω) (kind : Kind) (tail : Array (Term ω) := #[]) : Except Error (Term ω)
-with
-  mkInto (term : Term ω) (kind : Kind) (tail : Array (Term ω) := #[]) : Env ω (Term ω) :=
-    Env.managerDo? fun tm => mkTermInto tm term kind tail
+extern_env_def? [ω] in "termManager" mkInto as "mkTermInto"
+: (kind : Kind) → (term : Term ω) → (children : Array (Term ω) := #[]) → Term ω
 
 /-- Get the kind of this term. -/
 extern_def getKind : Term ω → Kind

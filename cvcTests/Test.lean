@@ -48,7 +48,8 @@ conj = `(and b1 b2 b3 b4)`
   println! "b3 = `{b3}`"
   let b4 ← solver.declareFun "b4" #[] bool
   println! "b4 = `{b4}`"
-  let conj ← b1.mkInto .AND #[b2, b3, b4]
+  -- let conj ← b1.mkInto .AND #[b2, b3, b4]
+  let conj ← Cvc5.Term.mk .AND #[b1, b2, b3, b4]
   println! "conj = `{conj}`"
 
 /-- error: expecting a Boolean subexpression -/
