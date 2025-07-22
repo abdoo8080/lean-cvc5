@@ -31,6 +31,7 @@ inductive Error where
   | recoverable (msg : String)
   | unsupported (msg : String)
   | option (msg : String)
+  | parsing (msg : String)
 deriving Repr
 
 namespace Error
@@ -41,6 +42,7 @@ def toIO : Error → IO.Error
   | .recoverable msg => IO.Error.userError s!"[recoverable] {msg}"
   | .unsupported msg => IO.Error.userError s!"[unsupported] {msg}"
   | .option msg => IO.Error.userError s!"[option] {msg}"
+  | .parsing msg => IO.Error.userError s!"[parsing] {msg}"
 
 /-- String representation of an error. -/
 protected def toString : Error → String :=
@@ -64,6 +66,7 @@ protected def throw : m α := throw <| Error.error msg
 def throwRecoverable : m α := throw <| Error.recoverable msg
 def throwUnsupported : m α := throw <| Error.unsupported msg
 def throwOption : m α := throw <| Error.option msg
+def throwParsing : m α := throw <| Error.parsing msg
 
 end
 
@@ -452,25 +455,16 @@ end Env
 
 
 
-private opaque SolverImpl : NonemptyType.{0}
+namespace Solver
+
+private opaque RawImpl : NonemptyType.{0}
 
 /-- A cvc5 solver. -/
-private def Solver.Raw : Type := SolverImpl.type
+private def Raw : Type := RawImpl.type
 
-namespace Solver.Raw
+namespace Raw
 
-instance : Nonempty Solver.Raw := SolverImpl.property
-
-end Solver.Raw
-
-structure Solver (ω : Type) where
-private mk' ::
-  /-- Underlying raw solver. -/
-  private toRaw : Solver.Raw
-  /-- Parser placeholder. -/
-  private parser : IO.Ref (Option Unit)
-
-namespace Solver
+instance : Nonempty Raw := RawImpl.property
 
 /-- Constructor.
 
@@ -479,11 +473,45 @@ Constructs solver instance from a given term manager instance.
 - `tm`: The associated term manager.
 -/
 @[extern "solver_new"]
-private opaque Raw.new : TermManager → Solver.Raw
+private opaque new : TermManager → Solver.Raw
+
+end Raw
+
+
+/-! ### Solver input parser -/
+
+private opaque InputParserImpl : NonemptyType.{0}
+
+/-- Solver input parser -/
+private def InputParser : Type := InputParserImpl.type
+
+namespace InputParser
+
+instance : Nonempty InputParser := InputParserImpl.property
+
+@[extern "inputParser_new"]
+private opaque new : Solver.Raw → InputParser
+
+@[extern "inputParser_parseCommands"]
+private opaque parseCommands :
+  (raw : Solver.Raw) → (inputParser : InputParser) → (query : String) → Except Error String
+
+end InputParser
+
+end Solver
+
+structure Solver (ω : Type) where
+private mk' ::
+  /-- Underlying raw solver. -/
+  private toRaw : Solver.Raw
+  /-- Parser placeholder. -/
+  private parser? : IO.Ref (Option Solver.InputParser)
+
+namespace Solver
 
 private def ofManager (tm : TermManager) : BaseIO (Solver ω) := do
-  let parser ← IO.mkRef none
-  return {toRaw := Raw.new tm, parser}
+  let parser? ← IO.mkRef none
+  return {toRaw := Raw.new tm, parser?}
 
 def new : Env ω (Solver ω) := Env.managerDoM (liftM ∘ ofManager)
 
@@ -495,18 +523,83 @@ private def rawSolverDo (f : Solver.Raw → Env ω α) : Env ω α :=
 private def rawSolverDo? (f : Solver.Raw → Except Error α) : Env ω α :=
   solver.rawSolverDo (liftM ∘ f)
 
+private def inputParserDoM (f : InputParser → Env ω α) : Env ω α := do
+  if let some parser ← solver.parser?.get then f parser else
+    let parser := InputParser.new solver.toRaw
+    solver.parser?.set parser
+    f parser
+
+private def inputParser : Env ω InputParser := do
+  if let some parser ← solver.parser?.get then
+    return parser
+  else
+    let parser := InputParser.new solver.toRaw
+    solver.parser?.set parser
+    return parser
+
+/-- Parses some SMT-LIB commands and returns the output.
+
+- `commands` The SMT-LIB commands to parse.
+- `catchErrors` If true, this function fails if the parser's output contains errors. Otherwise does
+  not look at the output and simply returns it.
+-/
+def parseSmtLibWithOutput (commands : String) (catchErrors : Bool := true) : Env ω String := do
+  let parser ← solver.inputParser
+  let output ← parser.parseCommands solver.toRaw commands
+  if catchErrors then
+    let output := output.trim
+    if let some err := output.splitOn "\n" |> findError? then
+      cvc5.throwParsing s!"{err}\n\n```output\n{output}\n```"
+  return output
+where
+  findError? : List String → Option String
+    | line :: tail =>
+      if line.trimLeft.startsWith "(error"
+      then extractError none 0 (line :: tail)
+      else findError? tail
+    | [] => none
+  extractError (err? : Option String) (paren : Int) : List String → String
+    | line :: tail =>
+      let paren := parenBalance line paren
+      let err := err?.map (s!"{·}\n{line}") |>.getD line
+      if paren = 0 then attemptErrorCleanup err
+      else extractError err paren tail
+    | [] => err? |>.getD "cannot extract parsing error: reached EOI"
+  parenBalance (s : String) (current : Int) : Int := Id.run do
+    let mut balance := current
+    for i in [0:s.length] do
+      match s.get ⟨i⟩ with
+      | '(' => balance := balance + 1
+      | ')' => balance := balance - 1
+      | _ => pure ()
+    return balance
+  attemptErrorCleanup (s : String) :=
+    let (pref, suff) := ("(error \"", "\")")
+    if s.startsWith pref ∧ s.endsWith suff
+    then s.drop pref.length |>.dropRight suff.length
+    else s
+
+/-- Parses some SMT-LIB commands.
+
+Fails if an error is detected in the parser's output.
+-/
+def parseSmtLib (commands : String) : Env ω Unit := do
+  let _output ← solver.parseSmtLibWithOutput commands (catchErrors := true)
+
 end
 
 
 
 /-!
-helpers for C++ to work with `Solver ω` values.
+Helpers for C++ to work with `Solver ω` values.
 -/
 
 @[export ffi_solver_to_raw]
 private def ffi_solver_to_raw : Solver ω → Solver.Raw := toRaw
 
 end Solver
+
+
 
 
 private opaque SrtImpl : NonemptyType.{0}
@@ -1516,11 +1609,11 @@ Other aspects of printing are taken from the solver options.
 -/
 extern_def proofToString (solver : Solver ω) : (proof : Proof ω) → Env ω String
 
-/-- Parse a string containing SMT-LIB commands.
+-- /-- Parse a string containing SMT-LIB commands.
 
-Commands that produce a result such as `(check-sat)`, `(get-model)`, ... are executed but the
-results are ignored.
--/
-extern_def parseCommands (solver : Solver ω) : (smtLib : String) → Env ω Unit
+-- Commands that produce a result such as `(check-sat)`, `(get-model)`, ... are executed but the
+-- results are ignored.
+-- -/
+-- extern_def parseCommands (solver : Solver ω) : (smtLib : String) → Env ω Unit
 
 end Solver

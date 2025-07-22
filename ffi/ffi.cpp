@@ -1674,4 +1674,71 @@ LEAN_EXPORT lean_obj_res solver_parseCommands(lean_obj_arg solver,
   return env_pure(mk_unit_unit());
   CVC5_LEAN_API_TRY_CATCH_ENV_END;
 }
+
+
+static void inputParser_finalize(void* obj)
+{
+  delete static_cast<parser::InputParser*>(obj);
+}
+
+static void inputParser_foreach(void*, b_lean_obj_arg)
+{
+  // do nothing since `parser::InputParser` does not contain nested Lean objects
+}
+
+static lean_external_class* g_inputParser_class = nullptr;
+
+static inline lean_obj_res parser_box(parser::InputParser* tm)
+{
+  if (g_inputParser_class == nullptr)
+  {
+    g_inputParser_class =
+        lean_register_external_class(inputParser_finalize, inputParser_foreach);
+  }
+  return lean_alloc_external(g_inputParser_class, tm);
+}
+
+static inline const parser::InputParser* parser_unbox(b_lean_obj_arg tm)
+{
+  return static_cast<parser::InputParser*>(lean_get_external_data(tm));
+}
+
+static inline parser::InputParser* mut_parser_unbox(b_lean_obj_arg tm)
+{
+  return static_cast<parser::InputParser*>(lean_get_external_data(tm));
+}
+
+LEAN_EXPORT lean_obj_res inputParser_new(lean_obj_arg rawSolver)
+{
+  return parser_box(new parser::InputParser(solver_unbox(rawSolver)));
+}
+
+LEAN_EXPORT lean_obj_res inputParser_parseCommands(lean_obj_arg rawSolver,
+                                                   lean_obj_arg inputParser,
+                                                   lean_obj_arg query)
+{
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  Solver* slv = solver_unbox(rawSolver);
+  parser::InputParser* parser = mut_parser_unbox(inputParser);
+  // get the symbol manager of the parser, used when invoking commands below
+  parser::SymbolManager* sm = parser->getSymbolManager();
+  parser->setStringInput(
+      modes::InputLanguage::SMT_LIB_2_6, lean_string_cstr(query), "lean-cvc5");
+  // parse commands until finished
+  std::stringstream out;
+  parser::Command cmd;
+  while (true)
+  {
+    cmd = parser->nextCommand();
+    if (cmd.isNull())
+    {
+      break;
+    }
+    // invoke the command on the solver and the symbol manager, print the result
+    // to out
+    cmd.invoke(slv, sm, out);
+  }
+  return except_ok(lean_box(0), lean_mk_string(out.str().c_str()));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
+}
 }

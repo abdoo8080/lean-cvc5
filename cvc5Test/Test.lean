@@ -131,7 +131,7 @@ can't retrieve a symbol created by `parseCommands`
 -/
 #guard_msgs in #eval cvc5.runIO do
   let solver ← Solver.new
-  solver.parseCommands "\
+  solver.parseSmtLib "\
 (set-logic QF_LIA)
 (set-option :produce-models true)
 
@@ -150,3 +150,115 @@ can't retrieve a symbol created by `parseCommands`
   let res ← solver.checkSat
   if ¬ res.isSat then cvc5.throw "it works"
   else println! "can't retrieve a symbol created by `parseCommands`"
+
+
+/-- info:
+`(and b1 b2)` sat
+unsat after adding `(not b1)`
+-/
+#guard_msgs in #eval cvc5.runIO do
+  let solver ← Solver.new
+  let b1_and_b2 := "(and b1 b2)"
+  solver.parseSmtLib s!"\
+(set-logic QF_LIA)
+(set-option :produce-models true)
+
+(declare-fun b1 () Bool)
+(declare-fun b2 () Bool)
+
+(assert {b1_and_b2})
+  "
+  let res ← solver.checkSat
+  if ¬ res.isSat
+  then cvc5.throw "expected sat"
+  else println! "`{b1_and_b2}` sat"
+
+  let not_b1 := "(not b1)"
+  solver.parseSmtLib s!"(assert {not_b1})"
+  let res ← solver.checkSat
+  if ¬ res.isUnsat
+  then cvc5.throw "expected unsat"
+  else println! "unsat after adding `{not_b1}`"
+
+
+
+def findError (s : String) : Option String :=
+  let lines := s.trim.splitOn "\n"
+  aux lines
+where
+  aux
+    | line :: tail =>
+      if line.trimLeft.startsWith "(error" then
+        extractError none 0 (line :: tail)
+      else
+        aux tail
+    | [] => none
+  extractError (err? : Option String) (paren : Int) : List String → String
+    | line :: tail =>
+      let paren := parenBalance line paren
+      let err := err?.map (s!"{·}\n{line}") |>.getD line
+      if paren = 0 then err else extractError err paren tail
+    | [] => err? |>.getD "cannot extract parsing error: read EOI"
+  parenBalance (s : String) (current : Int) : Int := Id.run do
+    let mut balance := current
+    for i in [0:s.length] do
+      match s.get ⟨i⟩ with
+      | '(' => balance := balance + 1
+      | ')' => balance := balance - 1
+      | _ => pure ()
+    return balance
+
+
+/-- error:
+[parsing] Error in option parsing: Argument 'bad' for bool option produce-models is not a bool constant
+
+```output
+(error "Error in option parsing: Argument 'bad' for bool option produce-models is not a bool constant")
+```
+-/
+#guard_msgs in #eval cvc5.runIO do
+  let solver ← Solver.new
+  solver.parseSmtLib s!"\
+(set-logic QF_LIA)
+(set-option :produce-models bad)
+  "
+
+/-- error:
+Subexpressions must have the same type:
+Equation: (= b i)
+Type 1: Bool
+Type 2: Int
+-/
+#guard_msgs in #eval cvc5.runIO do
+  let solver ← Solver.new
+  solver.parseSmtLib s!"\
+(set-logic QF_LIA)
+(set-option :produce-models true)
+
+(declare-fun b () Bool)
+(declare-fun i () Int)
+
+(assert (= b i))
+  "
+
+/-- error:
+[parsing] cannot get model unless after a SAT or UNKNOWN response.
+
+```output
+unsat
+(error "cannot get model unless after a SAT or UNKNOWN response.")
+```
+-/
+#guard_msgs in #eval cvc5.runIO do
+  let solver ← Solver.new
+  solver.parseSmtLib s!"\
+(set-logic QF_LIA)
+(set-option :produce-models true)
+
+(declare-fun b () Bool)
+
+(assert (and b (not b)))
+
+(check-sat)
+(get-model)
+  "
