@@ -9,109 +9,109 @@ import cvc5Test.Init
 -/
 namespace cvc5.Test
 
-test! tm => do
-  let _ := tm.getBooleanSort
+test! do
+  let _ ← cvc5.getBooleanSort
 
-test! tm => do
-  let _ := tm.getIntegerSort
+test! do
+  let _ ← cvc5.getIntegerSort
 
-test! tm => do
-  let _ := tm.getRealSort
+test! do
+  let _ ← cvc5.getRealSort
 
-test! tm => do
-  let _ := tm.getRegExpSort
+test! do
+  let _ ← cvc5.getRegExpSort
 
-test! tm => do
-  let _ := tm.getStringSort
+test! do
+  let _ ← cvc5.getStringSort
 
-test! tm => do
-  let _ := tm.getRoundingModeSort
+test! do
+  let _ ← cvc5.getRoundingModeSort
 
-test! tm => do
-  let boolSort := tm.getBooleanSort
-  let intSort := tm.getIntegerSort
-  let realSort := tm.getRealSort
-  let bvSort ← tm.mkBitVectorSort 32
+test! do
+  let boolSort ← cvc5.getBooleanSort
+  let intSort ← cvc5.getIntegerSort
+  let realSort ← cvc5.getRealSort
+  let bvSort ← cvc5.mkBitVectorSort 32
 
   let size ←
     bvSort.getBitVectorSize
     |> assertOk
   assertEq size 32
 
-  tm.mkArraySort boolSort boolSort
+  cvc5.mkArraySort boolSort boolSort
   |> assertOkDiscard
-  tm.mkArraySort intSort intSort
+  cvc5.mkArraySort intSort intSort
   |> assertOkDiscard
-  tm.mkArraySort realSort realSort
+  cvc5.mkArraySort realSort realSort
   |> assertOkDiscard
-  tm.mkArraySort bvSort bvSort
+  cvc5.mkArraySort bvSort bvSort
   |> assertOkDiscard
-  tm.mkArraySort boolSort intSort
+  cvc5.mkArraySort boolSort intSort
   |> assertOkDiscard
-  tm.mkArraySort realSort bvSort
+  cvc5.mkArraySort realSort bvSort
   |> assertOkDiscard
 
-  let fpSort ← tm.mkFloatingPointSort 3 5
-  tm.mkArraySort fpSort fpSort
+  let fpSort ← cvc5.mkFloatingPointSort 3 5
+  cvc5.mkArraySort fpSort fpSort
   |> assertOkDiscard
-  tm.mkArraySort bvSort fpSort
+  cvc5.mkArraySort bvSort fpSort
   |> assertOkDiscard
   -- already tested, probably a typo in the original test
-  tm.mkArraySort boolSort boolSort
+  cvc5.mkArraySort boolSort boolSort
   |> assertOkDiscard
 
-  tm.mkArraySort tm.getBooleanSort tm.getIntegerSort
+  cvc5.mkArraySort (← cvc5.getBooleanSort) (← cvc5.getIntegerSort)
   |> assertOkDiscard
 
-test! tm => do
-  tm.mkBitVectorSort 32
+test! do
+  cvc5.mkBitVectorSort 32
   |> assertOkDiscard
-  tm.mkBitVectorSort 0
+  cvc5.mkBitVectorSort 0
   |> assertError "invalid argument '0' for 'size', expected size > 0"
 
--- test! tm => do
---   tm.mkFiniteFieldSort 31
+-- test! do
+--   cvc5.mkFiniteFieldSort 31
 --   |> assertOkDiscard
---   tm.mkFiniteFieldSort 6
+--   cvc5.mkFiniteFieldSort 6
 --   |> assertError "invalid argument '6' for 'modulus', expected modulus is prime"
 
---   tm.mkFiniteFieldSort 1100101 2
+--   cvc5.mkFiniteFieldSort 1100101 2
 --   |> assertOkDiscard
---   tm.mkFiniteFieldSort 10202 3
+--   cvc5.mkFiniteFieldSort 10202 3
 --   |> assertOkDiscard
---   tm.mkFiniteFieldSort 401 5
+--   cvc5.mkFiniteFieldSort 401 5
 --   |> assertOkDiscard
---   tm.mkFiniteFieldSortOfString "791a" 11
+--   cvc5.mkFiniteFieldSortOfString "791a" 11
 --   |> assertOkDiscard
---   tm.mkFiniteFieldSortOfString "970f" 16
+--   cvc5.mkFiniteFieldSortOfString "970f" 16
 --   |> assertOkDiscard
---   tm.mkFiniteFieldSortOfString "8CC5" 16
+--   cvc5.mkFiniteFieldSortOfString "8CC5" 16
 --   |> assertOkDiscard
 
---   tm.mkFiniteFieldSort 1100100 2
+--   cvc5.mkFiniteFieldSort 1100100 2
 --   |> assertError "invalid argument '1100100' for 'modulus', expected modulus is prime"
---   tm.mkFiniteFieldSort 10201 3
+--   cvc5.mkFiniteFieldSort 10201 3
 --   |> assertError "invalid argument '10201' for 'modulus', expected modulus is prime"
---   tm.mkFiniteFieldSort 400 5
+--   cvc5.mkFiniteFieldSort 400 5
 --   |> assertError "invalid argument '400' for 'modulus', expected modulus is prime"
---   tm.mkFiniteFieldSort 7919 11
+--   cvc5.mkFiniteFieldSort 7919 11
 --   |> assertError "invalid argument '7919' for 'modulus', expected modulus is prime"
---   tm.mkFiniteFieldSortOfString "970e" 16
+--   cvc5.mkFiniteFieldSortOfString "970e" 16
 --   |> assertError "invalid argument '970e' for 'modulus', expected modulus is prime"
---   tm.mkFiniteFieldSortOfString "8CC4" 16
+--   cvc5.mkFiniteFieldSortOfString "8CC4" 16
 --   |> assertError "invalid argument '8CC4' for 'modulus', expected modulus is prime"
 
-test! tm => do
-  tm.mkFloatingPointSort 4 8
+test! do
+  cvc5.mkFloatingPointSort 4 8
   |> assertOkDiscard
 
-  tm.mkFloatingPointSort 0 8
+  cvc5.mkFloatingPointSort 0 8
   |> assertError "invalid argument '0' for 'exp', expected exponent size > 1"
-  tm.mkFloatingPointSort 4 0
+  cvc5.mkFloatingPointSort 4 0
   |> assertError "invalid argument '0' for 'sig', expected significand size > 1"
-  tm.mkFloatingPointSort 1 8
+  cvc5.mkFloatingPointSort 1 8
   |> assertError "invalid argument '1' for 'exp', expected exponent size > 1"
-  tm.mkFloatingPointSort 4 1
+  cvc5.mkFloatingPointSort 4 1
   |> assertError "invalid argument '1' for 'sig', expected significand size > 1"
 
 
@@ -124,80 +124,80 @@ test! tm => do
 -- -/
 
 
--- test! tm => do
+-- test! do
 --   let uf ←
---     tm.mkUninterpretedSort "u"
+--     cvc5.mkUninterpretedSort "u"
 --     |> assertOk
---   let int := tm.getIntegerSort
+--   let int := cvc5.getIntegerSort
 --   let funSort ←
---     tm.mkFunctionSort #[uf] int
+--     cvc5.mkFunctionSort #[uf] int
 --     |> assertOk
 
 --   -- function arguments are allowed
---   tm.mkFunctionSort #[funSort] int
+--   cvc5.mkFunctionSort #[funSort] int
 --   |> assertOkDiscard
 --   -- non-first-class arguments are not allowed
---   let reSort := tm.getRegExpSort
---   tm.mkFunctionSort #[reSort] int
+--   let reSort := cvc5.getRegExpSort
+--   cvc5.mkFunctionSort #[reSort] int
 --   |> assertError
 --     "invalid domain sort in 'sorts' at index 0, expected first-class sort as domain sort"
 --   --
---   tm.mkFunctionSort #[int] funSort
+--   cvc5.mkFunctionSort #[int] funSort
 --   |> assertError
 --     "invalid argument '(-> u Int)' for 'codomain', expected non-function sort as codomain sort"
 --   --
---   tm.mkFunctionSort #[uf, int] int
+--   cvc5.mkFunctionSort #[uf, int] int
 --   |> assertOkDiscard
 
 --   let funSort2 ←
---     tm.mkFunctionSort #[← tm.mkUninterpretedSort "u"] tm.getBooleanSort
+--     cvc5.mkFunctionSort #[← cvc5.mkUninterpretedSort "u"] cvc5.getBooleanSort
 --     |> assertOk
 --   --
---   tm.mkFunctionSort #[funSort2, uf] int
+--   cvc5.mkFunctionSort #[funSort2, uf] int
 --   |> assertOkDiscard
 --   --
---   tm.mkFunctionSort #[int, uf] funSort2
+--   cvc5.mkFunctionSort #[int, uf] funSort2
 --   |> assertError
 --     "invalid argument '(-> u Bool)' for 'codomain', expected non-function sort as codomain sort"
 
---   let bool := tm.getBooleanSort
+--   let bool := cvc5.getBooleanSort
 --   let sorts1 := #[bool, int, int]
 --   let sorts2 := #[bool, int]
 
---   tm.mkFunctionSort sorts2 int
+--   cvc5.mkFunctionSort sorts2 int
 --   |> assertOkDiscard
---   tm.mkFunctionSort sorts1 int
+--   cvc5.mkFunctionSort sorts1 int
 --   |> assertOkDiscard
 
 --   -- At this point the original test creates a new `TermManager` and checks that some constructors
 --   -- fail because the manager is not a singleton anymore. But we don't have that problem.
 --   let tm ← TermManager.new
---   tm.mkFunctionSort sorts2 int
+--   cvc5.mkFunctionSort sorts2 int
 --   |> assertOkDiscard
---   tm.mkFunctionSort #[tm.getBooleanSort, tm.getIntegerSort] tm.getIntegerSort
---   |> assertOkDiscard
-
--- test! tm => do
---   tm.mkParamSort "T"
---   |> assertOkDiscard
---   tm.mkParamSort ""
+--   cvc5.mkFunctionSort #[cvc5.getBooleanSort, cvc5.getIntegerSort] cvc5.getIntegerSort
 --   |> assertOkDiscard
 
--- test! tm => do
---   tm.mkPredicateSort #[tm.getIntegerSort]
+-- test! do
+--   cvc5.mkParamSort "T"
 --   |> assertOkDiscard
---   tm.mkPredicateSort #[]
+--   cvc5.mkParamSort ""
+--   |> assertOkDiscard
+
+-- test! do
+--   cvc5.mkPredicateSort #[cvc5.getIntegerSort]
+--   |> assertOkDiscard
+--   cvc5.mkPredicateSort #[]
 --   |> assertError
 --     "invalid size of argument 'sorts', expected at least one parameter sort for predicate sort"
 --   -- function as arguments are allowed
---   let funSort ← tm.mkFunctionSort #[← tm.mkUninterpretedSort "u"] tm.getIntegerSort
---   tm.mkPredicateSort #[tm.getIntegerSort, funSort]
+--   let funSort ← cvc5.mkFunctionSort #[← cvc5.mkUninterpretedSort "u"] cvc5.getIntegerSort
+--   cvc5.mkPredicateSort #[cvc5.getIntegerSort, funSort]
 --   |> assertOkDiscard
---   tm.mkPredicateSort #[tm.getIntegerSort]
+--   cvc5.mkPredicateSort #[cvc5.getIntegerSort]
 --   |> assertOkDiscard
 
 --   -- At this point the original test creates a new `TermManager` and checks that some constructors
 --   -- fail because the manager is not a singleton anymore. But we don't have that problem.
 --   let tm ← TermManager.new
---   tm.mkPredicateSort #[tm.getIntegerSort]
+--   cvc5.mkPredicateSort #[cvc5.getIntegerSort]
 --   |> assertOkDiscard
