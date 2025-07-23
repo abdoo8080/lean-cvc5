@@ -455,8 +455,8 @@ This can be overridden when using this extension with the `in <stringLiteral>` o
 namespace Term -- not in `TermManager`
 
 /-- Documentation... -/
+--                  vvvvvvvvvvvvvvvv
 extern_env_def? [ω] in "termManager" mkTerm : (kind : Kind) → (children : Array (Term ω)) → Term ω
---                  ^^^^^^^^^^^^^^^^
 ```
 
 The second part of the name of the C++ functions we bind is the name of the original cvc5 function
@@ -466,8 +466,8 @@ optional syntax:
 
 ```lean
 /-- Documentation... -/
+--                     vvvvvvvvvvv
 extern_env_def? [ω] mk as "mkTerm" : (kind : Kind) → (children : Array (Term ω)) → Term ω
---                     ^^^^^^^^^^^
 ```
 
 Using both overrides at the same time is fine, for instance one can define `Term.mk` directly with

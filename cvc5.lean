@@ -1242,20 +1242,23 @@ abbrev ofOp := @ofIndices
 
 end Op
 
+/-- Create n-ary term of given kind.
+
+- `kind` The kind of the term.
+- `children` The children of the term.
+-/
+extern_env_def? [ω] in "termManager" mkTerm :
+  (kind : Kind) → (children : Array (Term ω) := #[]) → Term ω
 
 namespace Term
+
+@[inherit_doc cvc5.mkTerm]
+def mk := @cvc5.mkTerm
 
 @[inherit_doc Op.mkTerm]
 def ofOp := @Op.mkTerm
 
 extern_env_defs [ω] in "termManager"
-
-  /-- Create n-ary term of given kind.
-
-  - `kind` The kind of the term.
-  - `children` The children of the term.
-  -/
-  def? mk as "mkTerm" : (kind : Kind) → (children : Array (Term ω) := #[]) → Term ω
 
   /-- Create n-ary term of given kind.
 

@@ -4,7 +4,7 @@ namespace cvc5.Test
 
 def solver1Parse : IO Unit := cvc5.runIO do
   let solver1 ← Solver.new
-  solver1.parseCommands "
+  solver1.parseSmtLib "
 (set-logic QF_LIA)
 
 (declare-fun n1 () Int)
@@ -26,7 +26,7 @@ def solver1Parse : IO Unit := cvc5.runIO do
 
 
   let solver2 ← Solver.new
-  solver2.parseCommands "
+  solver2.parseSmtLib "
 (set-option :produce-proofs true)
 
 (set-logic QF_LIA)

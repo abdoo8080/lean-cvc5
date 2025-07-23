@@ -80,6 +80,9 @@ def assertError
     | .option err => do
         IO.eprintln s!"{Test.pref hint}expected error `{expected}`, got option error `{err}`"
         fail "assertion failed"
+    | .parsing err => do
+        IO.eprintln s!"{Test.pref hint}expected cvc5 error `{expected}`, got parsing error `{err}`"
+        fail "assertion failed"
     | .missingValue => do
         IO.eprintln s!"{Test.pref hint}expected cvc5 error `{expected}`, got missing value error"
         fail "assertion failed"
