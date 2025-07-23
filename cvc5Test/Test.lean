@@ -180,35 +180,6 @@ unsat after adding `(not b1)`
   then cvc5.throw "expected unsat"
   else println! "unsat after adding `{not_b1}`"
 
-
-
-def findError (s : String) : Option String :=
-  let lines := s.trim.splitOn "\n"
-  aux lines
-where
-  aux
-    | line :: tail =>
-      if line.trimLeft.startsWith "(error" then
-        extractError none 0 (line :: tail)
-      else
-        aux tail
-    | [] => none
-  extractError (err? : Option String) (paren : Int) : List String → String
-    | line :: tail =>
-      let paren := parenBalance line paren
-      let err := err?.map (s!"{·}\n{line}") |>.getD line
-      if paren = 0 then err else extractError err paren tail
-    | [] => err? |>.getD "cannot extract parsing error: read EOI"
-  parenBalance (s : String) (current : Int) : Int := Id.run do
-    let mut balance := current
-    for i in [0:s.length] do
-      match s.get ⟨i⟩ with
-      | '(' => balance := balance + 1
-      | ')' => balance := balance - 1
-      | _ => pure ()
-    return balance
-
-
 /-- error:
 [parsing] Error in option parsing: Argument 'bad' for bool option produce-models is not a bool constant
 
