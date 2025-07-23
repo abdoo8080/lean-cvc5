@@ -19,15 +19,16 @@ test![TestApiBlackSort, hash] do
   assertEq int.hash int.hash
   assertNe int.hash str.hash
 
-test![TestApiBlackSort, operatorsComparison] do
-  let nullSrt ← Srt.null
-  let int ← cvc5.getIntegerSort
-  assertFalse (int == nullSrt)
-  assertTrue (int != nullSrt)
-  assertFalse (int < nullSrt)
-  assertFalse (int ≤ nullSrt)
-  assertTrue (int > nullSrt)
-  assertTrue (int ≥ nullSrt)
+-- -- lean API does not expose a `null` sort
+-- test![TestApiBlackSort, operatorsComparison] do
+--   let nullSrt ← Srt.null
+--   let int ← cvc5.getIntegerSort
+--   assertFalse (int == nullSrt)
+--   assertTrue (int != nullSrt)
+--   assertFalse (int < nullSrt)
+--   assertFalse (int ≤ nullSrt)
+--   assertTrue (int > nullSrt)
+--   assertTrue (int ≥ nullSrt)
 
 test![TestApiBlackSort, getKind] do
   let b ← cvc5.getBooleanSort
@@ -46,23 +47,24 @@ test![TestApiBlackSort, getKind] do
   assertEq abs.getKind SortKind.ABSTRACT_SORT
 
 test![TestApiBlackSort, hasGetSymbol] do
-  let n ← Srt.null
+  -- -- `null` sort not exposed
+  -- let n := Srt.null ()
   let b ← cvc5.getBooleanSort
   let s0 ← cvc5.mkParamSort "s0"
   let s1 ← cvc5.mkParamSort "|s1\\|"
 
-  assertError
-    "invalid call to 'bool cvc5::Sort::hasSymbol() const', \
-    expected non-null object"
-    n.hasSymbol
+  -- assertError
+  --   "invalid call to 'bool cvc5::Sort::hasSymbol() const', \
+  --   expected non-null object"
+  --   n.hasSymbol
   assertFalse (← assertOk b.hasSymbol)
   assertTrue (← assertOk s0.hasSymbol)
   assertTrue (← assertOk s1.hasSymbol)
 
-  assertError
-    "invalid call to 'std::string cvc5::Sort::getSymbol() const', \
-    expected non-null object"
-    n.getSymbol
+  -- assertError
+  --   "invalid call to 'std::string cvc5::Sort::getSymbol() const', \
+  --   expected non-null object"
+  --   n.getSymbol
   assertError
     "invalid call to 'std::string cvc5::Sort::getSymbol() const', \
     expected the sort to have a symbol."
@@ -71,57 +73,65 @@ test![TestApiBlackSort, hasGetSymbol] do
   assertEq (← assertOk s0.getSymbol) "s0"
   assertEq (← assertOk s1.getSymbol) "|s1\\|"
 
-test![TestApiBlackSort, isNull] do
-  let n ← cvc5.Srt.null
-  assertTrue n.isNull
-  assertFalse (← cvc5.getBooleanSort).isNull
+-- -- `null` sort not exposed
+-- test![TestApiBlackSort, isNull] do
+--   let n ← cvc5.Srt.null
+--   assertTrue n.isNull
+--   assertFalse (← cvc5.getBooleanSort).isNull
 
 test![TestApiBlackSort, isBoolean] do
   assertTrue (← cvc5.getBooleanSort).isBoolean
-  let n ← Srt.null
-  assertFalse n.isBoolean
+  assertFalse (← cvc5.getIntegerSort).isBoolean
+  -- let n ← Srt.null
+  -- assertFalse n.isBoolean
 
 test![TestApiBlackSort, isInteger] do
   assertTrue (← cvc5.getIntegerSort).isInteger
   assertFalse (← cvc5.getRealSort).isInteger
-  let n ← Srt.null
-  assertFalse n.isInteger
+  -- let n ← Srt.null
+  -- assertFalse n.isInteger
 
 test![TestApiBlackSort, isReal] do
   assertTrue (← cvc5.getRealSort).isReal
   assertFalse (← cvc5.getIntegerSort).isReal
-  let n ← Srt.null
-  assertFalse n.isReal
+  -- let n ← Srt.null
+  -- assertFalse n.isReal
 
 test![TestApiBlackSort, isString] do
   assertTrue (← cvc5.getStringSort).isString
-  let n ← Srt.null
-  assertFalse n.isString
+  assertFalse (← cvc5.getBooleanSort).isString
+  -- let n ← Srt.null
+  -- assertFalse n.isString
 
 test![TestApiBlackSort, isRegExp] do
   assertTrue (← cvc5.getRegExpSort).isRegExp
-  let n ← Srt.null
-  assertFalse n.isRegExp
+  assertFalse (← cvc5.getStringSort).isRegExp
+  -- let n ← Srt.null
+  -- assertFalse n.isRegExp
 
 test![TestApiBlackSort, isRoundingMode] do
   assertTrue (← cvc5.getRoundingModeSort).isRoundingMode
-  let n ← Srt.null
-  assertFalse n.isRoundingMode
+  assertFalse (← cvc5.getBooleanSort).isRoundingMode
+  -- let n ← Srt.null
+  -- assertFalse n.isRoundingMode
 
 test![TestApiBlackSort, isBitVector] do
   assertTrue (← cvc5.mkBitVectorSort 8).isBitVector
-  let n ← Srt.null
-  assertFalse n.isBitVector
+  assertFalse (← cvc5.getStringSort).isBitVector
+  -- let n ← Srt.null
+  -- assertFalse n.isBitVector
 
 test![TestApiBlackSort, isFiniteField] do
   assertTrue (← cvc5.mkFiniteFieldSort 7).isFiniteField
-  let n ← Srt.null
-  assertFalse n.isFiniteField
+  assertFalse (← cvc5.getStringSort).isFiniteField
+  -- let n ← Srt.null
+  -- assertFalse n.isFiniteField
 
 test![TestApiBlackSort, isFloatingPoint] do
   assertTrue (← cvc5.mkFloatingPointSort 8 24).isFloatingPoint
-  let n ← Srt.null
-  assertFalse n.isFloatingPoint
+  assertFalse (← cvc5.getStringSort).isFloatingPoint
+  -- let n ← Srt.null
+  -- assertFalse n.isFloatingPoint
 
 -- test![TestApiBlackSort, isDatatype] do
 --   let dtSort ← cvc5.createDatatypeSort
@@ -169,23 +179,27 @@ test![TestApiBlackSort, isFunction] do
   assertTrue (
     ← cvc5.mkFunctionSort #[← cvc5.getBooleanSort] (← cvc5.getIntegerSort)
   ).isFunction
-  let n ← Srt.null
-  assertFalse n.isFunction
+  assertFalse (← cvc5.getStringSort).isFunction
+  -- let n ← Srt.null
+  -- assertFalse n.isFunction
 
 test![TestApiBlackSort, isPredicate] do
   assertTrue (← cvc5.mkPredicateSort #[← cvc5.getRealSort]).isPredicate
-  let n ← Srt.null
-  assertFalse n.isPredicate
+  assertFalse (← cvc5.getStringSort).isPredicate
+  -- let n ← Srt.null
+  -- assertFalse n.isPredicate
 
 test![TestApiBlackSort, isTuple] do
   assertTrue (← cvc5.mkTupleSort #[← cvc5.getRealSort]).isTuple
-  let n ← Srt.null
-  assertFalse n.isTuple
+  assertFalse (← cvc5.getStringSort).isTuple
+  -- let n ← Srt.null
+  -- assertFalse n.isTuple
 
 test![TestApiBlackSort, isNullable] do
   assertTrue (← cvc5.mkNullableSort (← cvc5.getRealSort)).isNullable
-  let n ← Srt.null
-  assertFalse n.isNullable
+  assertFalse (← cvc5.getStringSort).isNullable
+  -- let n ← Srt.null
+  -- assertFalse n.isNullable
 
 -- test![TestApiBlackSort, isRecord] do
 --   assertEq (← cvc5.mkRecordSort #[("asdf", cvc5.getRealSort)]).isRecord true
@@ -194,41 +208,47 @@ test![TestApiBlackSort, isNullable] do
 
 test![TestApiBlackSort, isArray] do
   assertTrue (← cvc5.mkArraySort (← cvc5.getRealSort) (← cvc5.getIntegerSort)).isArray
-  let n ← Srt.null
-  assertFalse n.isArray
+  assertFalse (← cvc5.getStringSort).isArray
+  -- let n ← Srt.null
+  -- assertFalse n.isArray
 
 test![TestApiBlackSort, isSet] do
   assertTrue (← cvc5.mkSetSort (← cvc5.getRealSort)).isSet
-  let n ← Srt.null
-  assertFalse n.isSet
+  assertFalse (← cvc5.getStringSort).isSet
+  -- let n ← Srt.null
+  -- assertFalse n.isSet
 
 test![TestApiBlackSort, isBag] do
   assertTrue (← cvc5.mkBagSort (← cvc5.getRealSort)).isBag
-  let n ← Srt.null
-  assertFalse n.isBag
+  assertFalse (← cvc5.getStringSort).isBag
+  -- let n ← Srt.null
+  -- assertFalse n.isBag
 
 test![TestApiBlackSort, isSequence] do
   assertTrue (← cvc5.mkSequenceSort (← cvc5.getRealSort)).isSequence
-  let n ← Srt.null
-  assertFalse n.isSequence
+  assertFalse (← cvc5.getStringSort).isSequence
+  -- let n ← Srt.null
+  -- assertFalse n.isSequence
 
 test![TestApiBlackSort, isAbstract] do
   assertTrue (← cvc5.mkAbstractSort SortKind.BITVECTOR_SORT).isAbstract
   assertFalse (← cvc5.mkAbstractSort SortKind.ARRAY_SORT).isAbstract
   assertTrue (← cvc5.mkAbstractSort SortKind.ABSTRACT_SORT).isAbstract
-  let n ← Srt.null
-  assertFalse n.isAbstract
+  -- let n ← Srt.null
+  -- assertFalse n.isAbstract
 
 test![TestApiBlackSort, isUninterpreted] do
   assertTrue (← cvc5.mkUninterpretedSort "asdf").isUninterpretedSort
-  let n ← Srt.null
-  assertFalse n.isUninterpretedSort
+  assertFalse (← cvc5.getStringSort).isUninterpretedSort
+  -- let n ← Srt.null
+  -- assertFalse n.isUninterpretedSort
 
 test![TestApiBlackSort, isUninterpretedSortConstructor] do
   let scSort ← cvc5.mkUninterpretedSortConstructorSort 1 "asdf"
   assertTrue scSort.isUninterpretedSortConstructor
   let scSort2 ← cvc5.mkUninterpretedSortConstructorSort 2 "asdf"
   assertTrue scSort2.isUninterpretedSortConstructor
+  assertFalse (← cvc5.getStringSort).isUninterpretedSortConstructor
 
 -- test![TestApiBlackSort, getDatatype] do
 --   let dTypeSort ← createDatatypeSort
@@ -465,10 +485,10 @@ test![TestApiBlackSort, getFiniteFieldSize] do
   let ffSort ← cvc5.mkFiniteFieldSort 31
   assertOkDiscard ffSort.getFiniteFieldSize
   assertEq (← ffSort.getFiniteFieldSize) 31
-  let n ← Srt.null
-  n.getFiniteFieldSize |> assertError
-    "invalid call to 'std::string cvc5::Sort::getFiniteFieldSize() const', \
-    expected non-null object"
+  -- let n ← Srt.null
+  -- n.getFiniteFieldSize |> assertError
+  --   "invalid call to 'std::string cvc5::Sort::getFiniteFieldSize() const', \
+  --   expected non-null object"
 
 test![TestApiBlackSort, getFloatingPointExponentSize] do
   let fpSort ← cvc5.mkFloatingPointSort 4 8
@@ -536,9 +556,9 @@ test![TestApiBlackSort, sortScopedToString] do
   assertEq bvSort8.toString "(_ BitVec 8)"
   assertEq uSort.toString name
 
-test![TestApiBlackSort, toString] do
-  -- useless test here, as `toString` is not expected to fail at all
-  assertOkDiscard (toString <$> Srt.null)
+-- -- `null` sort not exposed
+-- test![TestApiBlackSort, toString] do
+--   assertOkDiscard (toString <$> Srt.null)
 
 test![TestApiBlackSort, substitute] do
   let sortVar0 ← cvc5.mkParamSort "T0"

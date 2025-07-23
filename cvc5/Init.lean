@@ -7,14 +7,66 @@ Authors: Abdalrhman Mohamed, Adrien Champion
 
 import Lean.Elab.Command
 
+/-! # Basic types, helpers, and syntax extensions -/
 namespace cvc5
 
-/-! ## DSL for definition  DRY -/
+
+
+/-- Error type. -/
+inductive Error where
+  | missingValue
+  | error (msg : String)
+  | recoverable (msg : String)
+  | unsupported (msg : String)
+  | option (msg : String)
+  | parsing (msg : String)
+deriving Repr
+
+namespace Error
+
+def toIO : Error → IO.Error
+  | .missingValue => IO.Error.userError "missing value"
+  | .error msg => IO.Error.userError s!"{msg}"
+  | .recoverable msg => IO.Error.userError s!"[recoverable] {msg}"
+  | .unsupported msg => IO.Error.userError s!"[unsupported] {msg}"
+  | .option msg => IO.Error.userError s!"[option] {msg}"
+  | .parsing msg => IO.Error.userError s!"[parsing] {msg}"
+
+/-- String representation of an error. -/
+protected def toString : Error → String :=
+  toString ∘ repr
+
+/-- Panics on errors, otherwise yields the `ok` result. -/
+def unwrap! [Inhabited α] : Except Error α → α
+| .ok a => a
+| .error e => panic! e.toString
+
+instance : ToString Error :=
+  ⟨Error.toString⟩
+
+end Error
+
+section variable [Monad m] [MonadExcept Error m] (msg : String)
+
+def throwMissingValue : m α := throw <| Error.missingValue
+
+protected def throw : m α := throw <| Error.error msg
+def throwRecoverable : m α := throw <| Error.recoverable msg
+def throwUnsupported : m α := throw <| Error.unsupported msg
+def throwOption : m α := throw <| Error.option msg
+def throwParsing : m α := throw <| Error.parsing msg
+
+end
+
+
+
+/-! ## Syntax extensions for external definitions -/
 section defsMacro
 
 open Lean
 open Elab
 open Command (CommandElab CommandElabM)
+open Lean.Parser.Command (visibility)
 
 declare_syntax_cat externKw'
 
@@ -346,9 +398,8 @@ def myFunction : Term → Except Error Op
 scoped syntax (name := externdef)
   declModifiers
   withPosition(
-    externKw'
-    ("in " str)?
-    ident ("as " str)? declSig (defsItemTail')?
+    externKw' ("in " str)? ident (", " (visibility)? ident)* ("as " str)? declSig
+    (defsItemTail')?
   )
 : command
 
@@ -356,7 +407,9 @@ scoped syntax (name := externdef)
 unsafe def externdefImpl : CommandElab
 | `(command|
   $mods:declModifiers
-  $externKw' $[in $path:str]? $ident $[as $altIdent?:str]? $sig $[$tail]?
+  $externKw' $[in $path:str]?
+    $ident $[, $[$aliasesVis?]? $aliases]* $[as $altIdent?:str]? $sig
+  $[$tail]?
 ) => do
   let defMod ←
     match externKw' with
@@ -373,6 +426,12 @@ unsafe def externdefImpl : CommandElab
       def $[$defMod]? $ident $sig $[$tail:defsItemTail']?
   )
   Command.elabCommand stx
+  for (aliasIdent, vis?) in aliases.zip aliasesVis? do
+    let stx ← `(
+      @[inherit_doc $ident]
+      $[$vis?]? abbrev $aliasIdent := @$ident
+    )
+    Command.elabCommand stx
 | _ => throwUnsupportedSyntax
 
 
@@ -483,7 +542,7 @@ extern_env_def? [ω] in "termManager" mk as "mkTerm" :
 -/
 scoped syntax (name := externEnvDefStx)
   declModifiers
-  externEnvKw "[" ident "]" ("in " str)? ident ("as " str)? declSig
+  externEnvKw "[" ident "]" ("in " str)? ident (", " (visibility)? ident)* ("as " str)? declSig
 : command
 
 /-- Generates code for a `TermManager` external definition / `Env` definition pair. -/
@@ -640,7 +699,8 @@ where
 @[command_elab externEnvDefStx, inherit_doc externEnvDefStx]
 unsafe def externEnvDefElab : CommandElab
 | `(command| $mods:declModifiers
-  $kw:externEnvKw [ $omega:ident ] $[in $path?:str]? $ident:ident $[as $altIdent?:str]? $sig:declSig
+  $kw:externEnvKw [ $omega:ident ] $[in $path?:str]?
+    $ident:ident $[, $[$aliasesVis?]? $aliases:ident]* $[as $altIdent?:str]? $sig:declSig
 ) => do
   -- asked to wrap the `TermManager` external definition's return type in `Except Error`?
   let wrapReturnTyInExcept ←
@@ -676,6 +736,12 @@ unsafe def externEnvDefElab : CommandElab
   -- pass everything to codegen
   envCodeGen
     (mkIdent omega.getId) mods extIdent extStr wrapReturnTyInExcept (mkIdent ident.getId) sig
+  for (aliasIdent, vis?) in aliases.zip aliasesVis? do
+    let stx ← `(
+      @[inherit_doc $ident]
+      $[$vis?]? abbrev $aliasIdent := @$ident
+    )
+    Command.elabCommand stx
 | _ => throwUnsupportedSyntax
 
 
@@ -688,7 +754,7 @@ scoped syntax "def? " : manyEnvDefsDefKw
 
 scoped syntax (name := manyEnvDefsStx)
   withPosition(manyEnvDefsKw "[" ident "]" ("in " str)? ppLine group(
-    colGt declModifiers manyEnvDefsDefKw ident ("as " str)? declSig
+    colGt declModifiers manyEnvDefsDefKw ident (", " (visibility)? ident)* ("as " str)? declSig
   )+)
 : command
 
@@ -696,17 +762,20 @@ scoped syntax (name := manyEnvDefsStx)
 unsafe def manyEnvDefsElab : CommandElab
 | `(command|
   extern_env_defs [ $omega:ident ] $[in $path?:str]?
-    $[ $mods:declModifiers $defKw $ident:ident $[as $altIdent?:str]? $sig:declSig ]*
+    $[ $mods:declModifiers $defKw
+      $ident:ident $[, $[$aliasesVis?]? $aliases:ident]* $[as $altIdent?:str]? $sig:declSig ]*
 ) => do
-  let many := mods.zip <| defKw.zip <| ident.zip <| altIdent?.zip sig
-  for (mods, kw, ident, altIdent?, sig) in many do
+  let many :=
+    mods.zip <| defKw.zip <| ident.zip <| aliases.zip <| aliasesVis?.zip <| altIdent?.zip sig
+  for (mods, kw, ident, aliases, aliasesVis?, altIdent?, sig) in many do
     let thisKw ← match kw with
       | `(manyEnvDefsDefKw| def) => `(externEnvKw| extern_env_def)
       | `(manyEnvDefsDefKw| def?) => `(externEnvKw| extern_env_def?)
       | _ => throwUnsupportedSyntax
     let stx ← `(
       $mods:declModifiers
-      $thisKw:externEnvKw [$omega:ident] $[in $path?]? $ident:ident $[as $altIdent?]? $sig:declSig
+      $thisKw:externEnvKw [$omega:ident] $[in $path?]?
+        $ident:ident $[, $[$aliasesVis?]? $aliases:ident]* $[as $altIdent?]? $sig:declSig
     )
     Command.elabCommand stx
 | _ => throwUnsupportedSyntax
