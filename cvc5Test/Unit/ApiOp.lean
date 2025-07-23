@@ -24,12 +24,13 @@ test! do
   let x ← Op.ofIndices Kind.BITVECTOR_EXTRACT #[31, 1] |> assertOk
   assertEq x.getKind Kind.BITVECTOR_EXTRACT
 
-test! do
-  let x ← Op.null
-  assertEq x.isNull true
-  let y ← Op.ofIndices Kind.BITVECTOR_EXTRACT #[31, 1] |> assertOk
-  assertEq y.isNull false
-  assertNe x y
+-- -- `null` op not exposed
+-- test! do
+--   let x ← Op.null
+--   assertEq x.isNull true
+--   let y ← Op.ofIndices Kind.BITVECTOR_EXTRACT #[31, 1] |> assertOk
+--   assertEq y.isNull false
+--   assertNe x y
 
 test! do
   Op.ofIndices Kind.ADD

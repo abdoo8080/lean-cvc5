@@ -71,13 +71,14 @@ def createRewriteProof : Env ω (Proof ω) := do
 
 end
 
-test![TestApiBlackProof, nullProof] do
-  let proof ← Proof.null
-  assertEq proof.getRule ProofRule.UNKNOWN
-  -- skipping test in original file for the hash being equal to the constructor index
-  assertTrue proof.getResult.isNull
-  assertTrue proof.getChildren.isEmpty
-  assertTrue proof.getArguments.isEmpty
+-- -- `null` proof not exposed
+-- test![TestApiBlackProof, nullProof] do
+--   let proof ← Proof.null
+--   assertEq proof.getRule ProofRule.UNKNOWN
+--   -- skipping test in original file for the hash being equal to the constructor index
+--   assertTrue proof.getResult.isNull
+--   assertTrue proof.getChildren.isEmpty
+--   assertTrue proof.getArguments.isEmpty
 
 test![TestApiBlackProof, getRule] do
   let proof ← createProof
