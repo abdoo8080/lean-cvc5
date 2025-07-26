@@ -95,6 +95,7 @@ def noSafetyProblemWithThis : Env ω Unit := do
 
     println! "  solver stuff..."
     let solver ← Solver.new
+    solver.setLogic "ALL"
     solver.setOption "produce-models" "true"
     -- using a `Term ω` while we are in `Env ω'`, but just its `toString` which is perfectly fine
     solver.parseSmtLib s!"\
@@ -137,9 +138,9 @@ def buildSomeTerm : Env ω (Term ω) := do
 error: type mismatch
   buildSomeTerm
 has type
-  Env ?m.3843 (Term ?m.3843) : Type
+  Env ?m.3932 (Term ?m.3932) : Type
 but is expected to have type
-  Env ω✝ (Term ?m.3838) : Type
+  Env ω✝ (Term ?m.3927) : Type
 -/
 #guard_msgs in #eval do
   let termButManagerIsDead : Term _ ← cvc5.runIO buildSomeTerm

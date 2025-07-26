@@ -77,11 +77,13 @@ which can only be created inside an `Env ω` environment.
 
 For technical details on how this scoping works, see `cvc5.run`.
 -/
-structure Env (ω : Type) (α : Type) where
+structure EnvT (ω : Type) (m : Type → Type) (α : Type) where
 /-- Private constructor from a term manager reader. -/
 private ofRaw ::
   /-- Private accessor to the term manager reader. -/
-  private toRaw : ReaderT cvc5.TermManager (ExceptT Error BaseIO) α
+  private toRaw : ReaderT cvc5.TermManager (ExceptT Error m) α
+
+abbrev Env (ω : Type) (α : Type) : Type := EnvT ω BaseIO α
 
 /-- Runs `Env ω` code, also available as `cvc5.Env.run`.
 
@@ -96,9 +98,19 @@ Remember `Term ω` is the type of terms that are only legal for scope `ω`, *i.e
 If we tried to `run` this function then the `α` in `run`'s signature would need to be `Term ω`, but
 this is impossible as `ω` cannot exist outside the `run` function.
 -/
-protected def run (code : {ω : Type} → Env ω α) : ExceptT Error BaseIO α := do
+protected def run [Monad m] [MonadLiftT BaseIO m]
+  (code : {ω : Type} → EnvT ω m α)
+: ExceptT Error m α := do
   let tm ← TermManager.new ()
   (@code Unit).toRaw tm
+
+protected def run! [Monad m] [MonadLiftT IO m]
+  (code : {ω : Type} → EnvT ω m α)
+: m α := do
+  let _ : MonadLift BaseIO m := { monadLift code := return ← code.toIO }
+  match ← cvc5.run code with
+  | .ok res => return res
+  | .error e => (throw <| IO.userError <| toString e : IO α)
 
 /-- Convenience wrapper around `cvc5.run`/`Env.run` to run `Env ω` code in `IO`.
 
@@ -113,6 +125,8 @@ namespace Env
 
 export cvc5 (run runIO)
 
+private abbrev ofRaw := @EnvT.ofRaw
+
 instance : Monad (Env ω) where
   pure := (⟨pure ·⟩)
   bind | ⟨code⟩, f => ⟨fun tm => code tm >>= (f · |>.toRaw tm)⟩
@@ -125,8 +139,11 @@ instance : MonadExcept Error (Env ω) where
     | error@(.error _ _) => error
     | .ok (.error e) world => errorDo e |>.toRaw tm world
 
-instance : MonadLift (ST IO.RealWorld) (Env ω) where
-  monadLift stCode := ofRaw fun _ => stCode
+instance [Monad m] : MonadLift m (EnvT ω m) where
+  monadLift mCode := ofRaw fun _ => mCode
+
+-- sanity
+example : MonadLiftT (ST IO.RealWorld) (Env ω) := inferInstance
 
 instance : MonadLift (Except Error) (Env ω) where
   monadLift excCode := ofRaw fun _ => excCode
