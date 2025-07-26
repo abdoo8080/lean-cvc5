@@ -138,9 +138,9 @@ def buildSomeTerm : Env ω (Term ω) := do
 error: type mismatch
   buildSomeTerm
 has type
-  Env ?m.3932 (Term ?m.3932) : Type
+  Env ?m.3960 (Term ?m.3960) : Type
 but is expected to have type
-  Env ω✝ (Term ?m.3927) : Type
+  Env ω✝ (Term ?m.3955) : Type
 -/
 #guard_msgs in #eval do
   let termButManagerIsDead : Term _ ← cvc5.runIO buildSomeTerm

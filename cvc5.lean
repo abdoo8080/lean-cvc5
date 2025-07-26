@@ -145,6 +145,13 @@ instance : MonadExcept Error (Env ω) where
 instance [Monad m] : MonadLift m (EnvT ω m) where
   monadLift mCode := ofRaw fun _ => mCode
 
+instance [M : Monad m] [MonadLiftT BaseIO m] : MonadLift (Env ω) (EnvT ω m) where
+  monadLift envCode := ofRaw fun tm => do
+    let code : BaseIO (Except Error _) := envCode.toRaw tm
+    match ← code with
+    | .ok res => return res
+    | .error e => throw e
+
 -- sanity
 example : MonadLiftT (ST IO.RealWorld) (Env ω) := inferInstance
 
