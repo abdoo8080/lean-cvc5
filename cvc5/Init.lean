@@ -208,11 +208,12 @@ $[ with $[
       then pure i.type.getForallArity
       else throwError s!"failed to retrieve arity of (opaque) function `{ident}`"
 
-    let mut args := #[ Lean.Name.mkSimple "ω" |> Lean.mkIdent ]
+    let omega := Lean.Name.mkSimple "ω" |> Lean.mkIdent
+    let mut args := #[]
     for i in [0:arity.pred] do
       let arg := Lean.Name.mkSimple s!"v{i}" |> Lean.mkIdent
       args := args.push arg
-    let funCall : TSyntax `term ← `(term| ( @ $fullIdent $[ $args ]* ))
+    let funCall : TSyntax `term ← `(term| ( $fullIdent ($omega := $omega) $[ $args ]* ))
 
     for (autoDoc?, autoId) in autoDoc?.zip autoId do
       let id : String := autoId.getId.toString
@@ -224,7 +225,7 @@ $[ with $[
           `(fun $[$args]* => $funCall |> Except.toOption)
         else
           throwError s!"unexpected auto function name `{id}`: expected `<ident>!` or `<ident>?`"
-      let cmd ← define autoDoc? autoId (← `(optDeclSig|)) body
+      let cmd ← define autoDoc? autoId (← `(optDeclSig| {$omega : Prop})) body
       Command.elabCommand cmd
 
   if let
