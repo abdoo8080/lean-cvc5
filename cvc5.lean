@@ -77,35 +77,35 @@ which can only be created inside an `Env ω` environment.
 
 For technical details on how this scoping works, see `cvc5.run`.
 -/
-structure EnvT (ω : Type) (m : Type → Type) (α : Type) where
+structure EnvT (ω : Prop) (m : Type → Type) (α : Type) : Type where
 /-- Private constructor from a term manager reader. -/
 private ofRaw ::
   /-- Private accessor to the term manager reader. -/
   private toRaw : ReaderT cvc5.TermManager (ExceptT Error m) α
 
-abbrev Env (ω : Type) (α : Type) : Type := EnvT ω BaseIO α
+abbrev Env (ω : Prop) (α : Type) : Type := EnvT ω BaseIO α
 
 /-- Runs `Env ω` code, also available as `cvc5.Env.run`.
 
 # Scoping with `ω`
 
-Notice the type of the `code` argument is `{ω : Type} → Env ω α`, **not** `Env ω α` with `ω` a
+Notice the type of the `code` argument is `{ω : Prop} → Env ω α`, **not** `Env ω α` with `ω` a
 type parameter of the `run` function. This means that whatever `ω` will end up being passed to
 `code`, *it cannot escape its scope* which is the body of this `run` function.
 
-For instance, consider a hypothetical function `producesTerm : {ω : Type} → Env ω (Term ω)`.
+For instance, consider a hypothetical function `producesTerm : {ω : Prop} → Env ω (Term ω)`.
 Remember `Term ω` is the type of terms that are only legal for scope `ω`, *i.e.* inside an `Env ω`.
 If we tried to `run` this function then the `α` in `run`'s signature would need to be `Term ω`, but
 this is impossible as `ω` cannot exist outside the `run` function.
 -/
 protected def run [Monad m] [MonadLiftT BaseIO m]
-  (code : {ω : Type} → EnvT ω m α)
+  (code : {ω : Prop} → EnvT ω m α)
 : ExceptT Error m α := do
   let tm ← TermManager.new ()
-  (@code Unit).toRaw tm
+  (@code True).toRaw tm
 
 protected def run! [Monad m] [MonadLiftT IO m]
-  (code : {ω : Type} → EnvT ω m α)
+  (code : {ω : Prop} → EnvT ω m α)
 : m α := do
   let _ : MonadLift BaseIO m := { monadLift code := return ← code.toIO }
   match ← cvc5.run code with
@@ -116,7 +116,7 @@ protected def run! [Monad m] [MonadLiftT IO m]
 
 Also available as `cvc5.Env.runIO`.
 -/
-protected def runIO (code : {ω : Type} → Env ω α) : IO α := fun world =>
+protected def runIO (code : {ω : Prop} → Env ω α) : IO α := fun world =>
   match cvc5.run code world with
   | .ok (.ok res) world => .ok res world
   | .ok (.error err) world => .error err.toIO world
@@ -223,7 +223,7 @@ end Solver
 
 > See `Env`'s documentation for details regarding `ω`-scoping.
 -/
-structure Solver (ω : Type) where
+structure Solver (ω : Prop) where
 /-- Private constructor. -/
 private mk' ::
   /-- Private accessor to the underlying unsafe solver. -/
@@ -245,19 +245,19 @@ private mk' ::
 private opaque Srt.Impl : NonemptyType.{0}
 /-- The sort of a cvc5 term. -/
 @[irreducible]
-def Srt : (ω : Type) → Type := fun _ => Srt.Impl.type
+def Srt : (ω : Prop) → Type := fun _ => Srt.Impl.type
 
 /-- `Op` underlying opaque type, compiles to the `C++` version. -/
 private opaque Op.Impl : NonemptyType.{0}
 /-- A cvc5 term. -/
 @[irreducible]
-def Op : (ω : Type) → Type := fun _ => Op.Impl.type
+def Op : (ω : Prop) → Type := fun _ => Op.Impl.type
 
 /-- `Term` underlying opaque type, compiles to the `C++` version. -/
 private opaque Term.Impl : NonemptyType.{0}
 /-- A cvc5 term. -/
 @[irreducible]
-def Term : (ω : Type) → Type := fun _ => Term.Impl.type
+def Term : (ω : Prop) → Type := fun _ => Term.Impl.type
 
 
 
@@ -270,7 +270,7 @@ Proofs are trees and every proof object corresponds to the root step of a proof.
 root step are the premises of the step.
 -/
 @[irreducible]
-def Proof : (ω : Type) → Type := fun _ => Proof.Impl.type
+def Proof : (ω : Prop) → Type := fun _ => Proof.Impl.type
 
 
 

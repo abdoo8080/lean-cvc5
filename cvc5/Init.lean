@@ -681,16 +681,16 @@ where
     --
     -- First we `set_option autoImplicit false`: this catches mistakes like `Term w` (`≠ Term ω`)
     -- and more generally any use of a term-manager-scope type different from the one provided in
-    -- the top-level syntax extension. It's not perfect: users can still add `{w : Type}`, but
+    -- the top-level syntax extension. It's not perfect: users can still add `{w : Prop}`, but
     -- catching that would require a much deeper dive into the users' signatures.
     --
-    -- Second we add an `{$omegaIdent : Type}` argument explicitely. Otherwise we would get an error
+    -- Second we add an `{$omegaIdent : Prop}` argument explicitely. Otherwise we would get an error
     -- due to the `set_option autoImplicit false` above.
     let envDefStx ← do
       `(command|
         set_option autoImplicit false in
         $defMods:declModifiers
-        def $envDefIdent {$omegaIdent : Type} : $envDefSig := $envDefBody
+        def $envDefIdent {$omegaIdent : Prop} : $envDefSig := $envDefBody
       )
     logTrace s!"envDef = {envDefStx}"
     Command.elabCommand envDefStx
