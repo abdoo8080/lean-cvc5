@@ -134,13 +134,13 @@ instance [Monad m] : Monad (EnvT ω m) where
 -- sanity
 example : Monad (Env ω) := inferInstance
 
-instance : MonadExcept Error (Env ω) where
+instance [Monad m] : MonadExcept Error (EnvT ω m) where
   throw e := ⟨fun _ => throw e⟩
-  tryCatch | ⟨code⟩, errorDo => ofRaw fun tm world =>
-    match code tm world with
-    | okay@(.ok (.ok _) _) => okay
-    | error@(.error _ _) => error
-    | .ok (.error e) world => errorDo e |>.toRaw tm world
+  tryCatch | ⟨code⟩, errorDo => ofRaw fun tm => do
+    try code tm catch e => errorDo e |>.toRaw tm
+
+-- sanity
+example : MonadExcept Error (Env ω) := inferInstance
 
 instance [Monad m] : MonadLift m (EnvT ω m) where
   monadLift mCode := ofRaw fun _ => mCode
