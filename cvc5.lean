@@ -127,9 +127,12 @@ export cvc5 (run runIO)
 
 private abbrev ofRaw := @EnvT.ofRaw
 
-instance : Monad (Env ω) where
+instance [Monad m] : Monad (EnvT ω m) where
   pure := (⟨pure ·⟩)
   bind | ⟨code⟩, f => ⟨fun tm => code tm >>= (f · |>.toRaw tm)⟩
+
+-- sanity
+example : Monad (Env ω) := inferInstance
 
 instance : MonadExcept Error (Env ω) where
   throw e := ⟨fun _ => throw e⟩
