@@ -65,17 +65,42 @@ end TermManager
 
 
 
-/-- Environment monad for most `cvc5` functions, based on Lean's `ST.Ref`.
+/-- *"Scoped"* environment monad(-transformer), based on Lean's `ST.Ref`.
 
-`Env ω α` represents code producing a value of type `α` in *scope* `ω`. In `C++`-level terms, the
-"scope" corresponds to a specific *term manager* being alive, which means everything created by this
-manager is legal to use: terms, sorts, solvers, *etc.*
+Environment monad `Env ω α` represents code producing a value of type `α` in *scope* `ω` where `ω :
+Prop`, with `EnvT ω m α` its monad-transformer version. In `C++`-level terms, the "scope" `ω`
+corresponds to a specific *term manager* being alive, which means everything created by this manager
+is legal to use: terms, sorts, solvers, *etc.* It also means they can "interact" with each others as
+they rely on the same term manager; for instance one can only *assert* a term in a solver if they
+have the same scope.
 
-As a consequence most types in this library take a scope type parameter `ω` that encode scope
-traceability as type-checking, similar to Rust's lifetimes. See for instance `Term ω` and `Solver ω`
-which can only be created inside an `Env ω` environment.
+As a consequence most types in this library take a scope type parameter `ω` that encodes scope
+traceability into type-checking, similar to Rust's lifetimes. Terms (`Term`), sorts (`Srt`), solvers
+(`Solver`), *etc.* are all parameterized by a scope `ω` so that lean's type-checking tracks the
+scope they are legal in. Most constructors for these types are in `Env ω` for some `ω` and create,
+say, `Term ω` values to encode the fact that these values only make sense in the same `ω` scope.
 
-For technical details on how this scoping works, see `cvc5.run`.
+Most of the functions in this API rely on scoping to encode their own safety. Term comparison for
+example requires two `Term ω`, preventing from comparing terms that might not agree on their scope.
+Remember that *same scope* means *belong to the same term manager (and that manager is alive)* at
+`C++`-level, so the scoping prevents from comparing terms created by different managers which does
+not make sense.
+
+The only way to run `Env ω` code is through `cvc5.run`, `cvc5.runIO`, *etc.* These functions have a
+signature of the form
+```lean
+def cvc5.run (code : {ω : Prop} → Env ω α) ...
+```
+**not**
+```lean
+def cvc5.run {ω : Prop} (code : Env ω α) ...
+```
+Requiring the `code` to be compatible with any scoping property `ω` prevents `code`'s result type
+(`α`) from mentioning `ω` at all, and thus it is not possible to for `code` to produce, say, a `Term
+ω`. This trick is what makes `ω`-type-checking guarantee that all types are memory-safe, as the
+underlying term manager is created before running `code` and destroyed right after it is done
+running. For more technical details on this topic see the [*Running scoped code*
+section](#Running-scoped-code).
 -/
 structure EnvT (ω : Prop) (m : Type → Type) (α : Type) : Type where
 /-- Private constructor from a term manager reader. -/
@@ -83,48 +108,14 @@ private ofRaw ::
   /-- Private accessor to the term manager reader. -/
   private toRaw : ReaderT cvc5.TermManager (ExceptT Error m) α
 
+@[inherit_doc EnvT]
 abbrev Env (ω : Prop) (α : Type) : Type := EnvT ω BaseIO α
 
-/-- Runs `Env ω` code, also available as `cvc5.Env.run`.
 
-# Scoping with `ω`
-
-Notice the type of the `code` argument is `{ω : Prop} → Env ω α`, **not** `Env ω α` with `ω` a
-type parameter of the `run` function. This means that whatever `ω` will end up being passed to
-`code`, *it cannot escape its scope* which is the body of this `run` function.
-
-For instance, consider a hypothetical function `producesTerm : {ω : Prop} → Env ω (Term ω)`.
-Remember `Term ω` is the type of terms that are only legal for scope `ω`, *i.e.* inside an `Env ω`.
-If we tried to `run` this function then the `α` in `run`'s signature would need to be `Term ω`, but
-this is impossible as `ω` cannot exist outside the `run` function.
--/
-protected def run [Monad m] [MonadLiftT BaseIO m]
-  (code : {ω : Prop} → EnvT ω m α)
-: ExceptT Error m α := do
-  let tm ← TermManager.new ()
-  (@code True).toRaw tm
-
-protected def run! [Monad m] [MonadLiftT IO m]
-  (code : {ω : Prop} → EnvT ω m α)
-: m α := do
-  let _ : MonadLift BaseIO m := { monadLift code := return ← code.toIO }
-  match ← cvc5.run code with
-  | .ok res => return res
-  | .error e => (throw <| IO.userError <| toString e : IO α)
-
-/-- Convenience wrapper around `cvc5.run`/`Env.run` to run `Env ω` code in `IO`.
-
-Also available as `cvc5.Env.runIO`.
--/
-protected def runIO (code : {ω : Prop} → Env ω α) : IO α := fun world =>
-  match cvc5.run code world with
-  | .ok (.ok res) world => .ok res world
-  | .ok (.error err) world => .error err.toIO world
 
 namespace Env
 
-export cvc5 (run runIO)
-
+/-- Private accessor to the internal monadic code of some `EnvT` code. -/
 private abbrev ofRaw := @EnvT.ofRaw
 
 instance [Monad m] : Monad (EnvT ω m) where
@@ -134,12 +125,13 @@ instance [Monad m] : Monad (EnvT ω m) where
 -- sanity
 example : Monad (Env ω) := inferInstance
 
-instance [Monad m] : MonadExcept Error (EnvT ω m) where
+instance [Monad m] : MonadExceptOf Error (EnvT ω m) where
   throw e := ⟨fun _ => throw e⟩
   tryCatch | ⟨code⟩, errorDo => ofRaw fun tm => do
     try code tm catch e => errorDo e |>.toRaw tm
 
 -- sanity
+example [Monad m] : MonadExceptOf Error (EnvT ω m) := inferInstance
 example : MonadExcept Error (Env ω) := inferInstance
 
 instance [Monad m] : MonadLift m (EnvT ω m) where
@@ -155,17 +147,25 @@ instance [M : Monad m] [MonadLiftT BaseIO m] : MonadLift (Env ω) (EnvT ω m) wh
 -- sanity
 example : MonadLiftT (ST IO.RealWorld) (Env ω) := inferInstance
 
-instance : MonadLift (Except Error) (Env ω) where
+instance [Monad m] : MonadLift (Except Error) (EnvT ω m) where
   monadLift excCode := ofRaw fun _ => excCode
 
 instance : MonadLift IO (Env ω) where
   monadLift ioCode := ofRaw fun _ => do
     match ← ioCode.toBaseIO with
     | .ok res => return res
-    | .error e => throw <| Error.error s!"[IO] {e}"
+    | .error e => throw <| Error.error <| toString e
 
 -- sanity
 example : MonadLiftT BaseIO (Env ω) := inferInstance
+
+instance [E : MonadExcept ε m] : MonadExceptOf ε (EnvT ω m) where
+  throw e := ⟨fun _ => E.throw e⟩
+  tryCatch | ⟨code⟩, errorDo => EnvT.ofRaw fun state =>
+    E.tryCatch (code state) (errorDo · |>.toRaw state)
+
+instance [E : MonadExcept ε m] : MonadExcept ε (EnvT ω m) :=
+  instMonadExceptOfMonadExceptOf ε (EnvT ω m)
 
 /-- Runs `TermManager`-taking `Env ω` code. -/
 private def managerDoM (f : TermManager → Env ω α) : Env ω α :=
@@ -179,15 +179,121 @@ private def managerDo? (f : TermManager → Except Error α) : Env ω α :=
 private def managerDo (f : TermManager → α) : Env ω α :=
   managerDoM (pure ∘ f)
 
+end Env
 
+
+
+/-!
+# Running scoped code
+
+In all *run* functions below (`cvc5.run`, `cvc5.run!`, *etc.*) the type of the `code` argument is
+`{ω : Prop} → Env ω α`, and **not** `Env ω α` with `ω` a type parameter of the run function. This
+means that whatever `ω` will end up being passed to `code`, *it cannot escape its scope* which is
+the body of this `run` function.
+
+This prevents `code` from producing values of a type mentioning `ω` such as `Term ω`, `Srt ω`,
+*etc.* Since run functions create a term manager, run `code` using this term manager, and then
+destroy the term manager, then values of types such as `Term ω` cannot escape their
+memory-safe context `ω` representing the lifetime of the term manager, *i.e.* the span of time when
+`code` runs.
+
+For instance, consider a hypothetical function `producesTerm : {ω : Prop} → Env ω (Term ω)`.
+Remember `Term ω` is the type of terms that are only legal for scope `ω`, *i.e.* inside an `Env ω`.
+If we tried to `run` this function then the `α` in `run`'s signature would need to be `Term ω`, but
+this is impossible as `ω` cannot exist outside the `run` function.
+-/
+
+
+
+/-- Runs `EnvT ω m` code in an `m'` monad with explicit `cvc5.Error`-s.
+
+See the [*Running scoped code* section](#Running-scoped-code) for a discussion on `ω`-scopes when
+running `EnvT` code.
+-/
+protected def runTo [Monad m] (m' : Type → Type) [Monad m'] [MonadLiftT m m'] [MonadLiftT BaseIO m']
+  (code : {ω : Prop} → EnvT ω m α)
+: m' (Except Error α) := do
+  let tm ← TermManager.new ()
+  liftM <| (@code True).toRaw tm
+
+/-- Runs `EnvT ω m` code with explicit `cvc5.Error`-s.
+
+See the [*Running scoped code* section](#Running-scoped-code) for a discussion on `ω`-scopes when
+running `EnvT` code.
+-/
+protected def runIn (m : Type → Type) [Monad m] [MonadLiftT BaseIO m]
+  (code : {ω : Prop} → EnvT ω m α)
+: m (Except Error α) :=
+  cvc5.runTo m code
+
+@[inherit_doc cvc5.runIn]
+protected def run [Monad m] [MonadLiftT BaseIO m]
+  (code : {ω : Prop} → EnvT ω m α)
+: m (Except Error α) :=
+  cvc5.runIn m code
+
+/-- Runs `Env ω` code in `IO` with explicit `cvc5.Error`-s.
+
+See the [*Running scoped code* section](#Running-scoped-code) for a discussion on `ω`-scopes when
+running `EnvT` code.
+-/
+protected def runIO
+  (code : {ω : Prop} → Env ω α)
+: IO (Except Error α) :=
+  cvc5.runTo IO code
+
+/-- Runs `EnvT ω m` code in an `m'` monad, reports `cvc5.Error`-s as `IO.Error`-s.
+
+See the [*Running scoped code* section](#Running-scoped-code) for a discussion on `ω`-scopes when
+running `EnvT` code.
+-/
+protected def runTo! [Monad m] (m' : Type → Type) [Monad m'] [MonadLiftT IO m'] [MonadLiftT m m']
+  (code : {ω : Prop} → EnvT ω m α)
+: m' α := do
+  let _ : MonadLiftT BaseIO m' := ⟨fun code => liftM code.toIO⟩
+  match ← cvc5.runTo m' code with
+  | .ok res => return res
+  | .error e => (throw e.toIO : IO _)
+
+/-- Runs `EnvT ω m` code, reports `cvc5.Error`-s as `IO.Error`-s.
+
+See the [*Running scoped code* section](#Running-scoped-code) for a discussion on `ω`-scopes when
+running `EnvT` code.
+-/
+protected def runIn! (m : Type → Type) [Monad m] [MonadLiftT IO m]
+  (code : {ω : Prop} → EnvT ω m α)
+: m α :=
+  cvc5.runTo! m code
+
+@[inherit_doc cvc5.runIn!]
+protected def run! [Monad m] [MonadLiftT IO m]
+  (code : {ω : Prop} → EnvT ω m α)
+: m α :=
+  cvc5.runIn! m code
+
+/-- Runs `Env ω` code in `IO`, reports `cvc5.Error`-s as `IO.Error`-s.
+
+See the [*Running scoped code* section](#Running-scoped-code) for a discussion on `ω`-scopes when
+running `EnvT` code.
+-/
+protected def runIO!
+  (code : {ω : Prop} → Env ω α)
+: IO α :=
+  cvc5.runTo! IO code
+
+
+
+namespace Env
 
 -- helpers for C++ to produce `Env ω _` values
 section ffi_helpers
 
+/-- Produces an `Env ω α` value. -/
 @[export ffi_env_pure]
 private def ffi_env_pure (a : α) : Env ω α :=
   pure a
 
+/-- Throws a `cvc5.Error` from a string. -/
 @[export ffi_env_throw]
 private def ffi_env_throw (cppError : String) : Env ω α :=
   throw <| .error s!"[ffi] {cppError}"
@@ -356,6 +462,7 @@ end
 -- helpers for C++ to work with `Solver ω` values
 section ffi_helpers
 
+/-- Accessor for the underlying unsafe solver. -/
 @[export ffi_solver_to_raw]
 private def ffi_solver_to_raw : Solver ω → Solver.Raw := toRaw
 

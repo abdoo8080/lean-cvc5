@@ -7,24 +7,24 @@ namespace Test
 open cvc5 (Solver Srt Term)
 
 /-- info: bool sort = `Bool` -/
-#guard_msgs in #eval cvc5.runIO do
+#guard_msgs in #eval cvc5.runIO! do
   let bool ← Srt.Boolean
   println! "bool sort = `{bool}`"
 
 /-- error: not a function sort: Bool -/
-#guard_msgs in #eval cvc5.runIO do
+#guard_msgs in #eval cvc5.runIO! do
   let bool ← Srt.Boolean
   let _sorts ← bool.getFunctionDomainSorts
 
 /-- info: Bool.substitute [Bool → Int] = Int -/
-#guard_msgs in #eval cvc5.runIO do
+#guard_msgs in #eval cvc5.runIO! do
   let bool ← Srt.Boolean
   let int ← Srt.Integer
   let sub ← bool.substitute #[bool] #[int]
   println! "{bool}.substitute [{bool} → {int}] = {sub}"
 
 /-- info: version = `1.2.1` -/
-#guard_msgs in #eval cvc5.runIO do
+#guard_msgs in #eval cvc5.runIO! do
   let solver ← Solver.new
   let version ← solver.getVersion
   println! "version = `{version}`"
@@ -37,7 +37,7 @@ b3 = `b3`
 b4 = `b4`
 conj = `(and b1 b2 b3 b4)`
 -/
-#guard_msgs in #eval cvc5.runIO do
+#guard_msgs in #eval cvc5.runIO! do
   let bool ← Srt.Boolean
   let solver ← Solver.new
   let b1 ← solver.declareFun "b1" #[] bool
@@ -54,7 +54,7 @@ conj = `(and b1 b2 b3 b4)`
   println! "conj = `{conj}`"
 
 /-- error: expecting a Boolean subexpression -/
-#guard_msgs in #eval cvc5.runIO do
+#guard_msgs in #eval cvc5.runIO! do
   let bool ← Srt.Boolean
   let int ← Srt.Integer
   let solver ← Solver.new
@@ -70,7 +70,7 @@ b1_and_b1_simplified = b1
 i1_plus_zero = (+ i1 0)
 i1_plus_zero_simplified = i1
 -/
-#guard_msgs in #eval cvc5.runIO do
+#guard_msgs in #eval cvc5.runIO! do
   let bool ← Srt.Boolean
   let int ← Srt.Integer
   let solver ← Solver.new
@@ -96,7 +96,7 @@ confirmed unsat
 confirmed sat
 confirmed sat
 -/
-#guard_msgs in #eval cvc5.runIO do
+#guard_msgs in #eval cvc5.runIO! do
   let bool ← Srt.Boolean
   let solver ← Solver.new
   let b1 ← solver.declareFun "b1" #[] bool
@@ -129,7 +129,7 @@ confirmed sat
 /-- info:
 can't retrieve a symbol created by `parseCommands`
 -/
-#guard_msgs in #eval cvc5.runIO do
+#guard_msgs in #eval cvc5.runIO! do
   let solver ← Solver.new
   solver.parseSmtLib "\
 (set-logic QF_LIA)
@@ -156,7 +156,7 @@ can't retrieve a symbol created by `parseCommands`
 `(and b1 b2)` sat
 unsat after adding `(not b1)`
 -/
-#guard_msgs in #eval cvc5.runIO do
+#guard_msgs in #eval cvc5.runIO! do
   let solver ← Solver.new
   let b1_and_b2 := "(and b1 b2)"
   solver.parseSmtLib s!"\
@@ -187,7 +187,7 @@ unsat after adding `(not b1)`
 (error "Error in option parsing: Argument 'bad' for bool option produce-models is not a bool constant")
 ```
 -/
-#guard_msgs in #eval cvc5.runIO do
+#guard_msgs in #eval cvc5.runIO! do
   let solver ← Solver.new
   solver.parseSmtLib s!"\
 (set-logic QF_LIA)
@@ -200,7 +200,7 @@ Equation: (= b i)
 Type 1: Bool
 Type 2: Int
 -/
-#guard_msgs in #eval cvc5.runIO do
+#guard_msgs in #eval cvc5.runIO! do
   let solver ← Solver.new
   solver.parseSmtLib s!"\
 (set-logic QF_LIA)
@@ -220,7 +220,7 @@ unsat
 (error "cannot get model unless after a SAT or UNKNOWN response.")
 ```
 -/
-#guard_msgs in #eval cvc5.runIO do
+#guard_msgs in #eval cvc5.runIO! do
   let solver ← Solver.new
   solver.parseSmtLib s!"\
 (set-logic QF_LIA)

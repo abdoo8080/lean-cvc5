@@ -52,7 +52,7 @@ def tryToHackIt : Env ω Unit := do
   let term : Term ω ← Term.mkConst int "i"
 
   -- hacking in progress, `fun {ω'} =>` bit not needed, added for (error) clarity
-  cvc5.runIO fun {ω'} => do
+  cvc5.runIO! fun {ω'} => do
     -- type annotations not needed, added for clarity
     let int' : Srt ω' ← Srt.Integer
     if int = int' then
@@ -86,7 +86,7 @@ def noSafetyProblemWithThis : Env ω Unit := do
 
   println! "now entering sub-`Env` 🙀"
   -- stealthily running sub-`Env` code, `fun {ω'} =>` not needed, added for clarity
-  let isSat ← cvc5.runIO fun {ω'} => do
+  let isSat ← cvc5.runIO! fun {ω'} => do
     println! "  I'm in"
     -- type annotations not needed, added for clarity
     let int' : Srt ω' ← Srt.Integer
@@ -119,7 +119,7 @@ now entering sub-`Env` 🙀
   now exiting sub-`Env`
 `(and (<= 7 i) (<= i 11))` is sat according to sub-`Env`
 -/
-#guard_msgs in #eval cvc5.runIO noSafetyProblemWithThis
+#guard_msgs in #eval cvc5.runIO! noSafetyProblemWithThis
 
 end Scoping
 
@@ -138,12 +138,12 @@ def buildSomeTerm : Env ω (Term ω) := do
 error: type mismatch
   buildSomeTerm
 has type
-  Env ?m.3962 (Term ?m.3962) : Type
+  Env ?m.3972 (Term ?m.3972) : Type
 but is expected to have type
-  Env ω✝ (Term ?m.3957) : Type
+  Env ω✝ (Term ?m.3967) : Type
 -/
 #guard_msgs in #eval do
-  let termButManagerIsDead : Term _ ← cvc5.runIO buildSomeTerm
+  let termButManagerIsDead : Term _ ← cvc5.runIO! buildSomeTerm
   println! "bad {termButManagerIsDead}"
 
 end NoScopeEscape
@@ -265,7 +265,7 @@ spawning task 24...
 waiting for all tasks and validating results
 all results have been confirmed to be the same
 -/
-#guard_msgs in #eval cvc5.runIO (concurrent 24)
+#guard_msgs in #eval cvc5.runIO! (concurrent 24)
 
 end WithTasks
 
@@ -316,7 +316,7 @@ def tryingToHackIt (taskCount : Nat) : Env ω Unit := do
   let mut tasks := #[]
   for i in [0:taskCount] do
     -- `fun {ω'} =>` not needed, added to improve error message's quality
-    let task ← IO.asTask (cvc5.runIO fun {ω'} => do
+    let task ← IO.asTask (cvc5.runIO! fun {ω'} => do
       let taskInt ← Srt.Integer
       let taskTerm ← Term.mkConst taskInt "j"
       for term in terms do
@@ -335,3 +335,25 @@ def tryingToHackIt (taskCount : Nat) : Env ω Unit := do
     println! "{error}"
 
 end WithIOAsTask
+
+
+
+namespace MonadExceptLift
+
+def tryCatchString : EnvT ω (ExceptT String IO) String := do
+  try throw "stringError"
+  catch e : String => return s!"got a string error: {e}"
+
+instance : MonadLift IO (ExceptT String IO) := inferInstance
+
+def runBlah : IO Unit := do
+  let res := cvc5.run tryCatchString
+  match ← res with
+  | .ok (.ok s) => println! "ok ok `{s}`"
+  | .ok (.error e) => println! "ok error `{e}`"
+  | .error e => println! "ok error `{e}`"
+
+/-- info: ok ok `got a string error: stringError` -/
+#guard_msgs in #eval runBlah
+
+end MonadExceptLift

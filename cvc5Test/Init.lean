@@ -131,7 +131,7 @@ macro_rules
     | _ => Lean.Syntax.mkStrLit "test failed "
   `(
     $[ $outputComment:docComment ]?
-    #guard_msgs in #eval cvc5.runIO do
+    #guard_msgs in #eval cvc5.runIO! do
       try ($code) catch e =>
         IO.eprintln ($errPrefStrLit ++ (toString e))
         return default

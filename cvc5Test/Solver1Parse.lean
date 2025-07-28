@@ -2,7 +2,7 @@ import cvc5Test.Init
 
 namespace cvc5.Test
 
-def solver1Parse : IO Unit := cvc5.runIO do
+def solver1Parse : IO Unit := cvc5.runIO! do
   let solver1 ← Solver.new
   solver1.parseSmtLib "
 (set-logic QF_LIA)

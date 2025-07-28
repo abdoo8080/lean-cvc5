@@ -2,7 +2,7 @@ import cvc5Test.Init
 
 namespace cvc5.Test
 
-def mkTerms1 : IO Unit := cvc5.runIO do
+def mkTerms1 : IO Unit := cvc5.runIO! do
   let boolKind : Kind := cvc5.Kind.CONST_BOOLEAN
 
   let (tru, fls) := (
