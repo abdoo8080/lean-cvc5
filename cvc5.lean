@@ -34,9 +34,9 @@ environment.
 
 Most important sections of this documentation:
 
-- `Env`ironment monad and `Solver` (scoped) type definitions
-- [Basic scoped types](#Main-scoped-types), *e.g.* terms (`Term`) and sorts (`Srt`)
-- [`Srt`](#Srt-interface) and [`Term`](#Term-interface) interfaces
+- `Env`ironment monad and transformer (`EnvT`) and `Solver` (scoped) type definitions
+- [basic scoped types](#Main-scoped-types), *e.g.* terms (`Term`) and sorts (`Srt`)
+- [`Srt`](#Srt-interface) and [`Term`](#Term-interface) interfaces over scoped types
 - [`Solver` interface](#Solver-interface)
 -/
 namespace cvc5
@@ -1668,7 +1668,7 @@ SMT-LIB:
  .. code:: smtlib
 
      (declare-fun <symbol> ( <sort>* ) <sort>)
- \endverbatim
+\endverbatim
 
 - `symbol`: The name of the function.
 - `sorts`: The sorts of the parameters to this function.
@@ -1742,6 +1742,9 @@ ext_def proofToString (solver : Solver ω) : (proof : Proof ω) → Env ω Strin
 
 /-- Parses some SMT-LIB commands and returns the output.
 
+The parsing context is maintained between calls to parsing functions, *e.g.* once the `declare-fun`
+for some symbol `x` has been parsed, subsequent calls to parsing functions will know about `x`.
+
 - `commands` The SMT-LIB commands to parse.
 - `catchErrors` If true, this function fails if the parser's output contains errors. Otherwise it
   does not check the parser's output and simply returns it.
@@ -1787,6 +1790,9 @@ where
 /-- Parses some SMT-LIB commands.
 
 Fails if an error is detected in the parser's output.
+
+The parsing context is maintained between calls to parsing functions, *e.g.* once the `declare-fun`
+for some symbol `x` has been parsed, subsequent calls to parsing functions will know about `x`.
 -/
 def parseSmtLib (solver : Solver ω) (commands : String) : Env ω Unit := do
   let _output ← solver.parseSmtLibWithOutput commands (catchErrors := true)
