@@ -816,7 +816,7 @@ end internal
 
 
 
-extern_defs [ω] in "termManager"
+ext_defs [ω] in "termManager"
 
   /-- Get the Boolean sort. -/
   env_def getBooleanSort, protected Srt.Boolean : Srt ω
@@ -1242,7 +1242,7 @@ protected ext_def hash : (Term ω) → UInt64
 
 instance : Hashable (Term ω) := ⟨Term.hash⟩
 
-extern_defs [ω] in "termManager"
+ext_defs [ω] in "termManager"
 
   /-- Create n-ary term of given kind.
 
@@ -1477,7 +1477,7 @@ protected ext_def get : (op : Op ω) → Fin op.getNumIndices → Term ω
 instance : GetElem (Op ω) Nat (Term ω) fun op i => i < op.getNumIndices where
   getElem op i h := op.get ⟨i, h⟩
 
-extern_defs [ω] in "termManager"
+ext_defs [ω] in "termManager"
 
   /-- Create operator of kind:
 
