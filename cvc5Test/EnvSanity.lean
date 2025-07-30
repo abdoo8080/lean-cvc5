@@ -27,18 +27,18 @@ has type
 but is expected to have type
   Srt ω : Type
 ---
-error: Application type mismatch: In the application
+error: application type mismatch
   Term.mkConst int
-the argument
+argument
   int
 has type
   Srt ω : Type
 but is expected to have type
   Srt ω' : Type
 ---
-error: Application type mismatch: In the application
+error: application type mismatch
   List.cons term
-the argument
+argument
   term
 has type
   Term ω : Type
@@ -138,9 +138,9 @@ def buildSomeTerm : Env ω (Term ω) := do
 error: type mismatch
   buildSomeTerm
 has type
-  Env ?m.3972 (Term ?m.3972) : Type
+  Env ?m.4006 (Term ?m.4006) : Type
 but is expected to have type
-  Env ω✝ (Term ?m.3967) : Type
+  Env ω✝ (Term ?m.4001) : Type
 -/
 #guard_msgs in #eval do
   let termButManagerIsDead : Term _ ← cvc5.runIO! buildSomeTerm
@@ -298,10 +298,10 @@ functions because it has no reason to be compatible with `ω'`.
 
 export WithTasks (generateManyTerms)
 
-/-- error:
-Application type mismatch: In the application
+/--
+error: application type mismatch
   List.cons term
-the argument
+argument
   term
 has type
   Term ω : Type
