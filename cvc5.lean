@@ -127,13 +127,26 @@ instance [Monad m] : Monad (EnvT ω m) where
 -- sanity
 example : Monad (Env ω) := inferInstance
 
-instance [Monad m] : MonadExceptOf Error (EnvT ω m) where
-  throw e := ⟨fun _ => throw e⟩
+-- `MonadExcept`/`MonadExceptOf` instances adapted from `ExceptT`
+
+@[always_inline]
+instance (m : Type → Type) (ε : Type) [MonadExceptOf ε m] : MonadExceptOf ε (EnvT ω m) where
+  throw e := ofRaw fun _ => throw e
+  tryCatch | ⟨code⟩, errorDo => ofRaw fun tm =>
+    tryCatchThe ε (code tm) fun e => errorDo e |>.toRaw tm
+
+@[always_inline]
+instance [M : Monad m] : MonadExceptOf Error (EnvT ω m) where
+  throw e := ofRaw fun _ => M.pure (.error e)
   tryCatch | ⟨code⟩, errorDo => ofRaw fun tm => do
     try code tm catch e => errorDo e |>.toRaw tm
 
+instance [Monad m] : MonadExcept Error (EnvT ω m) where
+  throw := throwThe Error
+  tryCatch := tryCatchThe Error
+
 -- sanity
-example [Monad m] : MonadExceptOf Error (EnvT ω m) := inferInstance
+example : MonadExceptOf Error (Env ω) := inferInstance
 example : MonadExcept Error (Env ω) := inferInstance
 
 instance [Monad m] : MonadLift m (EnvT ω m) where
@@ -1125,7 +1138,7 @@ ext_def isInstantiated : Srt ω → Bool
 
 For example, free constants and variables have symbols.
 -/
-ext_def? hasSymbol : (sort : Srt ω) → Except Error Bool
+ext_def?! hasSymbol : (sort : Srt ω) → Except Error Bool
 
 /-- Get the symbol of this sort.
 
@@ -1133,63 +1146,63 @@ The symbol of this sort is the string that was provided when constructing it *vi
 `Solver.mkUninterpretedSort`, `Solver.mkUnresolvedSort`, or
 `Solver.mkUninterpretedSortConstructorSort`.
 -/
-ext_def? getSymbol : (sort : Srt ω) → Except Error String
+ext_def?! getSymbol : (sort : Srt ω) → Except Error String
 
 /-- The arity of a function sort. -/
-ext_def? getFunctionArity : (sort : Srt ω) → Except Error Nat
+ext_def?! getFunctionArity : (sort : Srt ω) → Except Error Nat
 
 /-- The domain sorts of a function sort. -/
-ext_def? getFunctionDomainSorts : (sort : Srt ω) → Except Error (Array (Srt ω))
+ext_def?! getFunctionDomainSorts : (sort : Srt ω) → Except Error (Array (Srt ω))
 
 /-- The codomain sort of a function sort. -/
-ext_def? getFunctionCodomainSort : (sort : Srt ω) → Except Error (Srt ω)
+ext_def?! getFunctionCodomainSort : (sort : Srt ω) → Except Error (Srt ω)
 
 /-- The array index sort of an array index. -/
-ext_def? getArrayIndexSort : (sort : Srt ω) → Except Error (Srt ω)
+ext_def?! getArrayIndexSort : (sort : Srt ω) → Except Error (Srt ω)
 
 /-- The array element sort of an array index. -/
-ext_def? getArrayElementSort : (sort : Srt ω) → Except Error (Srt ω)
+ext_def?! getArrayElementSort : (sort : Srt ω) → Except Error (Srt ω)
 
 /-- The element sort of a set sort. -/
-ext_def? getSetElementSort : (sort : Srt ω) → Except Error (Srt ω)
+ext_def?! getSetElementSort : (sort : Srt ω) → Except Error (Srt ω)
 
 /-- The element sort of a bag sort. -/
-ext_def? getBagElementSort : (sort : Srt ω) → Except Error (Srt ω)
+ext_def?! getBagElementSort : (sort : Srt ω) → Except Error (Srt ω)
 
 /-- The element sort of a sequence sort. -/
-ext_def? getSequenceElementSort : (sort : Srt ω) → Except Error (Srt ω)
+ext_def?! getSequenceElementSort : (sort : Srt ω) → Except Error (Srt ω)
 
 /-- The sort kind of an abstract sort, which denotes the kind of sorts that this abstract sort
 denotes.
 -/
-ext_def? getAbstractedKind : (sort : Srt ω) → Except Error SortKind
+ext_def?! getAbstractedKind : (sort : Srt ω) → Except Error SortKind
 
 /-- The arity of an uninterpreted sort constructor sort. -/
-ext_def? getUninterpretedSortConstructorArity : (sort : Srt ω) → Except Error UInt32
+ext_def?! getUninterpretedSortConstructorArity : (sort : Srt ω) → Except Error UInt32
 
 /-- The bit-width of the bit-vector sort. -/
-ext_def? getBitVectorSize : (sort : Srt ω) → Except Error UInt32
+ext_def?! getBitVectorSize : (sort : Srt ω) → Except Error UInt32
 
 /-- The size of the finite field sort. -/
-ext_def? getFiniteFieldSize : (sort : Srt ω) → Except Error Nat
+ext_def?! getFiniteFieldSize : (sort : Srt ω) → Except Error Nat
 
 /-- The bit-width of the exponent of the floating-point sort. -/
-ext_def? getFloatingPointExponentSize : (sort : Srt ω) → Except Error UInt32
+ext_def?! getFloatingPointExponentSize : (sort : Srt ω) → Except Error UInt32
 
 /-- The width of the significand of the floating-point sort. -/
-ext_def? getFloatingPointSignificandSize : (sort : Srt ω) → Except Error UInt32
+ext_def?! getFloatingPointSignificandSize : (sort : Srt ω) → Except Error UInt32
 
 /-- The length of a tuple sort. -/
-ext_def? getTupleLength : (sort : Srt ω) → Except Error UInt32
+ext_def?! getTupleLength : (sort : Srt ω) → Except Error UInt32
 
 /-- The element sorts of a tuple sort. -/
-ext_def? getTupleSorts : (sort : Srt ω) → Except Error (Array (Srt ω))
+ext_def?! getTupleSorts : (sort : Srt ω) → Except Error (Array (Srt ω))
 
 /-- The element sort of a nullable sort. -/
-ext_def? getNullableElementSort : (sort : Srt ω) → Except Error (Srt ω)
+ext_def?! getNullableElementSort : (sort : Srt ω) → Except Error (Srt ω)
 
 /-- Get the associated uninterpreted sort constructor of an instantiated uninterpreted sort. -/
-ext_def? getUninterpretedSortConstructor : (sort : Srt ω) → Except Error (Srt ω)
+ext_def?! getUninterpretedSortConstructor : (sort : Srt ω) → Except Error (Srt ω)
 
 /-- Instantiate a parameterized datatype sort or uninterpreted sort constructor sort.
 
@@ -1197,7 +1210,7 @@ Create sort parameters with `TermManager.mkParamSort symbol`.
 
 - `params` The list of sort parameters to instantiate with.
 -/
-ext_def? instantiate : (sort : Srt ω) → (params : Array (Srt ω)) → Except Error (Srt ω)
+ext_def?! instantiate : (sort : Srt ω) → (params : Array (Srt ω)) → Except Error (Srt ω)
 
 /-- Simultaneous substitution of Sorts.
 
@@ -1209,7 +1222,7 @@ the vector takes priority.
 - `sorts` The sub-sorts to be substituted within this sort.
 - `replacements` The sort replacing the substituted sub-sorts.
 -/
-ext_def? substitute
+ext_def?! substitute
 : (sort : Srt ω) → (sorts : Array (Srt ω)) → (replacements : Array (Srt ω)) → Except Error (Srt ω)
 
 end Srt
@@ -1344,13 +1357,13 @@ protected ext_def get : (t : Term ω) → Fin t.getNumChildren → Term ω
 
 Requires that this term has an operator (see `hasOp`).
 -/
-ext_def? getOp : (term : Term ω) → Except Error (Op ω)
+ext_def?! getOp : (term : Term ω) → Except Error (Op ω)
 
 /-- Get the value of a Boolean term as a native Boolean value.
 
 Requires `term` to have sort Bool.
 -/
-ext_def? getBooleanValue : (term : Term ω) → Except Error Bool
+ext_def?! getBooleanValue : (term : Term ω) → Except Error Bool
 
 /-- Get the string representation of a bit-vector value.
 
@@ -1358,13 +1371,13 @@ Requires `term` to have a bit-vector sort.
 
 - `base`: `2` for binary, `10` for decimal, and `16` for hexadecimal.
 -/
-ext_def? getBitVectorValue : (term : Term ω) → (base : UInt32) → Except Error String
+ext_def?! getBitVectorValue : (term : Term ω) → (base : UInt32) → Except Error String
 
 /-- Get the native integral value of an integral value. -/
-ext_def? getIntegerValue : (term : Term ω) → Except Error Int
+ext_def?! getIntegerValue : (term : Term ω) → Except Error Int
 
 /-- Get the native rational value of a real, rational-compatible value. -/
-ext_def? getRationalValue : (term : Term ω) → Except Error Std.Internal.Rat
+ext_def?! getRationalValue : (term : Term ω) → Except Error Std.Internal.Rat
 
 /-- Get the symbol of this term.
 
@@ -1373,13 +1386,13 @@ Requires that this term has a symbol (see `hasSymbol`).
 The symbol of the term is the string that was provided when constructing it *via*
 `TermManager.mkConst` or `TermManager.mkVar`.
 -/
-ext_def? getSymbol : (term : Term ω) → Except Error String
+ext_def?! getSymbol : (term : Term ω) → Except Error String
 
 /-- Get skolem identifier of this term.
 
 Requires `isSkolem`.
 -/
-ext_def? getSkolemId : (term : Term ω) → Except Error SkolemId
+ext_def?! getSkolemId : (term : Term ω) → Except Error SkolemId
 
 /-- Get the skolem indices of this term.
 
@@ -1388,7 +1401,7 @@ Requires `isSkolem`.
 Returns the skolem indices of this term. This is a list of terms that the skolem function is indexed
 by. For example, the array diff skolem `SkolemId.ARRAY_DEQ_DIFF` is indexed by two arrays.
 -/
-ext_def? getSkolemIndices : (term : Term ω) → Except Error (Array (Term ω))
+ext_def?! getSkolemIndices : (term : Term ω) → Except Error (Array (Term ω))
 
 instance : GetElem (Term ω) Nat (Term ω) fun t i => i < t.getNumChildren where
   getElem t i h := t.get ⟨i, h⟩
@@ -1419,22 +1432,22 @@ def getChildren (t : Term ω) : Array (Term ω) := Id.run do
   cts
 
 /-- Boolean negation. -/
-protected ext_def? not : (t : Term ω) → Except Error (Term ω)
+protected ext_def?! not : (t : Term ω) → Except Error (Term ω)
 
 /-- Boolean and. -/
-protected ext_def? and : (lft rgt : Term ω) → Except Error (Term ω)
+protected ext_def?! and : (lft rgt : Term ω) → Except Error (Term ω)
 
 /-- Boolean or. -/
-protected ext_def? or : (lft rgt : Term ω) → Except Error (Term ω)
+protected ext_def?! or : (lft rgt : Term ω) → Except Error (Term ω)
 
 /-- Boolean exclusive or. -/
-protected ext_def? xor : (lft rgt : Term ω) → Except Error (Term ω)
+protected ext_def?! xor : (lft rgt : Term ω) → Except Error (Term ω)
 
 /-- Equality. -/
-protected ext_def? eq : (lft rgt : Term ω) → Except Error (Term ω)
+protected ext_def?! eq : (lft rgt : Term ω) → Except Error (Term ω)
 
 /-- Boolean implication. -/
-protected ext_def? imp : (lft rgt : Term ω) → Except Error (Term ω)
+protected ext_def?! imp : (lft rgt : Term ω) → Except Error (Term ω)
 
 /-- If-then-else.
 
@@ -1442,7 +1455,7 @@ protected ext_def? imp : (lft rgt : Term ω) → Except Error (Term ω)
 - `thn`: then-branch of some sort `S`;
 - `els`: else-branch of *the same* sort `S`.
 -/
-protected ext_def? ite : (cnd thn els : Term ω) → Except Error (Term ω)
+protected ext_def?! ite : (cnd thn els : Term ω) → Except Error (Term ω)
 
 end Term
 
@@ -1551,7 +1564,7 @@ ext_def getRule : Proof ω → ProofRule
 
 Requires that `getRule` does not return `ProofRule.DSL_REWRITE` or `ProofRule.REWRITE`.
 -/
-ext_def? getRewriteRule : (proof : Proof ω) → Except Error ProofRewriteRule
+ext_def?! getRewriteRule : (proof : Proof ω) → Except Error ProofRewriteRule
 
 /-- The conclusion of the root step of the proof. -/
 ext_def getResult : Proof ω → Term ω

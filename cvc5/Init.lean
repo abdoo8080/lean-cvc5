@@ -232,8 +232,8 @@ def absolutize (ident : Lean.Ident) : CommandElabM Lean.Ident := do
 
 /-- Applies some function to the string version of the last part of an identifier.
 
-Used to generate names for `Option` variants of `Except _ _` function, *i.e.* `get → get?` which is
-done directly by function `addQuestionMark`.
+Used to generate names for variants of `Except _ _` functions, *i.e.* `get → get?` which is
+done directly by function `addQuestionMark`. See also `addBang`.
 -/
 def lastBitDo (ident : Lean.Ident) (f : String → String) : Option Lean.Ident :=
   match ident.getId.componentsRev with
@@ -253,6 +253,16 @@ def addQuestionMark (ident : Lean.Ident) : CommandElabM Lean.Ident := do
   if let some ident := lastBitDo ident (s!"{·}?") then return ident else
     Lean.logErrorAt ident.raw
       s!"cannot retrieve last part of identifier {ident} for `Option` variant generation"
+    throwUnsupportedSyntax
+
+/-- Augments the last bit of `ident` with a question mark `!`.
+
+Used to generate names for unwrap-variants of `Except _ _` functions.
+-/
+def addBang (ident : Lean.Ident) : CommandElabM Lean.Ident := do
+  if let some ident := lastBitDo ident (s!"{·}!") then return ident else
+    Lean.logErrorAt ident.raw
+      s!"cannot retrieve last part of identifier {ident} for unwrap-variant generation"
     throwUnsupportedSyntax
 
 end Ident
@@ -327,12 +337,17 @@ def managerTakingTy : CommandElabM Lean.Term := do
   let sigEnd ← `(term| $tmIdent → $exceptIdent $errorIdent $(ss.returnType))
   addArgs ss sigEnd
 
-/-- Signature obtained by `Env ω`-wrapping the return type. -/
+/-- Type with all arguments and an `Env ω`-wrapped return type. -/
 def envTy (ω : Ident) : CommandElabM Lean.Term := do
   let envIdent := Lean.mkIdent `cvc5.Env
   let returnTy ← `(term| $envIdent $ω $(ss.returnType))
   let sig ← addArgs ss returnTy
   `( {$ω : Prop} → $sig )
+
+/-- Signature obtained by `Env ω`-wrapping the return type. -/
+def envSig (ω : Ident) : CommandElabM DeclSig? := do
+  let ty ← ss.envTy ω
+  `(optDeclSig| : $ty )
 
 /-- Body of an `Env ω`-function that just calls the term-manager-taking version. -/
 def envBody (tmVersionIdent : Lean.Ident) : CommandElabM Lean.Term := do
@@ -365,9 +380,7 @@ def optionFunTy : CommandElabM Lean.Term := do
 
 /-- Signature version of `optionFunTy` of the form `: <type>`. -/
 def optionFunSig : CommandElabM DeclSig? := do
-  let optIdent := Lean.mkIdent ``Option
-  let returnTy ← `(term| $optIdent $(ss.returnType))
-  let ty ← addArgs ss returnTy
+  let ty ← ss.optionFunTy
   `(optDeclSig| : $ty)
 
 /-- Body of an `Option`-function that just calls the `Except Error` version. -/
@@ -379,6 +392,33 @@ def optionBody (exceptVersionIdent : Lean.Ident) : CommandElabM Lean.Term := do
       explicitArgIdents.push <| Lean.mkIdent <| Lean.Name.mkSimple s!"v_{i.succ}"
   `(fun $[ $explicitArgIdents:ident ]* =>
     if let .ok res := $ident $[ $explicitArgIdents ]* then some res else none)
+
+/-- Type with all arguments and untouched return type. -/
+def unwrapFunTy : CommandElabM Lean.Term := do
+  addArgs ss ss.returnType
+
+/-- Signature version of `unwrapFunTy` of the form `: <type>`. -/
+def unwrapFunSig : CommandElabM DeclSig? := do
+  let optIdent := Lean.mkIdent ``Option
+  let returnTy ← `(term| $optIdent $(ss.returnType))
+  let ty ← addArgs ss returnTy
+  `(optDeclSig| : $ty)
+
+/-- Body of an `Option`-function that just calls the `Except Error` version. -/
+def unwrapBody (exceptVersionIdent : Lean.Ident) : CommandElabM Lean.Term := do
+  let ident ← Ident.absolutize exceptVersionIdent
+  let mut explicitArgIdents := #[]
+  for i in [0:ss.explicitArgCount] do
+    explicitArgIdents :=
+      explicitArgIdents.push <| Lean.mkIdent <| Lean.Name.mkSimple s!"v_{i.succ}"
+  let identStr := Lean.Syntax.mkStrLit <| toString ident
+  `(term| fun $[ $explicitArgIdents:ident ]* =>
+      match ($ident $[ $explicitArgIdents ]*) with
+      | .ok res => res
+      | .error e =>
+        let src := $identStr
+        panic! s!"[{src}] cannot unwrap error result: {e}"
+  )
 
 end SplitSig
 
@@ -547,9 +587,9 @@ Keyword `ext_def?` assumes the external definition `myFunction` has a signature 
 -/
 declare_syntax_cat cvc5.extDefKw
 @[inherit_doc Lean.Parser.Category.cvc5.extDefKw]
-scoped syntax "ext_def " : cvc5.extDefKw
-@[inherit_doc Lean.Parser.Category.cvc5.extDefKw]
-scoped syntax "ext_def? " : cvc5.extDefKw
+scoped syntax (
+  "ext_def " <|> "ext_def? " <|> "ext_def! " <|> "ext_def!? " <|> "ext_def?! "
+) : cvc5.extDefKw
 /-- Keyword for `Env` external definitions. -/
 declare_syntax_cat cvc5.envDefKw
 @[inherit_doc Lean.Parser.Category.cvc5.envDefKw]
@@ -634,9 +674,7 @@ def envDefSpecElab (ω : Lean.Ident) (defaultPref? : Option String) (declMods : 
       externDefElab (← DeclMods.empty) withTmIdent (← extIdentOf pref? extIdent? ident) tmSig envVis
 
     -- env-def and aliases
-    let envSig ← do
-      let envTy ← ss.envTy ω
-      `(optDeclSig| : $envTy)
+    let envSig ← ss.envSig ω
     let envBody ← ss.envBody withTmIdent
 
     -- main env-def
@@ -695,19 +733,32 @@ unsafe def externExtDefElab : CommandElab
   -- elab env def and aliases
   let originalIdent ← extDefSpecElab (pref?.map TSyntax.getString) mods none extDefSpec
   -- generate `Option` variant if asked to
+  let mut optionVariant := false
+  let mut unwrapVariant := false
   match defKw with
   | `(extDefKw| ext_def) => pure ()
-  | `(extDefKw| ext_def?) => do
+  | `(extDefKw| ext_def?) => optionVariant := true
+  | `(extDefKw| ext_def!) => unwrapVariant := true
+  | `(extDefKw| ext_def!?)| `(extDefKw| ext_def?!) =>
+    optionVariant := true
+    unwrapVariant := true
+  | _ => throwUnsupportedSyntax
+  if optionVariant ∨ unwrapVariant then
     if let `(extDefSpec|
       $[in $_pref?]? $_ident $[as $_extIdent]? $_aliases $sig:declSig
     ) := extDefSpec then
       let ss ← SplitSig.ofDeclSig sig >>= SplitSig.unpackExceptReturnType
-      let optDefSig ← ss.optionFunSig
-      let optDefBody ← ss.optionBody originalIdent
-      let optDefIdent ← Ident.addQuestionMark originalIdent
-      elabDef mods optDefIdent optDefSig optDefBody
+      if optionVariant then
+        let optionDefSig ← ss.optionFunSig
+        let optionDefBody ← ss.optionBody originalIdent
+        let optionDefIdent ← Ident.addQuestionMark originalIdent
+        elabDef mods optionDefIdent optionDefSig optionDefBody
+      if unwrapVariant then
+        let unwrapDefSig ← ss.optionFunSig
+        let unwrapDefBody ← ss.optionBody originalIdent
+        let unwrapDefIdent ← Ident.addBang originalIdent
+        elabDef mods unwrapDefIdent unwrapDefSig unwrapDefBody
     else throwUnsupportedSyntax
-  | _ => throwUnsupportedSyntax
   -- elab more defs if any
   if let some moreDefs := moreDefs? then
     moreDefsElab moreDefs
