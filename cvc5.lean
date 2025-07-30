@@ -41,6 +41,8 @@ Most important sections of this documentation:
 -/
 namespace cvc5
 
+open scoped cvc5.Ext
+
 
 
 /-! ## Cvc5 monadic environment -/

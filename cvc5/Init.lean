@@ -492,17 +492,17 @@ For instance, `in "termManager"` forces the prefix to `"termManager"`.
 -/
 declare_syntax_cat cvc5.inPref
 @[inherit_doc Lean.Parser.Category.cvc5.inPref]
-syntax "in " str : cvc5.inPref
+scoped syntax "in " str : cvc5.inPref
 
 /-- Forces the function identifier of extern-identifier `<prefix>_<funIdent>`. -/
 declare_syntax_cat cvc5.asIdent
 @[inherit_doc Lean.Parser.Category.cvc5.asIdent]
-syntax "as " str : cvc5.asIdent
+scoped syntax "as " str : cvc5.asIdent
 
 /-- Syntax for easily specify aliases of an `ext_def`/`env_def`, with visibility modifiers. -/
 declare_syntax_cat cvc5.aliases
 @[inherit_doc Lean.Parser.Category.cvc5.aliases]
-syntax (", " (visibility)? ident)* : cvc5.aliases
+scoped syntax (", " (visibility)? ident)* : cvc5.aliases
 
 /-- Specification of an external definition, no `ext_def`/`env_def` keyword.
 
@@ -515,7 +515,7 @@ Specifies
 -/
 declare_syntax_cat cvc5.extDefSpec
 @[inherit_doc Lean.Parser.Category.cvc5.extDefSpec]
-syntax (cvc5.inPref)? ident (cvc5.asIdent)? cvc5.aliases declSig : cvc5.extDefSpec
+scoped syntax (cvc5.inPref)? ident (cvc5.asIdent)? cvc5.aliases declSig : cvc5.extDefSpec
 
 /-- Additional definitions, optionally follows an `extDefSpec`.
 
@@ -526,19 +526,19 @@ specifies mutually-recursive functions that can call each other.
 -/
 declare_syntax_cat cvc5.moreDefs
 @[inherit_doc Lean.Parser.Category.cvc5.moreDefs]
-syntax ppLine withPosition("with " ppLine
+scoped syntax ppLine withPosition("with " ppLine
   group( colGt declModifiers declId optDeclSig " := " withPosition(group(colGe term)) )+
 ) : cvc5.moreDefs
 
 /-- An `extDefSpec` followed by an optional `moreDefs`, no `ext_def`/`env_def` keyword. -/
 declare_syntax_cat cvc5.extDefSpecWithDefs
 @[inherit_doc Lean.Parser.Category.cvc5.extDefSpecWithDefs]
-syntax cvc5.extDefSpec cvc5.moreDefs ? : cvc5.extDefSpecWithDefs
+scoped syntax cvc5.extDefSpec cvc5.moreDefs ? : cvc5.extDefSpecWithDefs
 
 /-- Specifies the identifier to use as the `ω`-scope in `Env` (external or not) definitions. -/
 declare_syntax_cat cvc5.omegaScope
 @[inherit_doc Lean.Parser.Category.cvc5.omegaScope]
-syntax "[" ident "]" : cvc5.omegaScope
+scoped syntax "[" ident "]" : cvc5.omegaScope
 
 /-- Keywords for external definitions.
 
@@ -547,35 +547,35 @@ Keyword `ext_def?` assumes the external definition `myFunction` has a signature 
 -/
 declare_syntax_cat cvc5.extDefKw
 @[inherit_doc Lean.Parser.Category.cvc5.extDefKw]
-syntax "ext_def " : cvc5.extDefKw
+scoped syntax "ext_def " : cvc5.extDefKw
 @[inherit_doc Lean.Parser.Category.cvc5.extDefKw]
-syntax "ext_def? " : cvc5.extDefKw
+scoped syntax "ext_def? " : cvc5.extDefKw
 /-- Keyword for `Env` external definitions. -/
 declare_syntax_cat cvc5.envDefKw
 @[inherit_doc Lean.Parser.Category.cvc5.envDefKw]
-syntax "env_def " : cvc5.envDefKw
+scoped syntax "env_def " : cvc5.envDefKw
 /-- An `extDefKw` or an `envDefKw`, used for definitions inside an `ext_defs` list. -/
 declare_syntax_cat cvc5.extDefsKws
 @[inherit_doc Lean.Parser.Category.cvc5.extDefsKws]
-syntax (cvc5.envDefKw <|> cvc5.extDefKw) : cvc5.extDefsKws
+scoped syntax (cvc5.envDefKw <|> cvc5.extDefKw) : cvc5.extDefsKws
 
 /-- Keyword for a list of external definitions. -/
 declare_syntax_cat cvc5.extDefsKw
 @[inherit_doc Lean.Parser.Category.cvc5.extDefsKw]
-syntax "ext_defs " : cvc5.extDefsKw
+scoped syntax "ext_defs " : cvc5.extDefsKw
 
 @[inherit_doc explainExtension]
-syntax (name := externEnvDef)
+scoped syntax (name := externEnvDef)
   declModifiers cvc5.envDefKw (cvc5.omegaScope)? (cvc5.inPref)? cvc5.extDefSpecWithDefs
 : command
 
 @[inherit_doc explainExtension]
-syntax (name := externExtDef)
+scoped syntax (name := externExtDef)
   group(declModifiers cvc5.extDefKw (cvc5.inPref)? cvc5.extDefSpecWithDefs)
 : command
 
 @[inherit_doc explainExtension]
-syntax (name := externDefs)
+scoped syntax (name := externDefs)
   withPosition(cvc5.extDefsKw (cvc5.omegaScope)? (cvc5.inPref)? ppLine group(
     colGt declModifiers cvc5.extDefsKws (cvc5.omegaScope)? (cvc5.inPref)?
       cvc5.extDefSpec (cvc5.moreDefs)?
