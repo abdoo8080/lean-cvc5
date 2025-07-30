@@ -63,6 +63,122 @@ end
 /-! ## Syntax extensions for external definitions -/
 namespace Ext
 
+
+/-- Cvc5 external definition syntax extension.
+
+# Overview
+
+Provides two main external definition syntaxes: normal external definitions `ext_def` and `Env`
+external definitions `env_def`. The former is simple enough:
+
+```
+namespace Term
+/-- Documentation. -/
+ext_def getSort : Term ω → Srt ω
+```
+elaborates to
+```
+/-- Documentation. -/
+@[extern "term_getSort"]
+opaque getSort : Term ω → Srt ω
+```
+
+`Env` external definitions are a bit different.
+
+```
+namespace Term
+/-- Documentation. -/
+env_def [ω] mkConst : (sort : Srt ω) → (symbol : String) → Term ω
+```
+
+Notice the return type `Term ω` without an `Env`/`Except _` wrapper; also note the `[ω]` specifying
+the identifier of the `ω`-scope. Now, `env_def` assumes that at `C++`-level, `term_mkConst` has type
+`Srt ω → String → TermManager → Except Error (Term ω)`; so it must bind this function, and expose an
+`Env ω (Term ω)` variant.
+
+```
+@[extern "term_mkConst"]
+private opaque mkConst.withManager : Srt ω → String → TermManager → Except Error (Term ω)
+/-- Documentation. -/
+def mkConst : Srt ω → String → Env ω (Term ω) :=
+  fun v_1 v_2 => Env.managerDo? (mkConst v_1 v_2)
+```
+
+# Features
+
+Both kinds of definitions support visibility modifiers. They also allow control over the `prefix`
+and `funIdent` part of the `extern "<prefix>_<funIdent>"`
+```
+namespace Term
+/-- Extern string: `customPrefix_getSort`. -/
+ext_def in "customPrefix" getSort : Term ω → Srt ω
+/-- Extern string: `term_customIdent`. -/
+ext_def getSort' as "customIdent" : Term ω → Srt ω
+/-- Extern string: `customPrefix_customIdent`. -/
+ext_def in "customPrefix" getSort' as "customIdent" : Term ω → Srt ω
+```
+
+Both definition kinds can define aliases for the function they elaborate to.
+```
+/-- Documentation. -/
+ext_def getSort, Srt.ofTerm, anotherAlias : Term ω → Srt ω
+/-- External function ident override goes *before* the aliases. -/
+ext_def getSort as "customIdent", Srt.ofTerm, anotherAlias : Term ω → Srt ω
+```
+
+Both definition kinds can be followed by a *`with` clause* which allow packing more definitions
+alongside an ext/env definition.
+```
+/-- Documentation. -/
+ext_def getSort, Srt.ofTerm, anotherAlias : Term ω → Srt ω
+with
+  /-- True if `term` has sort `Bool`. -/
+  hasBoolSort (term : Term ω) : Bool := term.getSort.isBoolean
+```
+This feature is most valuable in multi ext/env definitions (discussed below).
+
+The `ext_def` syntax has a slightly different version: `ext_def?`. The syntax is exactly the same as
+`ext_def`, but the elaboration of `ext_def? defIdent ...`
+- assumes the return type of the definition is `Except _ α` for some `α`;
+- elaborates the external definition of `defIdent` just like `ext_def`;
+- generates a second (non-external) definition `defIdent?`.
+```
+def defIdent? : InType1 → InType2 → ... → Option α :=
+  fun v_1 v_2 ... => if let .ok res := (defIdent v_1 v_2 ...) then some res else none
+```
+
+# Multi ext/env definitions
+
+Specifying the `ω`-scope identifier of `env_def`-s every time can be tedious. The same goes for
+overriding the prefix of the extern identifier when many consecutive ext/env definitions use the
+exact same one.
+
+Multi external definitions let us factor both these things. They start with `ext_defs` followed by
+an `ω`-scope identifier and a external-identifier-prefix override (both optional). This syntax then
+simply takes an heterogeneous list of **indented** `ext_def`/`ext_def?`/`env_def` as discussed
+above.
+```
+namespace Term
+
+ext_defs [ω] in "termManager"
+
+  /-- No need to specify `[ω]` in env definitions as long as it is specified at `ext_defs`-level. -/
+  env_def mk as "mkTerm" : Kind → Array (Term ω) → Term ω
+  with
+    /-- Can use `with` definitions. -/
+    mkUnary (k : Kind) (arg : Term ω) : Env ω Term ω := Term.mk k #[arg]
+    /-- Doc. -/
+    mkBinary (k : Kind) (lft rgt : Term ω) : Env ω Term ω := Term.mk k #[lft, rgt]
+
+  /-- Can still override the external prefix. -/
+  ext_def in "notTermManager" someFunction : ...
+```
+
+-/
+def explainExtension := Empty
+
+
+
 open Lean
 open Elab
 open Command (CommandElab CommandElabM)
@@ -388,7 +504,7 @@ declare_syntax_cat cvc5.aliases
 @[inherit_doc Lean.Parser.Category.cvc5.aliases]
 syntax (", " (visibility)? ident)* : cvc5.aliases
 
-/-- Specification of an external definition.
+/-- Specification of an external definition, no `ext_def`/`env_def` keyword.
 
 Specifies
 - an optional extern-identifier prefix (`inPref`);
@@ -397,11 +513,11 @@ Specifies
 - a list of aliases for the main identifier (`aliases`);
 - the signature of the definition.
 -/
-declare_syntax_cat cvc5.externDefSpec
-@[inherit_doc Lean.Parser.Category.cvc5.externDefSpec]
-syntax (cvc5.inPref)? ident (cvc5.asIdent)? cvc5.aliases declSig : cvc5.externDefSpec
+declare_syntax_cat cvc5.extDefSpec
+@[inherit_doc Lean.Parser.Category.cvc5.extDefSpec]
+syntax (cvc5.inPref)? ident (cvc5.asIdent)? cvc5.aliases declSig : cvc5.extDefSpec
 
-/-- Additional definitions, optionally follows an `externDefSpec`.
+/-- Additional definitions, optionally follows an `extDefSpec`.
 
 Essentially the same as lean's usual `where` syntax, but uses `with` instead. We don't use `where`
 because though the syntax is the same, the semantics is very different from lean's `where` clauses.
@@ -414,10 +530,10 @@ syntax ppLine withPosition("with " ppLine
   group( colGt declModifiers declId optDeclSig " := " withPosition(group(colGe term)) )+
 ) : cvc5.moreDefs
 
-/-- An `externDefSpec` followed by an optional `moreDefs`. -/
-declare_syntax_cat cvc5.externDefSpecWithDefs
-@[inherit_doc Lean.Parser.Category.cvc5.externDefSpecWithDefs]
-syntax cvc5.externDefSpec cvc5.moreDefs ? : cvc5.externDefSpecWithDefs
+/-- An `extDefSpec` followed by an optional `moreDefs`, no `ext_def`/`env_def` keyword. -/
+declare_syntax_cat cvc5.extDefSpecWithDefs
+@[inherit_doc Lean.Parser.Category.cvc5.extDefSpecWithDefs]
+syntax cvc5.extDefSpec cvc5.moreDefs ? : cvc5.extDefSpecWithDefs
 
 /-- Specifies the identifier to use as the `ω`-scope in `Env` (external or not) definitions. -/
 declare_syntax_cat cvc5.omegaScope
@@ -448,15 +564,31 @@ declare_syntax_cat cvc5.extDefsKw
 @[inherit_doc Lean.Parser.Category.cvc5.extDefsKw]
 syntax "ext_defs " : cvc5.extDefsKw
 
-
+@[inherit_doc explainExtension]
 syntax (name := externEnvDef)
-  declModifiers cvc5.envDefKw (cvc5.omegaScope)? (cvc5.inPref)? cvc5.externDefSpecWithDefs
+  declModifiers cvc5.envDefKw (cvc5.omegaScope)? (cvc5.inPref)? cvc5.extDefSpecWithDefs
 : command
 
-def externDefElabSpec
+@[inherit_doc explainExtension]
+syntax (name := externExtDef)
+  group(declModifiers cvc5.extDefKw (cvc5.inPref)? cvc5.extDefSpecWithDefs)
+: command
+
+@[inherit_doc explainExtension]
+syntax (name := externDefs)
+  withPosition(cvc5.extDefsKw (cvc5.omegaScope)? (cvc5.inPref)? ppLine group(
+    colGt declModifiers cvc5.extDefsKws (cvc5.omegaScope)? (cvc5.inPref)?
+      cvc5.extDefSpec (cvc5.moreDefs)?
+  )+)
+: command
+
+
+
+/-- Elaboration for the `extDefSpec` part of an `ext_def`/`ext_def?`. -/
+def extDefSpecElab
   (defaultPref? : Option String) (declMods : DeclMods) (forceVis? : Option VisSpec)
-: (stx : TSyntax `cvc5.externDefSpec) → CommandElabM Lean.Ident
-  | `(externDefSpec|
+: (stx : TSyntax `cvc5.extDefSpec) → CommandElabM Lean.Ident
+  | `(extDefSpec|
     $[in $pref?:str]? $ident:ident $[as $extIdent?:str]?
       $[ , $[$aliasesVis?]? $aliases ]*
       $sig:declSig
@@ -467,19 +599,21 @@ def externDefElabSpec
     logTrace! "elab external definition of `{ident}`"
     externDefElab declMods ident (← extIdentOf pref? extIdent? ident) sig forceVis?
     -- aliases
+    let absoluteIdent ← Ident.absolutize ident
     for (aliasVis?, aliasIdent) in aliasesVis?.zip aliases do
-      logTrace! "elab `{ident}` alias `{aliasIdent}`"
+      logTrace! "elab alias {aliasIdent} for {absoluteIdent} ({ident})"
       let stx ← `(
-        @[inherit_doc $ident]
-        $[$aliasVis?]? def $aliasIdent := @$ident
+        @[inherit_doc $absoluteIdent]
+        $[$aliasVis?]? def $aliasIdent := @$absoluteIdent
       )
       Command.elabCommand stx
     return ident
   | _ => throwUnsupportedSyntax
 
-def elabEnvExternDefSpec (ω : Lean.Ident) (defaultPref? : Option String) (declMods : DeclMods)
-: (stx : TSyntax `cvc5.externDefSpec) → CommandElabM Unit
-  | `(externDefSpec|
+/-- Elaboration for the `extDefSpec` part of an `env_def`. -/
+def envDefSpecElab (ω : Lean.Ident) (defaultPref? : Option String) (declMods : DeclMods)
+: (stx : TSyntax `cvc5.extDefSpec) → CommandElabM Unit
+  | `(extDefSpec|
     $[in $pref?:str]? $ident:ident $[as $extIdent?:str]?
       $[ , $[$aliasesVis?]? $aliases ]*
       $sig:declSig
@@ -519,7 +653,8 @@ def elabEnvExternDefSpec (ω : Lean.Ident) (defaultPref? : Option String) (declM
       Command.elabCommand stx
   | _ => throwUnsupportedSyntax
 
-def elabMoreDefs
+/-- Elaboration for the `moreDefs` part of an `ext_def`/`env_def` -/
+def moreDefsElab
 : (stx : TSyntax `cvc5.moreDefs) → CommandElabM Unit
   | `(moreDefs| with $[ $mods:declModifiers $ident $declSig? := $body]*) => do
     logTrace! "elab more definitions attached to"
@@ -529,12 +664,12 @@ def elabMoreDefs
       Command.elabCommand stx
   | _ => throwUnsupportedSyntax
 
-@[command_elab externEnvDef]
+@[command_elab externEnvDef, inherit_doc externEnvDef]
 unsafe def externEnvDefElab : CommandElab
 | `(command|
   $mods:declModifiers
   env_def $[ [ $ω?:ident] ]? $[ in $pref?:str ]?
-    $extDefSpec:cvc5.externDefSpec
+    $extDefSpec:cvc5.extDefSpec
     $[ $moreDefs?:cvc5.moreDefs ]?
 ) => do
   let ω ←
@@ -542,32 +677,28 @@ unsafe def externEnvDefElab : CommandElab
       Lean.logErrorAt extDefSpec.raw s!"missing `ω`-scope identifier: expected `env_def [ω] ...`"
       throwUnsupportedSyntax
   -- elab env def and aliases
-  elabEnvExternDefSpec ω (pref?.map TSyntax.getString) mods extDefSpec
+  envDefSpecElab ω (pref?.map TSyntax.getString) mods extDefSpec
   -- elab more defs if any
   if let some moreDefs := moreDefs? then
-    elabMoreDefs moreDefs
+    moreDefsElab moreDefs
 | _ => throwUnsupportedSyntax
 
 
-syntax (name := externExtDef)
-  group(declModifiers cvc5.extDefKw (cvc5.inPref)? cvc5.externDefSpecWithDefs)
-: command
-
-@[command_elab externExtDef]
+@[command_elab externExtDef, inherit_doc externExtDef]
 unsafe def externExtDefElab : CommandElab
 | `(command|
   $mods:declModifiers
   $defKw:cvc5.extDefKw $[ in $pref?:str ]?
-    $extDefSpec:cvc5.externDefSpec
+    $extDefSpec:cvc5.extDefSpec
     $[ $moreDefs?:cvc5.moreDefs ]?
 ) => do
   -- elab env def and aliases
-  let originalIdent ← externDefElabSpec (pref?.map TSyntax.getString) mods none extDefSpec
+  let originalIdent ← extDefSpecElab (pref?.map TSyntax.getString) mods none extDefSpec
   -- generate `Option` variant if asked to
   match defKw with
   | `(extDefKw| ext_def) => pure ()
   | `(extDefKw| ext_def?) => do
-    if let `(externDefSpec|
+    if let `(extDefSpec|
       $[in $_pref?]? $_ident $[as $_extIdent]? $_aliases $sig:declSig
     ) := extDefSpec then
       let ss ← SplitSig.ofDeclSig sig >>= SplitSig.unpackExceptReturnType
@@ -579,23 +710,16 @@ unsafe def externExtDefElab : CommandElab
   | _ => throwUnsupportedSyntax
   -- elab more defs if any
   if let some moreDefs := moreDefs? then
-    elabMoreDefs moreDefs
+    moreDefsElab moreDefs
 | _ => throwUnsupportedSyntax
 
 
-syntax (name := externDefs)
-  withPosition(cvc5.extDefsKw (cvc5.omegaScope)? (cvc5.inPref)? ppLine group(
-    colGt declModifiers cvc5.extDefsKws (cvc5.omegaScope)? (cvc5.inPref)?
-      cvc5.externDefSpec (cvc5.moreDefs)?
-  )+)
-: command
-
-@[command_elab externDefs]
+@[command_elab externDefs, inherit_doc externDefs]
 unsafe def externDefsElab : CommandElab
 | `(command|
   ext_defs $[ [$topOmega?:ident] ]? $[in $topPref?:str]? $[
     $mods:declModifiers $defKw $[ [$omega?:ident] ]? $[in $pref?:str]?
-      $extDefSpec:cvc5.externDefSpec
+      $extDefSpec:cvc5.extDefSpec
     $[$moreDefs?:cvc5.moreDefs]?
   ]*
 ) =>
@@ -613,7 +737,7 @@ unsafe def externDefsElab : CommandElab
           throwUnsupportedSyntax
       let stx ← `(command|
         $mods:declModifiers
-        env_def [$ω] $[in $pref?]? $defSpec:cvc5.externDefSpec $[ $moreDefs?:cvc5.moreDefs ]?
+        env_def [$ω] $[in $pref?]? $defSpec:cvc5.extDefSpec $[ $moreDefs?:cvc5.moreDefs ]?
       )
       externEnvDefElab stx
     | `(extDefsKws| ext_def) =>
@@ -623,7 +747,7 @@ unsafe def externDefsElab : CommandElab
         throwUnsupportedSyntax
       let stx ← `(command|
         $mods:declModifiers
-        ext_def $[in $pref?]? $defSpec:cvc5.externDefSpec $[ $moreDefs?:cvc5.moreDefs ]?
+        ext_def $[in $pref?]? $defSpec:cvc5.extDefSpec $[ $moreDefs?:cvc5.moreDefs ]?
       )
       externExtDefElab stx
     | _ => throwUnsupportedSyntax
