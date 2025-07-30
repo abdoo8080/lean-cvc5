@@ -105,8 +105,9 @@ test! do
 
   -- helper for 1/n-indexed operators
   let check (op : Op _) (idx : Nat) (intValue : Int) : Env _ Unit :=
-    if _ : idx < op.getNumIndices then
-      assertEq op[idx].getIntegerValue! intValue
+    if _ : idx < op.getNumIndices then do
+      let idx ← op[idx].getIntegerValue
+      assertEq idx intValue
     else fail "illegal op index `{idx}` for {op}"
 
   -- operators with 1 index

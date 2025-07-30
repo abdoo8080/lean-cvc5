@@ -1162,32 +1162,44 @@ LEAN_EXPORT lean_obj_res termManager_new(lean_obj_arg unit)
 
 LEAN_EXPORT lean_obj_arg termManager_getBooleanSort(lean_obj_arg tm)
 {
-  return sort_box(new Sort(mut_tm_unbox(tm)->getBooleanSort()));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  return except_ok(lean_box(0), sort_box(new Sort(mut_tm_unbox(tm)->getBooleanSort())));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
 LEAN_EXPORT lean_obj_arg termManager_getIntegerSort(lean_obj_arg tm)
 {
-  return sort_box(new Sort(mut_tm_unbox(tm)->getIntegerSort()));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  return except_ok(lean_box(0), sort_box(new Sort(mut_tm_unbox(tm)->getIntegerSort())));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
 LEAN_EXPORT lean_obj_arg termManager_getRealSort(lean_obj_arg tm)
 {
-  return sort_box(new Sort(mut_tm_unbox(tm)->getRealSort()));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  return except_ok(lean_box(0), sort_box(new Sort(mut_tm_unbox(tm)->getRealSort())));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
 LEAN_EXPORT lean_obj_arg termManager_getRegExpSort(lean_obj_arg tm)
 {
-  return sort_box(new Sort(mut_tm_unbox(tm)->getRegExpSort()));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  return except_ok(lean_box(0), sort_box(new Sort(mut_tm_unbox(tm)->getRegExpSort())));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
 LEAN_EXPORT lean_obj_arg termManager_getRoundingModeSort(lean_obj_arg tm)
 {
-  return sort_box(new Sort(mut_tm_unbox(tm)->getRoundingModeSort()));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  return except_ok(lean_box(0), sort_box(new Sort(mut_tm_unbox(tm)->getRoundingModeSort())));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
 LEAN_EXPORT lean_obj_arg termManager_getStringSort(lean_obj_arg tm)
 {
-  return sort_box(new Sort(mut_tm_unbox(tm)->getStringSort()));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  return except_ok(lean_box(0), sort_box(new Sort(mut_tm_unbox(tm)->getStringSort())));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
 LEAN_EXPORT lean_obj_arg termManager_mkArraySort(lean_obj_arg idx,
@@ -1301,8 +1313,10 @@ LEAN_EXPORT lean_obj_res termManager_mkAbstractSort(uint16_t kind, lean_obj_arg 
 
 LEAN_EXPORT lean_obj_res termManager_mkUninterpretedSort(lean_obj_arg symbol, lean_obj_arg tm)
 {
-  return sort_box(new Sort(
-      mut_tm_unbox(tm)->mkUninterpretedSort(lean_string_cstr(symbol))));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  return except_ok(lean_box(0), sort_box(new Sort(
+      mut_tm_unbox(tm)->mkUninterpretedSort(lean_string_cstr(symbol)))));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
 LEAN_EXPORT lean_obj_arg termManager_mkUninterpretedSortConstructorSort(
@@ -1342,13 +1356,17 @@ LEAN_EXPORT lean_obj_res termManager_mkNullableSort(lean_obj_arg sort, lean_obj_
 
 LEAN_EXPORT lean_obj_res termManager_mkParamSort(lean_obj_arg symbol, lean_obj_arg tm)
 {
-  return sort_box(
-      new Sort(mut_tm_unbox(tm)->mkParamSort(lean_string_cstr(symbol))));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  return except_ok(lean_box(0), sort_box(
+      new Sort(mut_tm_unbox(tm)->mkParamSort(lean_string_cstr(symbol)))));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
 LEAN_EXPORT lean_obj_res termManager_mkBoolean(uint8_t val, lean_obj_arg tm)
 {
-  return term_box(new Term(mut_tm_unbox(tm)->mkBoolean(bool_unbox(val))));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  return except_ok(lean_box(0), term_box(new Term(mut_tm_unbox(tm)->mkBoolean(bool_unbox(val)))));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
 LEAN_EXPORT lean_obj_res termManager_mkIntegerFromString(lean_obj_arg val, lean_obj_arg tm)
@@ -1426,15 +1444,21 @@ extern "C" lean_obj_res termManager_mkConst(lean_obj_arg sort,
                                             lean_obj_arg symbol,
                                             lean_obj_arg tm)
 {
-  return term_box(new Term(
-      mut_tm_unbox(tm)->mkConst(*sort_unbox(sort), lean_string_cstr(symbol))));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  return except_ok(lean_box(0),
+    term_box(new Term(
+      mut_tm_unbox(tm)->mkConst(*sort_unbox(sort), lean_string_cstr(symbol)))));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 extern "C" lean_obj_res termManager_mkVar(lean_obj_arg sort,
                                           lean_obj_arg symbol,
                                           lean_obj_arg tm)
 {
-  return term_box(new Term(
-      mut_tm_unbox(tm)->mkVar(*sort_unbox(sort), lean_string_cstr(symbol))));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  return except_ok(lean_box(0),
+    term_box(new Term(
+      mut_tm_unbox(tm)->mkVar(*sort_unbox(sort), lean_string_cstr(symbol)))));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
 LEAN_EXPORT lean_obj_res termManager_mkOpOfIndices(uint16_t kind,

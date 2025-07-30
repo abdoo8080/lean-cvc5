@@ -738,7 +738,7 @@ instance : Nonempty (Srt ω) :=
   by rw [typeDef] ; exact Srt.Impl.property
 
 /-- The null sort. -/
-private extern_def null : Unit → Srt ω
+private ext_def null : Unit → Srt ω
 
 -- should not expose this
 private instance : Inhabited (Srt ω) := ⟨null ()⟩
@@ -754,9 +754,9 @@ instance instNonemptyTerm : Nonempty (Term ω) :=
   by rw [typeDef] ; exact Term.Impl.property
 
 /-- The null term. -/
-private extern_def null : Unit → Term ω
+private ext_def null : Unit → Term ω
 /-- Determine if this term is nullary. -/
-private extern_def isNull : Term ω → Bool
+private ext_def isNull : Term ω → Bool
 
 private instance : Inhabited (Term ω) := ⟨null ()⟩
 
@@ -771,10 +771,10 @@ instance instNonemptyOp : Nonempty (Op ω) :=
   by rw [typeDef] ; exact Op.Impl.property
 
 /-- The null operator. -/
-private extern_def null : Unit → Op ω
+private ext_def null : Unit → Op ω
 
 /-- Determine if this operator is nullary. -/
-private extern_def isNull : Op ω → Bool
+private ext_def isNull : Op ω → Bool
 
 private instance : Inhabited (Op ω) := ⟨null ()⟩
 
@@ -790,7 +790,7 @@ instance : Nonempty (Proof ω) :=
   by rw [typeDef] ; exact Proof.Impl.property
 
 /-- The null proof. -/
-extern_def null' as "null" : Unit → Proof ω
+ext_def null' as "null" : Unit → Proof ω
 @[inherit_doc null']
 def null : Env ω (Proof ω) := pure <| null' ()
 
@@ -816,76 +816,73 @@ end internal
 
 
 
-extern_env_defs [ω] in "termManager"
+extern_defs [ω] in "termManager"
 
   /-- Get the Boolean sort. -/
-  def getBooleanSort, protected Srt.Boolean : Srt ω
+  env_def getBooleanSort, protected Srt.Boolean : Srt ω
 
   /-- Get the Integer sort. -/
-  def getIntegerSort, protected Srt.Integer : Srt ω
+  env_def getIntegerSort, protected Srt.Integer : Srt ω
 
   /-- Get the Real sort. -/
-  def getRealSort, protected Srt.Real : Srt ω
+  env_def getRealSort, protected Srt.Real : Srt ω
 
   /-- Get the regular expression sort. -/
-  def getRegExpSort, protected Srt.RegExp : Srt ω
+  env_def getRegExpSort, protected Srt.RegExp : Srt ω
 
   /-- Get the rounding mode sort. -/
-  def getRoundingModeSort, protected Srt.RoundingModeSort : Srt ω
+  env_def getRoundingModeSort, protected Srt.RoundingModeSort : Srt ω
 
   /-- Get the string sort. -/
-  def getStringSort, protected Srt.StringSort : Srt ω
+  env_def getStringSort, protected Srt.StringSort : Srt ω
 
   /-- Create an array sort.
 
   - `indexSort` The array index sort.
   - `elemSort` The array element sort.
   -/
-  def? mkArraySort, Srt.mkArray : (indexSort elemSort : Srt ω) → Srt ω
+  env_def mkArraySort, Srt.mkArray : (indexSort elemSort : Srt ω) → Srt ω
 
   /-- Create a bit-vector sort.
 
   - `size` The bit-width of the bit-vector sort.
   -/
-  def? mkBitVectorSort, Srt.mkBitVector : (size : UInt32) → Srt ω
+  env_def mkBitVectorSort, Srt.mkBitVector : (size : UInt32) → Srt ω
 
   /-- Create a floating-point sort.
 
   - `exp` The bit-width of the exponent of the floating-point sort.
   - `sig` The bit-width of the significand of the floating-point sort.
   -/
-  def? mkFloatingPointSort, Srt.mkFloatingPoint : (exp sig : UInt32) → Srt ω
+  env_def mkFloatingPointSort, Srt.mkFloatingPoint : (exp sig : UInt32) → Srt ω
 
   /-- Create a finite-field sort from a given string of base n.
 
   - `size` The modulus of the field. Must be a prime.
   -/
-  private def? mkFiniteFieldSortFromString :
+  private env_def mkFiniteFieldSortFromString :
     (size : String) → (base : UInt32 := 10) → Srt ω
+  with
+    @[inherit_doc mkFiniteFieldSortFromString]
+    mkFiniteFieldSort (size : Nat) : Env ω (Srt ω) :=
+      mkFiniteFieldSortFromString (toString size) 10
 
-@[inherit_doc mkFiniteFieldSortFromString]
-def mkFiniteFieldSort (size : Nat) : Env ω (Srt ω) :=
-  mkFiniteFieldSortFromString (toString size) 10
+    @[inherit_doc mkFiniteFieldSort]
+    Srt.mkFiniteField := @mkFiniteFieldSort
 
-@[inherit_doc mkFiniteFieldSort]
-abbrev Srt.mkFiniteField := @mkFiniteFieldSort
+    @[inherit_doc mkFiniteFieldSortFromString]
+    mkFiniteFieldSort? (size : Nat) : Env ω (Option (Srt ω)) := do
+      try some <$> mkFiniteFieldSort size catch _ => return none
 
-@[inherit_doc mkFiniteFieldSortFromString]
-def mkFiniteFieldSort? (size : Nat) : Env ω (Option (Srt ω)) := do
-  try some <$> mkFiniteFieldSort size catch _ => return none
-
-@[inherit_doc mkFiniteFieldSort?]
-abbrev Srt.mkFiniteField? := @mkFiniteFieldSort?
-
-
-extern_env_defs [ω] in "termManager"
+    @[inherit_doc mkFiniteFieldSort?]
+    Srt.mkFiniteField? := @mkFiniteFieldSort?
 
   /-- Create function sort.
 
   - `sorts` The sort of the function arguments.
   - `codomain` The sort of the function return value.
   -/
-  def? mkFunctionSort, Srt.mkFunction : (sorts : Array (Srt ω)) → (codomain : Srt ω) → Srt ω
+  env_def mkFunctionSort, Srt.mkFunction : (sorts : Array (Srt ω)) → (codomain : Srt ω) → Srt ω
 
   /-- Create a predicate sort.
 
@@ -893,13 +890,13 @@ extern_env_defs [ω] in "termManager"
 
   - `sorts` The list of sorts of the predicate.
   -/
-  def? mkPredicateSort, Srt.mkPredicate : (sorts : Array (Srt ω)) → Srt ω
+  env_def mkPredicateSort, Srt.mkPredicate : (sorts : Array (Srt ω)) → Srt ω
 
   /-- Create a tuple sort.
 
   - `sorts` The sorts of the elements of the tuple.
   -/
-  def? mkTupleSort, Srt.mkTuple : (sorts : Array (Srt ω)) → Srt ω
+  env_def mkTupleSort, Srt.mkTuple : (sorts : Array (Srt ω)) → Srt ω
 
   /-- Create an uninterpreted sort constructor sort.
 
@@ -908,26 +905,26 @@ extern_env_defs [ω] in "termManager"
   - `arity` The arity of the sort (must be > 0).
   - `symbol` The symbol of the sort.
   -/
-  def? mkUninterpretedSortConstructorSort, Srt.mkUninterpretedSortConstructor :
+  env_def mkUninterpretedSortConstructorSort, Srt.mkUninterpretedSortConstructor :
     (arity : Nat) → (symbol : String) → Srt ω
 
   /-- Create a set parameter.
 
   - `elemSort` The sort of the set elements.
   -/
-  def? mkSetSort, Srt.mkSet : (sort : Srt ω) → Srt ω
+  env_def mkSetSort, Srt.mkSet : (sort : Srt ω) → Srt ω
 
   /-- Create a set parameter.
 
   - `elemSort` The sort of the set elements.
   -/
-  def? mkBagSort, Srt.mkBag : (sort : Srt ω) → Srt ω
+  env_def mkBagSort, Srt.mkBag : (sort : Srt ω) → Srt ω
 
   /-- Create a set parameter.
 
   - `elemSort` The sort of the set elements.
   -/
-  def? mkSequenceSort, Srt.mkSequence : (sort : Srt ω) → Srt ω
+  env_def mkSequenceSort, Srt.mkSequence : (sort : Srt ω) → Srt ω
 
   /-- Create an abstract sort. An abstract sort represents a sort for a given kind whose parameters
   and arguments are unspecified.
@@ -944,19 +941,19 @@ extern_env_defs [ω] in "termManager"
   SortKind.ARRAY_SORT` will return the sort `(ARRAY_SORT ? ?)` instead of the abstract sort whose
   abstract kind is `SortKind.ARRAY_SORT`.
   -/
-  def? mkAbstractSort, Srt.mkAbstract : (k : SortKind) → Srt ω
+  env_def mkAbstractSort, Srt.mkAbstract : (k : SortKind) → Srt ω
 
   /-- Create an uninterpreted sort.
 
   - `symbol` The name of the sort.
   -/
-  def mkUninterpretedSort, Srt.mkUninterpreted : (symbol : String) → Srt ω
+  env_def mkUninterpretedSort, Srt.mkUninterpreted : (symbol : String) → Srt ω
 
   /-- Create a nullable sort.
 
   - `sort` The sort of the element of the nullable.
   -/
-  def? mkNullableSort, Srt.mkNullable : (sort : Srt ω) → Srt ω
+  env_def mkNullableSort, Srt.mkNullable : (sort : Srt ω) → Srt ω
 
   /-- Create a sort parameter.
 
@@ -964,35 +961,35 @@ extern_env_defs [ω] in "termManager"
 
   **Warning**: This function is experimental and may change in future versions.
   -/
-  def mkParamSort, Srt.mkParam : (symbol : String) → Srt ω
+  env_def mkParamSort, Srt.mkParam : (symbol : String) → Srt ω
 
 
 
 namespace Srt
 
 /-- A string representation of this sort. -/
-protected extern_def toString : Srt ω → String
+protected ext_def toString : Srt ω → String
 
 instance : ToString (Srt ω) := ⟨Srt.toString⟩
 
 instance : Repr (Srt ω) := ⟨fun self _ => self.toString⟩
 
 /-- Comparison for structural equality. -/
-protected extern_def beq : Srt ω → Srt ω → Bool
+protected ext_def beq : Srt ω → Srt ω → Bool
 
 instance : BEq (Srt ω) := ⟨Srt.beq⟩
 
 /-- Less than comparison. -/
-protected extern_def blt : Srt ω → Srt ω → Bool
+protected ext_def blt : Srt ω → Srt ω → Bool
 
 /-- Greater than comparison. -/
-protected extern_def bgt : Srt ω → Srt ω → Bool
+protected ext_def bgt : Srt ω → Srt ω → Bool
 
 /-- Less than or equal comparison. -/
-protected extern_def ble : Srt ω → Srt ω → Bool
+protected ext_def ble : Srt ω → Srt ω → Bool
 
 /-- Greater than or equal comparison. -/
-protected extern_def bge : Srt ω → Srt ω → Bool
+protected ext_def bge : Srt ω → Srt ω → Bool
 
 /-- Comparison of two sorts. -/
 protected def compare (s1 s2 : Srt ω) : Ordering :=
@@ -1015,104 +1012,104 @@ instance : DecidableLE (Srt ω) :=
   fun s1 s2 => if h : s1.ble s2 then .isTrue h else .isFalse h
 
 /-- Hash function for cvc5 sorts. -/
-protected extern_def hash : Srt ω → UInt64
+protected ext_def hash : Srt ω → UInt64
 
 instance : Hashable (Srt ω) := ⟨Srt.hash⟩
 
 /-- Get the kind of this sort. -/
-extern_def getKind : Srt ω → SortKind
+ext_def getKind : Srt ω → SortKind
 
 /-- Determine if this is the null sort. -/
-extern_def isNull : Srt ω → Bool
+ext_def isNull : Srt ω → Bool
 
 /-- Determine if this is the Boolean sort (SMT-LIB: `Bool`). -/
-extern_def isBoolean : Srt ω → Bool
+ext_def isBoolean : Srt ω → Bool
 
 /-- Determine if this is the Integer sort (SMT-LIB: `Int`). -/
-extern_def isInteger : Srt ω → Bool
+ext_def isInteger : Srt ω → Bool
 
 /-- Determine if this is the Real sort (SMT-LIB: `Real`). -/
-extern_def isReal : Srt ω → Bool
+ext_def isReal : Srt ω → Bool
 
 /-- Determine if this is the String sort (SMT-LIB: `String`). -/
-extern_def isString : Srt ω → Bool
+ext_def isString : Srt ω → Bool
 
 /-- Determine if this is the regular expression sort (SMT-LIB: `RegLan`). -/
-extern_def isRegExp : Srt ω → Bool
+ext_def isRegExp : Srt ω → Bool
 
 /-- Determine if this is the rounding mode sort (SMT-LIB: `RoundingMode`). -/
-extern_def isRoundingMode : Srt ω → Bool
+ext_def isRoundingMode : Srt ω → Bool
 
 /-- Determine if this is a bit-vector sort (SMT-LIB: `(_ BitVec i)`). -/
-extern_def isBitVector : Srt ω → Bool
+ext_def isBitVector : Srt ω → Bool
 
 /-- Determine if this is a floating-point sort (SMT-LIB: `(_ FloatingPoint eb sb)`). -/
-extern_def isFloatingPoint : Srt ω → Bool
+ext_def isFloatingPoint : Srt ω → Bool
 
 /-- Determine if this is a datatype sort. -/
-extern_def isDatatype : Srt ω → Bool
+ext_def isDatatype : Srt ω → Bool
 
 /-- Determine if this is a datatype constructor sort. -/
-extern_def isDatatypeConstructor : Srt ω → Bool
+ext_def isDatatypeConstructor : Srt ω → Bool
 
 /-- Determine if this is a datatype selector sort. -/
-extern_def isDatatypeSelector : Srt ω → Bool
+ext_def isDatatypeSelector : Srt ω → Bool
 
 /-- Determine if this is a datatype tester sort. -/
-extern_def isDatatypeTester : Srt ω → Bool
+ext_def isDatatypeTester : Srt ω → Bool
 
 /-- Determine if this is a datatype updater sort. -/
-extern_def isDatatypeUpdater : Srt ω → Bool
+ext_def isDatatypeUpdater : Srt ω → Bool
 
 /-- Determine if this is a function sort. -/
-extern_def isFunction : Srt ω → Bool
+ext_def isFunction : Srt ω → Bool
 
 /-- Determine if this is a predicate sort.
 
 A predicate sort is a function sort that maps to the Boolean sort. All predicate sorts are also
 function sorts.
 -/
-extern_def isPredicate : Srt ω → Bool
+ext_def isPredicate : Srt ω → Bool
 
 /-- Determine if this is a tuple sort. -/
-extern_def isTuple : Srt ω → Bool
+ext_def isTuple : Srt ω → Bool
 
 /-- Determine if this is a nullable sort. -/
-extern_def isNullable : Srt ω → Bool
+ext_def isNullable : Srt ω → Bool
 
 /-- Determine if this is a record sort.
 
 **Warning**: this function is experimental and may change in future versions.
 -/
-extern_def isRecord : Srt ω → Bool
+ext_def isRecord : Srt ω → Bool
 
 /-- Determine if this is an array sort. -/
-extern_def isArray : Srt ω → Bool
+ext_def isArray : Srt ω → Bool
 
 /-- Determine if this is a finite field sort. -/
-extern_def isFiniteField : Srt ω → Bool
+ext_def isFiniteField : Srt ω → Bool
 
 /-- Determine if this is a Set sort. -/
-extern_def isSet : Srt ω → Bool
+ext_def isSet : Srt ω → Bool
 
 /-- Determine if this is a Bag sort. -/
-extern_def isBag : Srt ω → Bool
+ext_def isBag : Srt ω → Bool
 
 /-- Determine if this is a Sequence sort. -/
-extern_def isSequence : Srt ω → Bool
+ext_def isSequence : Srt ω → Bool
 
 /-- Determine if this is an abstract sort. -/
-extern_def isAbstract : Srt ω → Bool
+ext_def isAbstract : Srt ω → Bool
 
 /-- Determine if this is an uninterpreted sort. -/
-extern_def isUninterpretedSort : Srt ω → Bool
+ext_def isUninterpretedSort : Srt ω → Bool
 
 /-- Determine if this is an uninterpreted sort constructor.
 
 An uninterpreted sort constructor has arity `> 0` and can be instantiated to construct uninterpreted
 sorts with given sort parameters.
 -/
-extern_def isUninterpretedSortConstructor : Srt ω → Bool
+ext_def isUninterpretedSortConstructor : Srt ω → Bool
 
 /-- Determine if this is an instantiated (parametric datatype or uninterpreted sort constructor)
 sort.
@@ -1120,13 +1117,13 @@ sort.
 An instantiated sort is a sort that has been constructed from instantiating a sort with sort
 arguments --- see also `cvc5.Sort.instantiate`.
 -/
-extern_def isInstantiated : Srt ω → Bool
+ext_def isInstantiated : Srt ω → Bool
 
 /-- Determine if this term has a symbol (a name).
 
 For example, free constants and variables have symbols.
 -/
-extern_def!? hasSymbol : Srt ω → Except Error Bool
+ext_def? hasSymbol : (sort : Srt ω) → Except Error Bool
 
 /-- Get the symbol of this sort.
 
@@ -1134,63 +1131,63 @@ The symbol of this sort is the string that was provided when constructing it *vi
 `Solver.mkUninterpretedSort`, `Solver.mkUnresolvedSort`, or
 `Solver.mkUninterpretedSortConstructorSort`.
 -/
-extern_def!? getSymbol : Srt ω → Except Error String
+ext_def? getSymbol : (sort : Srt ω) → Except Error String
 
 /-- The arity of a function sort. -/
-extern_def!? getFunctionArity : Srt ω → Except Error Nat
+ext_def? getFunctionArity : (sort : Srt ω) → Except Error Nat
 
 /-- The domain sorts of a function sort. -/
-extern_def!? getFunctionDomainSorts : Srt ω → Except Error (Array (Srt ω))
+ext_def? getFunctionDomainSorts : (sort : Srt ω) → Except Error (Array (Srt ω))
 
 /-- The codomain sort of a function sort. -/
-extern_def!? getFunctionCodomainSort : Srt ω → Except Error (Srt ω)
+ext_def? getFunctionCodomainSort : (sort : Srt ω) → Except Error (Srt ω)
 
 /-- The array index sort of an array index. -/
-extern_def!? getArrayIndexSort : Srt ω → Except Error (Srt ω)
+ext_def? getArrayIndexSort : (sort : Srt ω) → Except Error (Srt ω)
 
 /-- The array element sort of an array index. -/
-extern_def!? getArrayElementSort : Srt ω → Except Error (Srt ω)
+ext_def? getArrayElementSort : (sort : Srt ω) → Except Error (Srt ω)
 
 /-- The element sort of a set sort. -/
-extern_def!? getSetElementSort : Srt ω → Except Error (Srt ω)
+ext_def? getSetElementSort : (sort : Srt ω) → Except Error (Srt ω)
 
 /-- The element sort of a bag sort. -/
-extern_def!? getBagElementSort : Srt ω → Except Error (Srt ω)
+ext_def? getBagElementSort : (sort : Srt ω) → Except Error (Srt ω)
 
 /-- The element sort of a sequence sort. -/
-extern_def!? getSequenceElementSort : Srt ω → Except Error (Srt ω)
+ext_def? getSequenceElementSort : (sort : Srt ω) → Except Error (Srt ω)
 
 /-- The sort kind of an abstract sort, which denotes the kind of sorts that this abstract sort
 denotes.
 -/
-extern_def!? getAbstractedKind : Srt ω → Except Error SortKind
+ext_def? getAbstractedKind : (sort : Srt ω) → Except Error SortKind
 
 /-- The arity of an uninterpreted sort constructor sort. -/
-extern_def!? getUninterpretedSortConstructorArity : Srt ω → Except Error UInt32
+ext_def? getUninterpretedSortConstructorArity : (sort : Srt ω) → Except Error UInt32
 
 /-- The bit-width of the bit-vector sort. -/
-extern_def!? getBitVectorSize : Srt ω → Except Error UInt32
+ext_def? getBitVectorSize : (sort : Srt ω) → Except Error UInt32
 
 /-- The size of the finite field sort. -/
-extern_def!? getFiniteFieldSize : Srt ω → Except Error Nat
+ext_def? getFiniteFieldSize : (sort : Srt ω) → Except Error Nat
 
 /-- The bit-width of the exponent of the floating-point sort. -/
-extern_def!? getFloatingPointExponentSize : Srt ω → Except Error UInt32
+ext_def? getFloatingPointExponentSize : (sort : Srt ω) → Except Error UInt32
 
 /-- The width of the significand of the floating-point sort. -/
-extern_def!? getFloatingPointSignificandSize : Srt ω → Except Error UInt32
+ext_def? getFloatingPointSignificandSize : (sort : Srt ω) → Except Error UInt32
 
 /-- The length of a tuple sort. -/
-extern_def!? getTupleLength : Srt ω → Except Error UInt32
+ext_def? getTupleLength : (sort : Srt ω) → Except Error UInt32
 
 /-- The element sorts of a tuple sort. -/
-extern_def!? getTupleSorts : Srt ω → Except Error (Array (Srt ω))
+ext_def? getTupleSorts : (sort : Srt ω) → Except Error (Array (Srt ω))
 
 /-- The element sort of a nullable sort. -/
-extern_def!? getNullableElementSort : Srt ω → Except Error (Srt ω)
+ext_def? getNullableElementSort : (sort : Srt ω) → Except Error (Srt ω)
 
 /-- Get the associated uninterpreted sort constructor of an instantiated uninterpreted sort. -/
-extern_def!? getUninterpretedSortConstructor : Srt ω → Except Error (Srt ω)
+ext_def? getUninterpretedSortConstructor : (sort : Srt ω) → Except Error (Srt ω)
 
 /-- Instantiate a parameterized datatype sort or uninterpreted sort constructor sort.
 
@@ -1198,7 +1195,7 @@ Create sort parameters with `TermManager.mkParamSort symbol`.
 
 - `params` The list of sort parameters to instantiate with.
 -/
-extern_def!? instantiate : Srt ω → (params : Array (Srt ω)) → Except Error (Srt ω)
+ext_def? instantiate : (sort : Srt ω) → (params : Array (Srt ω)) → Except Error (Srt ω)
 
 /-- Simultaneous substitution of Sorts.
 
@@ -1210,8 +1207,8 @@ the vector takes priority.
 - `sorts` The sub-sorts to be substituted within this sort.
 - `replacements` The sort replacing the substituted sub-sorts.
 -/
-extern_def!? substitute
-: Srt ω → (sorts : Array (Srt ω)) → (replacements : Array (Srt ω)) → Except Error (Srt ω)
+ext_def? substitute
+: (sort : Srt ω) → (sorts : Array (Srt ω)) → (replacements : Array (Srt ω)) → Except Error (Srt ω)
 
 end Srt
 
@@ -1226,26 +1223,26 @@ end Srt
 - `kind` The kind of the term.
 - `children` The children of the term.
 -/
-extern_env_def? [ω] in "termManager" mkTerm, Term.mk :
+env_def [ω] in "termManager" mkTerm, Term.mk :
   (kind : Kind) → (children : Array (Term ω) := #[]) → Term ω
 
 namespace Term
 
 /-- A string representation of this term. -/
-protected extern_def toString : Term ω → String
+protected ext_def toString : Term ω → String
 
 instance : ToString (Term ω) := ⟨Term.toString⟩
 
 /-- Syntactic equality operator. -/
-protected extern_def beq : (Term ω) → (Term ω) → Bool
+protected ext_def beq : (Term ω) → (Term ω) → Bool
 
 instance : BEq (Term ω) := ⟨Term.beq⟩
 
-protected extern_def hash : (Term ω) → UInt64
+protected ext_def hash : (Term ω) → UInt64
 
 instance : Hashable (Term ω) := ⟨Term.hash⟩
 
-extern_env_defs [ω] in "termManager"
+extern_defs [ω] in "termManager"
 
   /-- Create n-ary term of given kind.
 
@@ -1253,7 +1250,7 @@ extern_env_defs [ω] in "termManager"
   - `term` The head of the children list.
   - `tail` The tail of the children list.
   -/
-  def? mkInto as "mkTermInto" :
+  env_def mkInto as "mkTermInto" :
     (kind : Kind) → (term : Term ω) → (children : Array (Term ω) := #[]) → Term ω
 
   /-- Create a free constant.
@@ -1264,7 +1261,7 @@ extern_env_defs [ω] in "termManager"
   - `sort` The sort of the constant.
   - `symbol` The name of the constant (optional).
   -/
-  def mkConst : (sort : Srt ω) → (symbol : String) → Term ω
+  env_def mkConst : (sort : Srt ω) → (symbol : String) → Term ω
 
   /--
   Create a bound variable to be used in a binder (i.e., a quantifier, a lambda, or a witness
@@ -1276,83 +1273,82 @@ extern_env_defs [ω] in "termManager"
   - `sort`: the sort of the variable.
   - `symbol`: the name of the variable (optional).
   -/
-  def mkVar : (sort : Srt ω) → (symbol : String) → Term ω
+  env_def mkVar : (sort : Srt ω) → (symbol : String) → Term ω
 
   /-- Create a Boolean constant.
 
   - `b`: The Boolean constant.
   -/
-  def mkBoolean : (b : Bool) → Term ω
+  env_def mkBoolean : (b : Bool) → Term ω
 
   /-- Create an integer-value term.
 
   - `s`: the string representation of the constant, may represent an integer such as (`"123"`).
   -/
-  private def? mkIntegerFromString : (s : String) → Term ω
+  private env_def mkIntegerFromString : (s : String) → Term ω
+  with
+    /-- Create an integer-value term. -/
+    mkInteger : Int → Env ω (Term ω) := mkIntegerFromString ∘ toString
 
   /-- Create a real-value term.
 
   - `s`: the string representation of the constant, may represent an integer (`"123"`) or a real
     constant (`"12.34"`, `"12/34"`).
   -/
-  private def? mkRealFromString : (s : String) → Term ω
-
-/-- Create an integer-value term. -/
-def mkInteger : Int → Env ω (Term ω) := mkIntegerFromString ∘ toString
-
-/-- Create a real-value term from a `Std.Internal.Rat`. -/
-def mkRealOfRat (rat : Std.Internal.Rat) : Env ω (Term ω) :=
-  mkRealFromString s!"{rat.num}/{rat.den}"
-
-/-- Create a real-value term from numerator/denominator `Int`-s. -/
-def mkReal (num : Int) (den : Int := 1)
-  (den_ne_0 : den ≠ 0 := by simp <;> omega)
-: Env ω (Term ω) :=
-  let (num, den) :=
-    match h : den with
-    | .ofNat 0 => by contradiction
-    | .ofNat den => (num, den)
-    | .negSucc denMinus1 => (-num, denMinus1.succ)
-  mkRealOfRat <| Std.Internal.mkRat num den
+  private env_def mkRealFromString : (s : String) → Term ω
+  with
+    /-- Create a real-value term from a `Std.Internal.Rat`. -/
+    mkRealOfRat (rat : Std.Internal.Rat) : Env ω (Term ω) :=
+      mkRealFromString s!"{rat.num}/{rat.den}"
+    /-- Create a real-value term from numerator/denominator `Int`-s. -/
+    mkReal (num : Int) (den : Int := 1)
+      (den_ne_0 : den ≠ 0 := by simp <;> omega)
+    : Env ω (Term ω) :=
+      let (num, den) :=
+        match h : den with
+        | .ofNat 0 => by contradiction
+        | .ofNat den => (num, den)
+        | .negSucc denMinus1 => (-num, denMinus1.succ)
+      mkRealOfRat <| Std.Internal.mkRat num den
 
 /-- Get the kind of this term. -/
-extern_def getKind : Term ω → Kind
+ext_def getKind : Term ω → Kind
 
 /-- Get the sort of this term. -/
-extern_def getSort : Term ω → Srt ω
+ext_def getSort : Term ω → Srt ω
 
 /-- Determine if this term has an operator. -/
-extern_def hasOp : Term ω → Bool
+ext_def hasOp : Term ω → Bool
 
 /-- Determine if this term has a symbol (a name).
 
 For example, free constants and variables have symbols.
 -/
-extern_def hasSymbol : Term ω → Bool
+ext_def hasSymbol : Term ω → Bool
 
 /-- Get the id of this term. -/
-extern_def getId : Term ω → Nat
+ext_def getId : Term ω → Nat
 
 /-- Get the number of children of this term. -/
-extern_def getNumChildren : Term ω → Nat
+ext_def getNumChildren : Term ω → Nat
 
 /-- Is this term a skolem? -/
-extern_def isSkolem : Term ω → Bool
+ext_def isSkolem : Term ω → Bool
 
 /-- Get the child term of this term at a given index. -/
-protected extern_def get : (t : Term ω) → Fin t.getNumChildren → Term ω
+protected ext_def get : (t : Term ω) → Fin t.getNumChildren → Term ω
 
 /-- Get the operator of a term with an operator.
 
 Requires that this term has an operator (see `hasOp`).
 -/
-extern_def!? getOp : Term ω → Except Error (Op ω)
+ext_def? getOp : (term : Term ω) → Except Error (Op ω)
 
 /-- Get the value of a Boolean term as a native Boolean value.
 
 Requires `term` to have sort Bool.
 -/
-extern_def!? getBooleanValue : Term ω → Except Error Bool
+ext_def? getBooleanValue : (term : Term ω) → Except Error Bool
 
 /-- Get the string representation of a bit-vector value.
 
@@ -1360,13 +1356,13 @@ Requires `term` to have a bit-vector sort.
 
 - `base`: `2` for binary, `10` for decimal, and `16` for hexadecimal.
 -/
-extern_def!? getBitVectorValue : Term ω → UInt32 → Except Error String
+ext_def? getBitVectorValue : (term : Term ω) → (base : UInt32) → Except Error String
 
 /-- Get the native integral value of an integral value. -/
-extern_def!? getIntegerValue : Term ω → Except Error Int
+ext_def? getIntegerValue : (term : Term ω) → Except Error Int
 
 /-- Get the native rational value of a real, rational-compatible value. -/
-extern_def!? getRationalValue : Term ω → Except Error Std.Internal.Rat
+ext_def? getRationalValue : (term : Term ω) → Except Error Std.Internal.Rat
 
 /-- Get the symbol of this term.
 
@@ -1375,13 +1371,13 @@ Requires that this term has a symbol (see `hasSymbol`).
 The symbol of the term is the string that was provided when constructing it *via*
 `TermManager.mkConst` or `TermManager.mkVar`.
 -/
-extern_def!? getSymbol : Term ω → Except Error String
+ext_def? getSymbol : (term : Term ω) → Except Error String
 
 /-- Get skolem identifier of this term.
 
 Requires `isSkolem`.
 -/
-extern_def!? getSkolemId : (Term ω) → Except Error SkolemId
+ext_def? getSkolemId : (term : Term ω) → Except Error SkolemId
 
 /-- Get the skolem indices of this term.
 
@@ -1390,7 +1386,7 @@ Requires `isSkolem`.
 Returns the skolem indices of this term. This is a list of terms that the skolem function is indexed
 by. For example, the array diff skolem `SkolemId.ARRAY_DEQ_DIFF` is indexed by two arrays.
 -/
-extern_def!? getSkolemIndices : Term ω → Except Error (Array (Term ω))
+ext_def? getSkolemIndices : (term : Term ω) → Except Error (Array (Term ω))
 
 instance : GetElem (Term ω) Nat (Term ω) fun t i => i < t.getNumChildren where
   getElem t i h := t.get ⟨i, h⟩
@@ -1421,22 +1417,22 @@ def getChildren (t : Term ω) : Array (Term ω) := Id.run do
   cts
 
 /-- Boolean negation. -/
-protected extern_def!? not : (t : Term ω) → Except Error (Term ω)
+protected ext_def? not : (t : Term ω) → Except Error (Term ω)
 
 /-- Boolean and. -/
-protected extern_def!? and : (lft rgt : Term ω) → Except Error (Term ω)
+protected ext_def? and : (lft rgt : Term ω) → Except Error (Term ω)
 
 /-- Boolean or. -/
-protected extern_def!? or : (lft rgt : Term ω) → Except Error (Term ω)
+protected ext_def? or : (lft rgt : Term ω) → Except Error (Term ω)
 
 /-- Boolean exclusive or. -/
-protected extern_def!? xor : (lft rgt : Term ω) → Except Error (Term ω)
+protected ext_def? xor : (lft rgt : Term ω) → Except Error (Term ω)
 
 /-- Equality. -/
-protected extern_def!? eq : (lft rgt : Term ω) → Except Error (Term ω)
+protected ext_def? eq : (lft rgt : Term ω) → Except Error (Term ω)
 
 /-- Boolean implication. -/
-protected extern_def!? imp : (lft rgt : Term ω) → Except Error (Term ω)
+protected ext_def? imp : (lft rgt : Term ω) → Except Error (Term ω)
 
 /-- If-then-else.
 
@@ -1444,7 +1440,7 @@ protected extern_def!? imp : (lft rgt : Term ω) → Except Error (Term ω)
 - `thn`: then-branch of some sort `S`;
 - `els`: else-branch of *the same* sort `S`.
 -/
-protected extern_def!? ite : (cnd thn els : Term ω) → Except Error (Term ω)
+protected ext_def? ite : (cnd thn els : Term ω) → Except Error (Term ω)
 
 end Term
 
@@ -1457,31 +1453,31 @@ end Term
 namespace Op
 
 /-- A string representation of this term. -/
-protected extern_def toString : Op ω → String
+protected ext_def toString : Op ω → String
 
 instance : ToString (Op ω) := ⟨Op.toString⟩
 
 /-- Syntactic equality operator. -/
-protected extern_def beq : Op ω → Op ω → Bool
+protected ext_def beq : Op ω → Op ω → Bool
 
 instance : BEq (Op ω) := ⟨Op.beq⟩
 
 /-- Get the kind of this operator. -/
-extern_def getKind : Op ω → Kind
+ext_def getKind : Op ω → Kind
 
 /-- Determine if this operator is indexed. -/
-extern_def isIndexed : Op ω → Bool
+ext_def isIndexed : Op ω → Bool
 
 /-- Get the number of indices of this operator. -/
-extern_def getNumIndices : Op ω → Nat
+ext_def getNumIndices : Op ω → Nat
 
 /-- Get the index at position `i` of an indexed operator. -/
-protected extern_def get : (op : Op ω) → Fin op.getNumIndices → Term ω
+protected ext_def get : (op : Op ω) → Fin op.getNumIndices → Term ω
 
 instance : GetElem (Op ω) Nat (Term ω) fun op i => i < op.getNumIndices where
   getElem op i h := op.get ⟨i, h⟩
 
-extern_env_defs [ω] in "termManager"
+extern_defs [ω] in "termManager"
 
   /-- Create operator of kind:
 
@@ -1492,7 +1488,7 @@ extern_env_defs [ω] in "termManager"
   - `kind` The kind of the operator.
   - `arg` The string argument to this operator.
   -/
-  def? ofString as "mkOpOfString" : (kind : Kind) → (arg : String) → Op ω
+  env_def ofString as "mkOpOfString" : (kind : Kind) → (arg : String) → Op ω
 
   /-- Create n-ary term of given kind from a given operator.
 
@@ -1501,7 +1497,7 @@ extern_env_defs [ω] in "termManager"
   - `op` The operator.
   - `children` The children of the term.
   -/
-  def? mkTerm, _root_.cvc5.Term.ofOp as "mkTermOfOp" :
+  env_def mkTerm as "mkTermOfOp", _root_.cvc5.Term.ofOp :
     (op : Op ω) → (children : Array (Term ω) := #[]) → Term ω
 
   /-- Create operator of Kind:
@@ -1531,7 +1527,7 @@ extern_env_defs [ω] in "termManager"
   If `args` is empty, the `Op` simply wraps the `cvc5.Kind`. The `Kind` can be used in
   `Term.mk` directly without creating an `Op` first.
   -/
-  def? ofIndices as "mkOpOfIndices" : (kind : Kind) → (args : Array Nat := #[]) → Op ω
+  env_def ofIndices as "mkOpOfIndices" : (kind : Kind) → (args : Array Nat := #[]) → Op ω
 
 @[inherit_doc ofIndices]
 abbrev ofOp := @ofIndices
@@ -1547,33 +1543,33 @@ end Op
 namespace Proof
 
 /-- Get the proof rule used by the root step of the root. -/
-extern_def getRule : Proof ω → ProofRule
+ext_def getRule : Proof ω → ProofRule
 
 /-- Get the proof rewrite rule used by the root step of the proof.
 
 Requires that `getRule` does not return `ProofRule.DSL_REWRITE` or `ProofRule.REWRITE`.
 -/
-extern_def!? getRewriteRule : Proof ω → Except Error ProofRewriteRule
+ext_def? getRewriteRule : (proof : Proof ω) → Except Error ProofRewriteRule
 
 /-- The conclusion of the root step of the proof. -/
-extern_def getResult : Proof ω → Term ω
+ext_def getResult : Proof ω → Term ω
 
 /-- The premises of the root step of the proof. -/
-extern_def getChildren : Proof ω → Array (Proof ω)
+ext_def getChildren : Proof ω → Array (Proof ω)
 
 /-- The arguments of the root step of the proof as a vector of terms.
 
 Some of those terms might be strings.
 -/
-extern_def getArguments : Proof ω → Array (Term ω)
+ext_def getArguments : Proof ω → Array (Term ω)
 
 /-- Operator overloading for referential equality of two proofs. -/
-protected extern_def beq : Proof ω → Proof ω → Bool
+protected ext_def beq : Proof ω → Proof ω → Bool
 
 instance : BEq (Proof ω) := ⟨Proof.beq⟩
 
 /-- Hash function for proofs. -/
-protected extern_def hash : Proof ω → UInt64
+protected ext_def hash : Proof ω → UInt64
 
 instance : Hashable (Proof ω) := ⟨Proof.hash⟩
 
@@ -1588,38 +1584,38 @@ end Proof
 namespace Result
 
 /-- Comparison for structural equality. -/
-protected extern_def beq : Result → Result → Bool
+protected ext_def beq : Result → Result → Bool
 
 instance : BEq Result := ⟨Result.beq⟩
 
 /-- Hash function for cvc5 sorts. -/
-protected extern_def hash : Result → UInt64
+protected ext_def hash : Result → UInt64
 
 instance : Hashable Result := ⟨Result.hash⟩
 
 /-- True if this result is from a satisfiable `checkSat` or `checkSatAssuming` query. -/
-extern_def isSat : Result → Bool
+ext_def isSat : Result → Bool
 
 /-- True if this result is from a unsatisfiable `checkSat` or `checkSatAssuming` query. -/
-extern_def isUnsat : Result → Bool
+ext_def isUnsat : Result → Bool
 
 /-- True if this result is from a `checkSat` or `checkSatAssuming` query and cvc5 was not able to
 determine (un)satisfiability.
 -/
-extern_def isUnknown : Result → Bool
+ext_def isUnknown : Result → Bool
 
 /-- An explanation for an unknown query result.
 
 Note that if the result is (un)sat, this function returns `UnknownExplanation.UNKNOWN_REASON`.
 -/
-extern_def getUnknownExplanation : Result → UnknownExplanation
+ext_def getUnknownExplanation : Result → UnknownExplanation
 with
   /-- An explanation for an unknown query result, `none` if the result in not unknown. -/
   getUnknownExplanation? (res : Result) : Option UnknownExplanation :=
     if ¬ res.isUnknown then none else res.getUnknownExplanation
 
 /-- A string representation of this result. -/
-protected extern_def toString : Result → String
+protected ext_def toString : Result → String
 
 instance : ToString Result := ⟨Result.toString⟩
 
@@ -1634,7 +1630,7 @@ end Result
 namespace Solver
 
 /-- Get a string representation of the version of this solver. -/
-extern_def getVersion (solver : Solver ω) : Env ω String
+ext_def getVersion (solver : Solver ω) : Env ω String
 
 /-- Simplify a term or formula based on rewriting and (optionally) applying substitutions for
 solved variables.
@@ -1645,7 +1641,7 @@ may replace occurrences of `x` with `0`.
 - `t` The term to simplify.
 - `applySubs` True to apply substitutions for solved variables.
 -/
-extern_def simplify :
+ext_def simplify :
   (solver : Solver ω) → (term : Term ω) → (applySubs : Bool := false) → Env ω (Term ω)
 
 /-- Set option.
@@ -1653,16 +1649,16 @@ extern_def simplify :
 - `option`: The option name.
 - `value`: The option value.
 -/
-extern_def setOption (solver : Solver ω) (option value : String) : Env ω Unit
+ext_def setOption (solver : Solver ω) (option value : String) : Env ω Unit
 
 /-- Remove all assertions. -/
-extern_def resetAssertions (solver : Solver ω) : Env ω Unit
+ext_def resetAssertions (solver : Solver ω) : Env ω Unit
 
 /-- Set logic.
 
 - `logic`: The logic to set.
 -/
-extern_def setLogic (solver : Solver ω) (logic : String) : Env ω Unit
+ext_def setLogic (solver : Solver ω) (logic : String) : Env ω Unit
 
 /-- Declare n-ary function symbol.
 
@@ -1680,7 +1676,7 @@ SMT-LIB:
 - `fresh`: If true, then this method always returns a new Term. Otherwise, this method will always
   return the same Term for each call with the given sorts and symbol where fresh is false.
 -/
-extern_def declareFun (solver : Solver ω)
+ext_def declareFun (solver : Solver ω)
   (symbol : String) (sorts : Array (Srt ω)) (sort : Srt ω) (fresh : Bool := false)
 : Env ω (Term ω)
 
@@ -1688,22 +1684,22 @@ extern_def declareFun (solver : Solver ω)
 
 - `term`: The formula to assert.
 -/
-extern_def assertFormula : (solver : Solver ω) → (term : Term ω) → Env ω Unit
+ext_def assertFormula : (solver : Solver ω) → (term : Term ω) → Env ω Unit
 
 /-- Check satisfiability. -/
-extern_def checkSat : (solver : Solver ω) → Env ω Result
+ext_def checkSat : (solver : Solver ω) → Env ω Result
 
 /-- Check satisfiability assuming the given formulas.
 
 - `assumptions`: The formulas to assume.
 -/
-extern_def checkSatAssuming : (solver : Solver ω) → (assumptions : Array (Term ω)) → Env ω Result
+ext_def checkSatAssuming : (solver : Solver ω) → (assumptions : Array (Term ω)) → Env ω Result
 
 /-- Get a proof associated with the most recent call to `checkSat`.
 
 Requires to enable option `produce-proofs`.
 -/
-extern_def getProof : (solver : Solver ω) → Env ω (Array (Proof ω))
+ext_def getProof : (solver : Solver ω) → Env ω (Array (Proof ω))
 
 /--
 Get the values of the given term in the current model.
@@ -1718,7 +1714,7 @@ SMT-LIB:
 
 - `terms`: The term for which the value is queried.
 -/
-extern_def getValue (solver : Solver ω) (term : Term ω) : Env ω (Term ω)
+ext_def getValue (solver : Solver ω) (term : Term ω) : Env ω (Term ω)
 
 /--
 Get the values of the given terms in the current model.
@@ -1733,7 +1729,7 @@ SMT-LIB:
 
 - `terms`: The terms for which the values are queried.
 -/
-extern_def getValues (solver : Solver ω) (terms : Array (Term ω)) : Env ω (Array (Term ω))
+ext_def getValues (solver : Solver ω) (terms : Array (Term ω)) : Env ω (Array (Term ω))
 
 /-- Prints a proof as a string in a selected proof format mode.
 
@@ -1741,7 +1737,7 @@ Other aspects of printing are taken from the solver options.
 
 - `proof`: A proof, usually obtained from `getProof`.
 -/
-extern_def proofToString (solver : Solver ω) : (proof : Proof ω) → Env ω String
+ext_def proofToString (solver : Solver ω) : (proof : Proof ω) → Env ω String
 
 
 /-- Parses some SMT-LIB commands and returns the output.
