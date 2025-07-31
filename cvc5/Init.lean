@@ -24,6 +24,7 @@ deriving Repr
 
 namespace Error
 
+/-- Conversion to IO error. -/
 def toIO : Error → IO.Error
   | .missingValue => IO.Error.userError "missing value"
   | .error msg => IO.Error.userError s!"{msg}"
@@ -48,12 +49,18 @@ end Error
 
 section variable [Monad m] [MonadExcept Error m] (msg : String)
 
+/-- Throws a *missing value* error. -/
 def throwMissingValue : m α := throw <| Error.missingValue
 
+/-- Throws an `Error.error` error. -/
 protected def throw : m α := throw <| Error.error msg
+/-- Throws a *recoverable* error. -/
 def throwRecoverable : m α := throw <| Error.recoverable msg
+/-- Throws an *unsupported* error. -/
 def throwUnsupported : m α := throw <| Error.unsupported msg
+/-- Throws an *option* error. -/
 def throwOption : m α := throw <| Error.option msg
+/-- Throws a *parsing* error. -/
 def throwParsing : m α := throw <| Error.parsing msg
 
 end
