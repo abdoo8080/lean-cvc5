@@ -399,9 +399,7 @@ def unwrapFunTy : CommandElabM Lean.Term := do
 
 /-- Signature version of `unwrapFunTy` of the form `: <type>`. -/
 def unwrapFunSig : CommandElabM DeclSig? := do
-  let optIdent := Lean.mkIdent ``Option
-  let returnTy ← `(term| $optIdent $(ss.returnType))
-  let ty ← addArgs ss returnTy
+  let ty ← ss.unwrapFunTy
   `(optDeclSig| : $ty)
 
 /-- Body of an `Option`-function that just calls the `Except Error` version. -/
@@ -754,8 +752,8 @@ unsafe def externExtDefElab : CommandElab
         let optionDefIdent ← Ident.addQuestionMark originalIdent
         elabDef mods optionDefIdent optionDefSig optionDefBody
       if unwrapVariant then
-        let unwrapDefSig ← ss.optionFunSig
-        let unwrapDefBody ← ss.optionBody originalIdent
+        let unwrapDefSig ← ss.unwrapFunSig
+        let unwrapDefBody ← ss.unwrapBody originalIdent
         let unwrapDefIdent ← Ident.addBang originalIdent
         elabDef mods unwrapDefIdent unwrapDefSig unwrapDefBody
     else throwUnsupportedSyntax
