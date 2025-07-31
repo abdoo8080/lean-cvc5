@@ -340,8 +340,11 @@ end WithIOAsTask
 
 namespace MonadExceptLift
 
+example : MonadExcept String (ExceptT String IO) := inferInstance
+example : MonadExceptOf String (EnvT ω (ExceptT String IO)) := inferInstance
+
 def tryCatchString : EnvT ω (ExceptT String IO) String := do
-  try throw "stringError"
+  try throwThe String "stringError"
   catch e : String => return s!"got a string error: {e}"
 
 instance : MonadLift IO (ExceptT String IO) := inferInstance

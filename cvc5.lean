@@ -174,14 +174,6 @@ instance : MonadLift IO (Env ω) where
 -- sanity
 example : MonadLiftT BaseIO (Env ω) := inferInstance
 
-instance [E : MonadExcept ε m] : MonadExceptOf ε (EnvT ω m) where
-  throw e := ⟨fun _ => E.throw e⟩
-  tryCatch | ⟨code⟩, errorDo => EnvT.ofRaw fun state =>
-    E.tryCatch (code state) (errorDo · |>.toRaw state)
-
-instance [E : MonadExcept ε m] : MonadExcept ε (EnvT ω m) :=
-  instMonadExceptOfMonadExceptOf ε (EnvT ω m)
-
 /-- Runs `TermManager`-taking `Env ω` code. -/
 private def managerDoM (f : TermManager → Env ω α) : Env ω α :=
   ofRaw fun tm => (f tm |>.toRaw tm)
