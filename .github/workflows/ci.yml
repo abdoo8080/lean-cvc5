@@ -53,8 +53,6 @@ jobs:
       with:
         auto-config: false
         use-github-cache: false
-    - name: Download cvc5 Release
-      run: lake update
     - name: Build and Test lean-cvc5
       run: lake test
     - name: Purge Disk Cache # https://github.com/actions/runner-images/issues/2619
