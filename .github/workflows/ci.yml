@@ -48,15 +48,10 @@ jobs:
         msystem: CLANG64
         path-type: inherit
         install: mingw-w64-clang-x86_64-clang
-    - name: Setup Lean Environment
+    - name: Build and Test lean-cvc5
       uses: leanprover/lean-action@v1
       with:
-        auto-config: false
         use-github-cache: false
-    - name: Download cvc5 Release
-      run: lake update
-    - name: Build and Test lean-cvc5
-      run: lake test
     - name: Purge Disk Cache # https://github.com/actions/runner-images/issues/2619
       if: github.event_name == 'release' && runner.os == 'macOS'
       run: sudo /usr/sbin/purge
