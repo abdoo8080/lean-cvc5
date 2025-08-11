@@ -7,7 +7,7 @@ import cvc5Test.Init
 
 namespace cvc5.Test
 
-test![TestApiSortKind, sortKindToString] _tm => do
+test![TestApiSortKind, sortKindToString] do
   let mut skStr := ""
   for idx in [SortKind.INTERNAL_SORT_KIND.toCtorIdx : SortKind.LAST_SORT_KIND.toCtorIdx] do
     let sk := SortKind.ofNat idx
