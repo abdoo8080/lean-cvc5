@@ -67,7 +67,7 @@ target cvc5Enums pkg : Unit := do
   -- NOTE: it is intentional that we RUN the job in the "computing build
   -- jobs" phase, since otherwise we run into a potential race condition due
   -- to the expected `input_file`s not actually existing.
-  let _ ← buildUnlessUpToDate traceFile (← getTrace) traceFile do
+  return pure <| ← buildUnlessUpToDate traceFile (← getTrace) traceFile do
     download url zipPath
     if ← cvc5Dir.pathExists then
       IO.FS.removeDirAll cvc5Dir
@@ -75,14 +75,13 @@ target cvc5Enums pkg : Unit := do
     IO.FS.removeFile zipPath
     let includeDir := (cvc5Dir / "include" / "cvc5")
     generateEnums includeDir pkg
-  return Job.nil
 
 input_file ffi.cpp where
   path := "ffi" / "ffi.cpp"
   text := true
 
 target ffi.o pkg : FilePath := do
-  Job.nop.bindM $ fun _ =>  pkg.afterBuildCacheAsync do
+  Job.nop.bindM $ fun _ => pkg.afterBuildCacheAsync do
     let srcJob ← ffi.cpp.fetch
     let oFile := pkg.buildDir / "ffi" / "ffi.o"
     let flags := #[
