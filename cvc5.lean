@@ -1226,6 +1226,28 @@ extern_def checkSat : SolverT m Result
 -/
 extern_def checkSatAssuming : (assumptions : Array Term) → SolverT m Result
 
+/--
+Get the unsatisfiable core.
+
+SMT-LIB:
+
+\verbatim embed:rst:leading-asterisk
+.. code:: smtlib
+
+  (get-unsat-core)
+
+Requires to enable option `produce-unsat-cores`.
+
+Note: In contrast to SMT-LIB, cvc5's API does not distinguish between named and
+unnamed assertions when producing an unsatisfiable core. Additionally, the API
+allows this option to be called after a check with assumptions. A subset of
+those assumptions may be included in the unsatisfiable core returned by this
+function.
+
+Returns a set of terms representing the unsatisfiable core.
+-/
+extern_def getUnsatCore : SolverT m (Array Term)
+
 /-- Get a proof associated with the most recent call to `checkSat`.
 
 Requires to enable option `produce-proofs`.
@@ -1275,7 +1297,7 @@ extern_def proofToString : Proof → SolverT m String
 Commands that produce a result such as `(check-sat)`, `(get-model)`, ... are executed but the
 results are ignored.
 -/
-extern_def parseCommands : String → SolverT m Unit
+extern_def parseCommands : String → SolverT m (Array Term)
 
 /-- Run a `query` given a term manager `tm`. -/
 def run (tm : TermManager) (query : SolverT m α) : m (Except Error α) :=

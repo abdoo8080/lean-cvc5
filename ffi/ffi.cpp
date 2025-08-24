@@ -1563,6 +1563,20 @@ LEAN_EXPORT lean_obj_res solver_checkSatAssuming(lean_obj_arg inst,
   CVC5_LEAN_API_TRY_CATCH_SOLVER_END(inst, solver);
 }
 
+LEAN_EXPORT lean_obj_res solver_getUnsatCore(lean_obj_arg inst,
+                                             lean_obj_arg solver)
+{
+  CVC5_LEAN_API_TRY_CATCH_SOLVER_BEGIN;
+  std::vector<Term> assertions = solver_unbox(solver)->getUnsatCore();
+  lean_object* as = lean_mk_empty_array();
+  for (const Term& assertion : assertions)
+  {
+    as = lean_array_push(as, term_box(new Term(assertion)));
+  }
+  return solver_val(lean_box(0), inst, lean_box(0), as, solver);
+  CVC5_LEAN_API_TRY_CATCH_SOLVER_END(inst, solver);
+}
+
 LEAN_EXPORT lean_obj_res solver_getProof(lean_obj_arg inst, lean_obj_arg solver)
 {
   CVC5_LEAN_API_TRY_CATCH_SOLVER_BEGIN;
@@ -1652,7 +1666,13 @@ LEAN_EXPORT lean_obj_res solver_parseCommands(lean_obj_arg inst,
     // to out
     cmd.invoke(slv, sm, out);
   }
-  return solver_val(lean_box(0), inst, lean_box(0), mk_unit_unit(), solver);
+  std::vector<Term> vars = sm->getDeclaredTerms();
+  lean_object* vs = lean_mk_empty_array();
+  for (const Term& var : vars)
+  {
+    vs = lean_array_push(vs, term_box(new Term(var)));
+  }
+  return solver_val(lean_box(0), inst, lean_box(0), vs, solver);
   CVC5_LEAN_API_TRY_CATCH_SOLVER_END(inst, solver);
 }
 }
