@@ -13,6 +13,9 @@ import cvc5.ProofRule
 import cvc5.SkolemId
 import cvc5.Types
 
+@[export prod_mk]
+private def mkProd := @Prod.mk
+
 namespace cvc5
 
 namespace Kind
@@ -1297,7 +1300,7 @@ extern_def proofToString : Proof → SolverT m String
 Commands that produce a result such as `(check-sat)`, `(get-model)`, ... are executed but the
 results are ignored.
 -/
-extern_def parseCommands : String → SolverT m (Array Term)
+extern_def parseCommands : String → SolverT m (Array cvc5.Sort × Array Term)
 
 /-- Run a `query` given a term manager `tm`. -/
 def run (tm : TermManager) (query : SolverT m α) : m (Except Error α) :=

@@ -5,6 +5,12 @@
 using namespace cvc5;
 
 extern "C" {
+
+lean_obj_res prod_mk(lean_obj_arg T,
+                     lean_obj_arg U,
+                     lean_obj_arg t,
+                     lean_obj_arg u);
+
 // ## `Except Error α` constructors
 
 lean_obj_res except_ok(lean_obj_arg alpha, lean_obj_arg val);
@@ -1666,13 +1672,23 @@ LEAN_EXPORT lean_obj_res solver_parseCommands(lean_obj_arg inst,
     // to out
     cmd.invoke(slv, sm, out);
   }
-  std::vector<Term> vars = sm->getDeclaredTerms();
-  lean_object* vs = lean_mk_empty_array();
-  for (const Term& var : vars)
+  std::vector<Sort> sortVars = sm->getDeclaredSorts();
+  lean_object* svs = lean_mk_empty_array();
+  for (const Sort& sortVar : sortVars)
   {
-    vs = lean_array_push(vs, term_box(new Term(var)));
+    svs = lean_array_push(svs, sort_box(new Sort(sortVar)));
   }
-  return solver_val(lean_box(0), inst, lean_box(0), vs, solver);
+  std::vector<Term> termVars = sm->getDeclaredTerms();
+  lean_object* tvs = lean_mk_empty_array();
+  for (const Term& termVar : termVars)
+  {
+    tvs = lean_array_push(tvs, term_box(new Term(termVar)));
+  }
+  return solver_val(lean_box(0),
+                    inst,
+                    lean_box(0),
+                    prod_mk(lean_box(0), lean_box(0), svs, tvs),
+                    solver);
   CVC5_LEAN_API_TRY_CATCH_SOLVER_END(inst, solver);
 }
 }
