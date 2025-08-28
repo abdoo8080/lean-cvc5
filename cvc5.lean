@@ -1287,6 +1287,15 @@ SMT-LIB:
 -/
 extern_def getValues (terms : Array Term) : SolverT m (Array Term)
 
+/--
+Get the domain elements of an uninterpreted sort in the current model.
+
+The current model interprets the uninterpreted sort `s` as a finite sort whose domain elements are given in the return value of this function.
+
+- `s`: The uninterpreted sort in question.
+-/
+extern_def getModelDomainElements (s : cvc5.Sort) : SolverT m (Array Term)
+
 /-- Prints a proof as a string in a selected proof format mode.
 
 Other aspects of printing are taken from the solver options.

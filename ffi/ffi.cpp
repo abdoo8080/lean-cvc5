@@ -1631,6 +1631,21 @@ LEAN_EXPORT lean_obj_res solver_getValues(lean_obj_arg inst,
   CVC5_LEAN_API_TRY_CATCH_SOLVER_END(inst, solver);
 }
 
+LEAN_EXPORT lean_obj_res solver_getModelDomainElements(lean_obj_arg inst,
+                                                       lean_obj_arg sort,
+                                                       lean_obj_arg solver)
+{
+  CVC5_LEAN_API_TRY_CATCH_SOLVER_BEGIN;
+  std::vector<Term> elements = solver_unbox(solver)->getModelDomainElements(*sort_unbox(sort));
+  lean_object* es = lean_mk_empty_array();
+  for (const Term& element : elements)
+  {
+    es = lean_array_push(es, term_box(new Term(element)));
+  }
+  return solver_val(lean_box(0), inst, lean_box(0), es, solver);
+  CVC5_LEAN_API_TRY_CATCH_SOLVER_END(inst, solver);
+}
+
 LEAN_EXPORT lean_obj_res solver_proofToString(lean_obj_arg inst,
                                               lean_obj_arg proof,
                                               lean_obj_arg solver)
