@@ -18,8 +18,8 @@ test![TestApiKind, kindHash] _tm => do
   for idx in [Kind.INTERNAL_KIND.toCtorIdx : Kind.LAST_KIND.toCtorIdx] do
     let k := Kind.ofNat idx
     if k = Kind.INTERNAL_KIND then
-      assertEq (k.hash + 2) UInt64.size
+      assertEq (k.hash + 2) ⟨UInt64.size⟩
     else if k  = Kind.UNDEFINED_KIND then
-      assertEq (k.hash + 1) UInt64.size
+      assertEq (k.hash + 1) ⟨UInt64.size⟩
     else
-      assertEq (k.hash + 2) k.toCtorIdx
+      assertEq (k.hash + 2) ⟨k.toCtorIdx⟩

@@ -16,7 +16,7 @@ test![TestApiBlackProofRule, proofRuleToString] _tm => do
 test![TestApiBlackProofRule, proofRuleHash] _tm => do
   for idx in [ProofRule.ASSUME.toCtorIdx : ProofRule.UNKNOWN.toCtorIdx] do
     let pr := ProofRule.ofNat idx
-    assertEq pr.hash pr.toCtorIdx
+    assertEq pr.hash ⟨pr.toCtorIdx⟩
 
 test![TestApiBlackProofRewriteRule, proofRuleToString] _tm => do
   for idx in [ProofRule.ASSUME.toCtorIdx : ProofRule.UNKNOWN.toCtorIdx] do
@@ -27,4 +27,4 @@ test![TestApiBlackProofRewriteRule, proofRuleToString] _tm => do
 test![TestApiBlackProofRewriteRule, proofRuleHash] _tm => do
   for idx in [ProofRule.ASSUME.toCtorIdx : ProofRule.UNKNOWN.toCtorIdx] do
     let pr := ProofRule.ofNat idx
-    assertEq pr.hash pr.toCtorIdx
+    assertEq pr.hash ⟨pr.toCtorIdx⟩

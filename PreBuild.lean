@@ -527,8 +527,8 @@ def writeLean (cpp lean :  FilePath) : IO Unit := do
 namespace FilePath
 
 def modified (p : FilePath) : IO Time := do
-  let meta ← p.metadata
-  return meta.modified
+  let metadata ← p.metadata
+  return metadata.modified
 
 end FilePath
 

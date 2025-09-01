@@ -16,5 +16,5 @@ test![TestApiBlackSkolemId, skolemIdToString] _tm => do
 test![TestApiBlackSkolemId, skolemIdHash] _tm => do
   for idx in [SkolemId.INTERNAL.toCtorIdx : SkolemId.NONE.toCtorIdx] do
     let si := SkolemId.ofNat idx
-    assertEq si.hash si.toCtorIdx
+    assertEq si.hash ⟨si.toCtorIdx⟩
   assertNe SkolemId.PURIFY.hash SkolemId.INTERNAL.hash
