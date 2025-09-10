@@ -289,6 +289,100 @@ inductive Error where
   | option (msg : String)
 deriving Repr
 
+/-- Cvc5 environment monad. -/
+-- **NB:** this definition is marked as irreducible at the end of this file for safety reasons
+def EnvT (m : Type → Type) (α : Type) : Type :=
+  StateT TermManager (ExceptT Error m) α
+
+@[reducible]
+def Env (α : Type) := EnvT BaseIO α
+
+namespace EnvT
+
+private theorem typeDefT : EnvT m = StateT TermManager (ExceptT Error m) :=
+  by unfold EnvT ; rfl
+
+private theorem typeDef : Env = StateT TermManager (ExceptT Error BaseIO) :=
+  by unfold Env ; rw [typeDefT]
+
+private def ofRaw : StateT TermManager (ExceptT Error m) α → EnvT m α :=
+  by unfold EnvT ; exact id
+
+private def toRaw : EnvT m α → StateT TermManager (ExceptT Error m) α :=
+  by unfold EnvT ; exact id
+
+-- sanity
+example : @ofRaw m α ∘ @toRaw m α = id := rfl
+example : @toRaw m α ∘ @ofRaw m α = id := rfl
+
+private def managerDoM (f : TermManager → EnvT m α) : EnvT m α :=
+  ofRaw fun tm => (f tm |> toRaw) tm
+
+private def managerDo [Monad m] (f : TermManager → α) : EnvT m α :=
+  ofRaw fun tm => return (f tm, tm)
+
+section monad variable [Monad m]
+
+instance : Monad (EnvT m) := by rw [typeDefT] ; exact inferInstance
+
+instance [MonadLiftT BaseIO m] : MonadLift Env (EnvT m) := ⟨
+  by
+    unfold Env ; rewrite [typeDefT, typeDefT] ; unfold ExceptT
+    exact fun code tm => liftM <| code tm
+⟩
+
+private scoped instance : MonadReader TermManager (EnvT m) where
+  read := ofRaw fun tm => return (tm, tm)
+-- sanity
+example : MonadReader TermManager Env := inferInstance
+
+instance : MonadLift (ExceptT Error m) (EnvT m) := by rw [typeDefT] ; exact inferInstance
+-- sanity
+example : MonadLiftT (Except Error) (EnvT m) := inferInstance
+example : MonadLiftT (Except Error) Env := inferInstance
+example : MonadLiftT m (EnvT m) := inferInstance
+
+instance [MonadLiftT BaseIO m] : MonadLift IO (EnvT m) := ⟨
+  fun ioCode => ofRaw fun tm => do
+    match ← ioCode.toBaseIO with
+    | .ok a => return (a, tm)
+    | .error e => throw <| .error s!"[IO error] {e.toString}"
+⟩
+-- sanity
+example [MonadLiftT BaseIO m] : MonadLiftT BaseIO (EnvT m) := inferInstance
+example : MonadLiftT IO Env := inferInstance
+example : MonadLiftT BaseIO Env := inferInstance
+
+instance : MonadExcept Error (EnvT m) := by rw [typeDefT] ; exact inferInstance
+--sanity
+example : MonadExcept Error Env := inferInstance
+
+end monad
+
+section ffi variable [Monad m]
+
+@[export envT_pure]
+private def envT_pure (a : α) : EnvT m α := return a
+
+@[export envT_throw]
+private def envT_throw (e : Error) : EnvT m α := throw e
+
+@[export envT_throw_string]
+private def envT_throw_string (e : String) : EnvT m α := throw <| (.error e)
+
+@[export env_pure]
+private def env_pure (a : α) : Env α := return a
+
+@[export env_throw]
+private def env_throw (e : Error) : Env α := throw e
+
+@[export env_throw_string]
+private def env_throw_string (e : String) : Env α := throw <| (.error e)
+
+end ffi
+
+end EnvT
+
 private opaque SolverImpl : NonemptyType.{0}
 
 /-- A cvc5 solver. -/
@@ -361,7 +455,7 @@ end Result
 section ffi_except_constructors
 
 /-- Only used by FFI to inject values. -/
-@[export except_ok]
+@[export generic_except_ok]
 private def mkExceptOk {α : Type} : α → Except Error α :=
   .ok
 
@@ -645,7 +739,9 @@ instance : Repr cvc5.Sort := ⟨fun self _ => self.toString⟩
 
 end cvc5.Sort
 
-namespace cvc5.Op
+namespace cvc5
+
+namespace Op
 
 /-- The null operator. -/
 extern_def null : Unit → Op
@@ -881,6 +977,75 @@ namespace TermManager
 
 /-- Constructor. -/
 extern_def new : BaseIO TermManager
+
+end TermManager
+
+/-- Get the Boolean sort. -/
+extern_def getBooleanSort : Env cvc5.Sort
+
+/-- Get the Integer sort. -/
+extern_def getIntegerSort : Env cvc5.Sort
+
+/-- Get the Real sort. -/
+extern_def getRealSort : Env cvc5.Sort
+
+/-- Get the regular expression sort. -/
+extern_def getRegExpSort : Env cvc5.Sort
+
+/-- Get the rounding mode sort. -/
+extern_def getRoundingModeSort : Env cvc5.Sort
+
+/-- Get the string sort. -/
+extern_def getStringSort : Env cvc5.Sort
+
+/-- Create an array sort.
+
+- `indexSort` The array index sort.
+- `elemSort` The array element sort.
+-/
+extern_def mkArraySort : (indexSort elemSort : cvc5.Sort) → Env cvc5.Sort
+
+/-- Create a bit-vector sort.
+
+- `size` The bit-width of the bit-vector sort.
+-/
+extern_def mkBitVectorSort : (size : UInt32) → Env cvc5.Sort
+
+/-- Create a floating-point sort.
+
+- `exp` The bit-width of the exponent of the floating-point sort.
+- `sig` The bit-width of the significand of the floating-point sort.
+-/
+extern_def mkFloatingPointSort : (exp sig : UInt32) → Env cvc5.Sort
+
+/-- Create a finite-field sort from a given string of base n.
+
+- `size` The modulus of the field. Must be a prime.
+-/
+extern_def mkFiniteFieldSortFromString : (size : String) → (base : UInt32) → Env cvc5.Sort
+
+-- @[inherit_doc mkFiniteFieldSortFromString]
+-- def mkFiniteFieldSort (size : Nat) (base : UInt32 := 10) : Env cvc5.Sort :=
+--   mkFiniteFieldSortFromString (toString size) base
+
+/-- Create function sort.
+
+- `sorts` The sort of the function arguments.
+- `codomain` The sort of the function return value.
+-/
+extern_def mkFunctionSort : (sorts : Array cvc5.Sort) → (cod : cvc5.Sort) → Env cvc5.Sort
+
+/-- Create a predicate sort.
+
+This is equivalent to calling `mkFunctionSort` with Boolean sort as the codomain.
+
+- `sorts` The list of sorts of the predicate.
+-/
+extern_def mkPredicateSort : (sorts : Array cvc5.Sort) → Env cvc5.Sort
+
+
+
+namespace TermManager
 
 /-- Get the Boolean sort. -/
 extern_def getBooleanSort : TermManager → cvc5.Sort
@@ -1325,5 +1490,24 @@ def run! [Inhabited α] (tm : TermManager) (query : SolverT m α) : m α := do
     panic! s!"{e}"
 
 end Solver
+
+namespace EnvT
+
+def run [Monad m] [MonadLiftT BaseIO m] (code : EnvT m α) : m (Except Error α) := do
+  let tm ← TermManager.new
+  Except.map Prod.fst <$> code.toRaw tm
+
+end EnvT
+
+protected abbrev run := @EnvT.run
+
+namespace Env
+
+def run : Env α → BaseIO (Except Error α) := cvc5.run
+
+end Env
+
+
+attribute [irreducible] EnvT
 
 end cvc5
