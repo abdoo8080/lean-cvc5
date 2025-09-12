@@ -7,53 +7,54 @@ import cvc5Test.Init
 
 namespace cvc5.Test
 
-test! tm => do
+test! do
   let bv1 ←
-    tm.mkOp Kind.BITVECTOR_EXTRACT #[31, 1]
+    mkOp Kind.BITVECTOR_EXTRACT #[31, 1]
     |> assertOk
   let bv1' ←
-    tm.mkOp Kind.BITVECTOR_EXTRACT #[31, 1]
+    mkOp Kind.BITVECTOR_EXTRACT #[31, 1]
     |> assertOk
   let bv2 ←
-    tm.mkOp Kind.BITVECTOR_EXTRACT #[31, 2]
+    mkOp Kind.BITVECTOR_EXTRACT #[31, 2]
     |> assertOk
   assertEq bv1 bv1'
   assertNe bv1 bv2
 
-test! tm => do
-  let x ← tm.mkOp Kind.BITVECTOR_EXTRACT #[31, 1] |> assertOk
+test! do
+  let x ← mkOp Kind.BITVECTOR_EXTRACT #[31, 1] |> assertOk
   assertEq x.getKind Kind.BITVECTOR_EXTRACT
 
-test! tm => do
+test! do
   let x := Op.null ()
   assertEq x.isNull true
-  let y ← tm.mkOp Kind.BITVECTOR_EXTRACT #[31, 1] |> assertOk
+  let y ← mkOp Kind.BITVECTOR_EXTRACT #[31, 1] |> assertOk
   assertEq y.isNull false
   assertNe x y
 
-test! tm => do
-  tm.mkOp Kind.ADD
+test! do
+  mkOp Kind.ADD
   |> assertOkDiscard
-  tm.mkOp Kind.BITVECTOR_EXTRACT
-  |> assertError "invalid number of indices for operator BITVECTOR_EXTRACT, expected 2 but got 0."
+  mkOp Kind.BITVECTOR_EXTRACT
+  |> assertError
+    "invalid number of indices for operator BITVECTOR_EXTRACT, expected 2 but got 0."
 
-test! tm => do
+test! do
   -- operators with 0 indices
-  let plus ← tm.mkOp Kind.ADD |> assertOk
+  let plus ← mkOp Kind.ADD |> assertOk
 
   assertEq 0 plus.getNumIndices
 
   -- operators with 1 index
-  let divisible ← tm.mkOp Kind.DIVISIBLE #[4]
-  let bvRepeat ← tm.mkOp Kind.BITVECTOR_REPEAT #[5]
-  let bvZeroExtend ← tm.mkOp Kind.BITVECTOR_ZERO_EXTEND #[6]
-  let bvSignExtend ← tm.mkOp Kind.BITVECTOR_SIGN_EXTEND #[7]
-  let bvRotateLeft ← tm.mkOp Kind.BITVECTOR_ROTATE_LEFT #[8]
-  let bvRotateRight ← tm.mkOp Kind.BITVECTOR_ROTATE_RIGHT #[9]
-  let intToBv ← tm.mkOp Kind.INT_TO_BITVECTOR #[10]
-  let iand ← tm.mkOp Kind.IAND #[11]
-  let fpToUbv ← tm.mkOp Kind.FLOATINGPOINT_TO_UBV #[12]
-  let fpToSbv ← tm.mkOp Kind.FLOATINGPOINT_TO_SBV #[13]
+  let divisible ← mkOp Kind.DIVISIBLE #[4]
+  let bvRepeat ← mkOp Kind.BITVECTOR_REPEAT #[5]
+  let bvZeroExtend ← mkOp Kind.BITVECTOR_ZERO_EXTEND #[6]
+  let bvSignExtend ← mkOp Kind.BITVECTOR_SIGN_EXTEND #[7]
+  let bvRotateLeft ← mkOp Kind.BITVECTOR_ROTATE_LEFT #[8]
+  let bvRotateRight ← mkOp Kind.BITVECTOR_ROTATE_RIGHT #[9]
+  let intToBv ← mkOp Kind.INT_TO_BITVECTOR #[10]
+  let iand ← mkOp Kind.IAND #[11]
+  let fpToUbv ← mkOp Kind.FLOATINGPOINT_TO_UBV #[12]
+  let fpToSbv ← mkOp Kind.FLOATINGPOINT_TO_SBV #[13]
 
   assertEq 1 divisible.getNumIndices
   assertEq 1 bvRepeat.getNumIndices
@@ -67,13 +68,13 @@ test! tm => do
   assertEq 1 fpToSbv.getNumIndices
 
   -- operators with 2 indices
-  let bvExtract ← tm.mkOp Kind.BITVECTOR_EXTRACT #[1, 0]
-  let toFpFromIeeeBv ← tm.mkOp Kind.FLOATINGPOINT_TO_FP_FROM_IEEE_BV #[3, 2]
-  let toFpFromFp ← tm.mkOp Kind.FLOATINGPOINT_TO_FP_FROM_FP #[5, 4]
-  let toFpFromReal ← tm.mkOp Kind.FLOATINGPOINT_TO_FP_FROM_REAL #[7, 6]
-  let toFpFromSbv ← tm.mkOp Kind.FLOATINGPOINT_TO_FP_FROM_SBV #[9, 8]
-  let toFpFromUbv ← tm.mkOp Kind.FLOATINGPOINT_TO_FP_FROM_UBV #[11, 10]
-  let regexpLoop ← tm.mkOp Kind.REGEXP_LOOP #[15, 14]
+  let bvExtract ← mkOp Kind.BITVECTOR_EXTRACT #[1, 0]
+  let toFpFromIeeeBv ← mkOp Kind.FLOATINGPOINT_TO_FP_FROM_IEEE_BV #[3, 2]
+  let toFpFromFp ← mkOp Kind.FLOATINGPOINT_TO_FP_FROM_FP #[5, 4]
+  let toFpFromReal ← mkOp Kind.FLOATINGPOINT_TO_FP_FROM_REAL #[7, 6]
+  let toFpFromSbv ← mkOp Kind.FLOATINGPOINT_TO_FP_FROM_SBV #[9, 8]
+  let toFpFromUbv ← mkOp Kind.FLOATINGPOINT_TO_FP_FROM_UBV #[11, 10]
+  let regexpLoop ← mkOp Kind.REGEXP_LOOP #[15, 14]
 
   assertEq 2 bvExtract.getNumIndices
   assertEq 2 toFpFromIeeeBv.getNumIndices
@@ -85,40 +86,40 @@ test! tm => do
 
   -- operators with n indices
   let indices := #[0, 3, 2, 0, 1, 2];
-  let tupleProject ← tm.mkOp Kind.TUPLE_PROJECT indices;
+  let tupleProject ← mkOp Kind.TUPLE_PROJECT indices;
   assertEq indices.size tupleProject.getNumIndices
 
-  let relationProject ← tm.mkOp Kind.RELATION_PROJECT indices
+  let relationProject ← mkOp Kind.RELATION_PROJECT indices
   assertEq indices.size relationProject.getNumIndices
 
-  let tableProject ← tm.mkOp Kind.TABLE_PROJECT indices
+  let tableProject ← mkOp Kind.TABLE_PROJECT indices
   assertEq indices.size tableProject.getNumIndices
 
-test! tm => do
+test! do
   -- operators with 0 indices
-  let plus ← tm.mkOp Kind.ADD |> assertOk
+  let plus ← mkOp Kind.ADD |> assertOk
 
   -- can't test that `plus[0]` fails as there are no legal indices at lean-level
   assertEq plus.isIndexed false
   assertEq plus.getNumIndices 0
 
   -- helper for 1/n-indexed operators
-  let check (op : Op) (idx : Nat) (intValue : Int) : cvc5.SolverM Unit :=
+  let check (op : Op) (idx : Nat) (intValue : Int) : cvc5.Env Unit :=
     if _ : idx < op.getNumIndices then
       assertEq op[idx].getIntegerValue! intValue
     else fail "illegal op index `{idx}` for {op}"
 
   -- operators with 1 index
-  let divisible ← tm.mkOp Kind.DIVISIBLE #[4]
-  let bvRepeat ← tm.mkOp Kind.BITVECTOR_REPEAT #[5]
-  let bvZeroExtend ← tm.mkOp Kind.BITVECTOR_ZERO_EXTEND #[6]
-  let bvSignExtend ← tm.mkOp Kind.BITVECTOR_SIGN_EXTEND #[7]
-  let bvRotateLeft ← tm.mkOp Kind.BITVECTOR_ROTATE_LEFT #[8]
-  let bvRotateRight ← tm.mkOp Kind.BITVECTOR_ROTATE_RIGHT #[9]
-  let intToBv ← tm.mkOp Kind.INT_TO_BITVECTOR #[10]
-  let iand ← tm.mkOp Kind.IAND #[11]
-  let fpToUbv ← tm.mkOp Kind.FLOATINGPOINT_TO_UBV #[12]
-  let fpToSbv ← tm.mkOp Kind.FLOATINGPOINT_TO_SBV #[13]
+  let divisible ← mkOp Kind.DIVISIBLE #[4]
+  let bvRepeat ← mkOp Kind.BITVECTOR_REPEAT #[5]
+  let bvZeroExtend ← mkOp Kind.BITVECTOR_ZERO_EXTEND #[6]
+  let bvSignExtend ← mkOp Kind.BITVECTOR_SIGN_EXTEND #[7]
+  let bvRotateLeft ← mkOp Kind.BITVECTOR_ROTATE_LEFT #[8]
+  let bvRotateRight ← mkOp Kind.BITVECTOR_ROTATE_RIGHT #[9]
+  let intToBv ← mkOp Kind.INT_TO_BITVECTOR #[10]
+  let iand ← mkOp Kind.IAND #[11]
+  let fpToUbv ← mkOp Kind.FLOATINGPOINT_TO_UBV #[12]
+  let fpToSbv ← mkOp Kind.FLOATINGPOINT_TO_SBV #[13]
 
   check divisible 0 4
   check bvRepeat 0 5
@@ -132,13 +133,13 @@ test! tm => do
   check fpToSbv 0 13
 
   -- operators with 2 indices
-  let bvExtract ← tm.mkOp Kind.BITVECTOR_EXTRACT #[1, 0]
-  let toFpFromIeeeBv ← tm.mkOp Kind.FLOATINGPOINT_TO_FP_FROM_IEEE_BV #[3, 2]
-  let toFpFromFp ← tm.mkOp Kind.FLOATINGPOINT_TO_FP_FROM_FP #[5, 4]
-  let toFpFromReal ← tm.mkOp Kind.FLOATINGPOINT_TO_FP_FROM_REAL #[7, 6]
-  let toFpFromSbv ← tm.mkOp Kind.FLOATINGPOINT_TO_FP_FROM_SBV #[9, 8]
-  let toFpFromUbv ← tm.mkOp Kind.FLOATINGPOINT_TO_FP_FROM_UBV #[11, 10]
-  let regexpLoop ← tm.mkOp Kind.REGEXP_LOOP #[15, 14]
+  let bvExtract ← mkOp Kind.BITVECTOR_EXTRACT #[1, 0]
+  let toFpFromIeeeBv ← mkOp Kind.FLOATINGPOINT_TO_FP_FROM_IEEE_BV #[3, 2]
+  let toFpFromFp ← mkOp Kind.FLOATINGPOINT_TO_FP_FROM_FP #[5, 4]
+  let toFpFromReal ← mkOp Kind.FLOATINGPOINT_TO_FP_FROM_REAL #[7, 6]
+  let toFpFromSbv ← mkOp Kind.FLOATINGPOINT_TO_FP_FROM_SBV #[9, 8]
+  let toFpFromUbv ← mkOp Kind.FLOATINGPOINT_TO_FP_FROM_UBV #[11, 10]
+  let regexpLoop ← mkOp Kind.REGEXP_LOOP #[15, 14]
 
   check bvExtract 0 1
   check bvExtract 1 0
@@ -157,7 +158,7 @@ test! tm => do
 
   -- operators with n indices
   let indices := #[0, 3, 2, 0, 1, 2];
-  let tupleProject ← tm.mkOp Kind.TUPLE_PROJECT indices;
+  let tupleProject ← mkOp Kind.TUPLE_PROJECT indices;
   for idx in [0 : indices.size] do
     check tupleProject idx indices[idx]!
 
@@ -165,7 +166,7 @@ test! tm => do
 Not sure what to do for the end of the test below. Original test is
 
 ```cpp
-Op bitvector_repeat_ot = d_tm.mkOp(Kind::BITVECTOR_REPEAT, {5});
+Op bitvector_repeat_ot = d_mkOp(Kind::BITVECTOR_REPEAT, {5});
 std::string op_repr = bitvector_repeat_ot.toString();
 ASSERT_EQ(bitvector_repeat_ot.toString(), op_repr);
 {
@@ -178,8 +179,8 @@ ASSERT_EQ(bitvector_repeat_ot.toString(), op_repr);
 I don't know what test would make sense at lean-level for this last block, so it's ignored. The only
 check left is not very interesting though.
 -/
-test! tm => do
-  let bitvectorRepeatOt ← tm.mkOp Kind.BITVECTOR_REPEAT #[5]
+test! do
+  let bitvectorRepeatOt ← mkOp Kind.BITVECTOR_REPEAT #[5]
   let opRepr := bitvectorRepeatOt.toString
   assertEq bitvectorRepeatOt.toString opRepr
   -- not sure what to do here, see comment above

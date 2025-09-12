@@ -15,54 +15,54 @@ namespace cvc5.Test
 
 section open Solver
 
-def createProof (tm : TermManager) : SolverM Proof := do
-  setOption "produce-proofs" "true"
-  let uSort := tm.mkUninterpretedSort "u"
-  let intSort := tm.getIntegerSort
-  let boolSort := tm.getBooleanSort
-  let uToIntSort ← tm.mkFunctionSort #[uSort] intSort
-  let intPredSort ← tm.mkFunctionSort #[intSort] boolSort
+def createProof (solver : Solver) : Env Proof := do
+  solver.setOption "produce-proofs" "true"
+  let uSort ← mkUninterpretedSort "u"
+  let intSort ← getIntegerSort
+  let boolSort ← getBooleanSort
+  let uToIntSort ← mkFunctionSort #[uSort] intSort
+  let intPredSort ← mkFunctionSort #[intSort] boolSort
 
-  let x ← declareFun "x" #[] uSort
-  let y ← declareFun "y" #[] uSort
-  let f ← declareFun "f" #[uSort] intSort
-  let p ← declareFun "p" #[intSort] boolSort
-  let zero := tm.mkInteger 0
-  let one := tm.mkInteger 1
-  let f_x ← tm.mkTerm Kind.APPLY_UF #[f, x]
-  let f_y ← tm.mkTerm Kind.APPLY_UF #[f, y]
-  let sum ← tm.mkTerm Kind.ADD #[f_x, f_y]
-  let p_0 ← tm.mkTerm Kind.APPLY_UF #[p, zero]
-  let p_f_y ← tm.mkTerm Kind.APPLY_UF #[p, f_y]
-  tm.mkTerm Kind.GT #[zero, f_x] >>= assertFormula
-  tm.mkTerm Kind.GT #[zero, f_y] >>= assertFormula
-  tm.mkTerm Kind.GT #[sum, one] >>= assertFormula
-  assertFormula p_0
-  p_f_y.not >>= assertFormula
-  let res ← checkSat
+  let x ← solver.declareFun "x" #[] uSort
+  let y ← solver.declareFun "y" #[] uSort
+  let f ← solver.declareFun "f" #[uSort] intSort
+  let p ← solver.declareFun "p" #[intSort] boolSort
+  let zero ← mkInteger 0
+  let one ← mkInteger 1
+  let f_x ← mkTerm Kind.APPLY_UF #[f, x]
+  let f_y ← mkTerm Kind.APPLY_UF #[f, y]
+  let sum ← mkTerm Kind.ADD #[f_x, f_y]
+  let p_0 ← mkTerm Kind.APPLY_UF #[p, zero]
+  let p_f_y ← mkTerm Kind.APPLY_UF #[p, f_y]
+  mkTerm Kind.GT #[zero, f_x] >>= solver.assertFormula
+  mkTerm Kind.GT #[zero, f_y] >>= solver.assertFormula
+  mkTerm Kind.GT #[sum, one] >>= solver.assertFormula
+  solver.assertFormula p_0
+  p_f_y.not >>= solver.assertFormula
+  let res ← solver.checkSat
   if ¬ res.isUnsat then
     fail "expected unsat result in proof creation"
 
-  let proof ← getProof
+  let proof ← solver.getProof
   if h : 0 < proof.size then
     return proof[0]
   else
     fail "expected non-empty proof"
 
-def createRewriteProof (tm : TermManager) : SolverM Proof := do
-  setOption "produce-proofs" "true"
-  setOption "proof-granularity" "dsl-rewrite"
-  let intSort := tm.getIntegerSort
-  let x ← declareFun "x" #[] intSort
-  let zero := tm.mkInteger 0
-  let geq ← tm.mkTerm Kind.GEQ #[x, zero]
-  let leq ← tm.mkTerm Kind.LEQ #[zero, x]
-  tm.mkTerm Kind.DISTINCT #[geq, leq] >>= assertFormula
-  let res ← checkSat
+def createRewriteProof (solver : Solver) : Env Proof := do
+  solver.setOption "produce-proofs" "true"
+  solver.setOption "proof-granularity" "dsl-rewrite"
+  let intSort ← getIntegerSort
+  let x ← solver.declareFun "x" #[] intSort
+  let zero ← mkInteger 0
+  let geq ← mkTerm Kind.GEQ #[x, zero]
+  let leq ← mkTerm Kind.LEQ #[zero, x]
+  mkTerm Kind.DISTINCT #[geq, leq] >>= solver.assertFormula
+  let res ← solver.checkSat
   if ¬ res.isUnsat then
     fail "expected unsat result in rewrite proof creation"
 
-  let proof ← getProof
+  let proof ← solver.getProof
   if h : 0 < proof.size then
     return proof[0]
   else
@@ -70,7 +70,7 @@ def createRewriteProof (tm : TermManager) : SolverM Proof := do
 
 end
 
-test![TestApiBlackProof, nullProof] do
+test![TestApiBlackProof, solver] do
   let proof := Proof.null ()
   assertEq proof.getRule ProofRule.UNKNOWN
   -- skipping test in original file for the hash being equal to the constructor index
@@ -78,12 +78,12 @@ test![TestApiBlackProof, nullProof] do
   assertTrue proof.getChildren.isEmpty
   assertTrue proof.getArguments.isEmpty
 
-test![TestApiBlackProof, getRule] smt tm => do
-  let proof ← createProof tm
+test![TestApiBlackProof, getRule] solver => do
+  let proof ← createProof solver
   assertEq proof.getRule ProofRule.SCOPE
 
-test![TestApiBlackProof, getRewriteRule] smt tm => do
-  let mut proof ← createRewriteProof tm
+test![TestApiBlackProof, getRewriteRule] solver => do
+  let mut proof ← createRewriteProof solver
   assertError
     "expected `getRule()` to return `DSL_REWRITE` or `THEORY_REWRITE`, got SCOPE instead."
     proof.getRewriteRule
@@ -102,21 +102,21 @@ test![TestApiBlackProof, getRewriteRule] smt tm => do
 
   assertOkDiscard proof.getRewriteRule
 
-test![TestApiBlackProof, getResult] tm => do
-  let proof ← createProof tm
+test![TestApiBlackProof, getResult] solver => do
+  let proof ← createProof solver
   let _ := proof.getResult
 
-test![TestApiBlackProof, getChildren] tm => do
-  let proof ← createProof tm
+test![TestApiBlackProof, getChildren] solver => do
+  let proof ← createProof solver
   let children := proof.getChildren
   assertFalse children.isEmpty
 
-test![TestApiBlackProof, getArguments] tm => do
-  let proof ← createProof tm
+test![TestApiBlackProof, getArguments] solver => do
+  let proof ← createProof solver
   let _ := proof.getArguments
 
-test![TestApiBlackProof, equalhash] tm => do
-  let x ← createProof tm
+test![TestApiBlackProof, equalhash] solver => do
+  let x ← createProof solver
   let kids := x.getChildren
   if h : 0 < kids.size then
     let y := kids[0]

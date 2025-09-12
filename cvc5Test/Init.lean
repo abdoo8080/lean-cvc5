@@ -32,41 +32,41 @@ def assertNe [ToString α] [BEq α] (lft rgt : α) (hint := "") : IO Unit := do
     fail "assertion failed"
 
 def assertOk
-  (code : SolverM α)
+  (code : Env α)
   (hint : String := "")
-: SolverM α := fun solver => do
-  match ← code solver with
-  | (.ok res, solver) => return (.ok res, solver)
-  | (.error e, _) =>
+: Env α := do
+  try code catch e =>
     IO.eprintln s!"{Test.pref hint}expected `.ok` result, got `{e}`"
     fail "assertion failed"
 
 def assertOkDiscard
-  (result : SolverM α)
+  (result : Env α)
   (hint : String := "")
-: SolverM Unit := do
+: Env Unit := do
   let _ ← assertOk result hint
   return ()
 
 def assertAnyError
   (expected : String)
-  (errorDo : Error → SolverM Unit)
-  (result : SolverM α)
+  (code : Env α)
+  (errorDo : Error → Env Unit := fun _ => return ())
   (hint : String := "")
-: SolverM Unit := fun solver => do
-  match ← result solver with
-  | (.ok _, _) =>
+: Env Unit := do
+  try
+    let _ ← code
     IO.eprintln s!"{Test.pref hint}expected {expected}, got `.ok` result"
     fail "assertion failed"
-  | (.error e, solver) => errorDo e solver
+  catch e => errorDo e
 
 def assertError
   (expected : String)
-  (result : SolverM α)
+  (code : Env α)
   (hint : String := "")
-: SolverM Unit :=
-  assertAnyError s!"cvc5 error `{expected}`"
-    (fun
+: Env Unit :=
+  assertAnyError expected
+    code
+    (hint := hint)
+    fun
     | .error err => do
       if err = expected then
         return ()
@@ -85,8 +85,6 @@ def assertError
     | .missingValue => do
         IO.eprintln s!"{Test.pref hint}expected cvc5 error `{expected}`, got missing value error"
         fail "assertion failed"
-    )
-    result hint
 
 end Test
 
@@ -99,119 +97,83 @@ def toOption (res : Result) : Option Bool :=
 
 end Result
 
-namespace Solver
+namespace Solver variable (solver : Solver)
 
 variable [Monad m]
 
-def checkSat? : SolverT m (Option Bool) :=
-  Result.toOption <$> Solver.checkSat
+def checkSat? : Env (Option Bool) :=
+  Result.toOption <$> solver.checkSat
 
-def checkSatAssuming? (terms : Array Term) : SolverT m (Option Bool) :=
-  Result.toOption <$> Solver.checkSatAssuming terms
-
-def runWith! [Inhabited α] (tm : TermManager) (query : SolverM α) : IO α := do
-  match ← Solver.run tm query with
-  | .ok res => return res
-  | .error err =>
-    IO.eprintln err
-    return default
-
-def runIO! [Inhabited α] (query : SolverM α) : IO α := do
-  match ← Solver.run (← TermManager.new) query with
-  | .ok res => return res
-  | .error err =>
-    IO.eprintln err.toString
-    return default
+def checkSatAssuming? (terms : Array Term) : Env (Option Bool) :=
+  Result.toOption <$> solver.checkSatAssuming terms
 
 end Solver
-
-def SolverT.run! [Inhabited α] (query : SolverT IO α) := Solver.runIO! query
 
 namespace Test
 
 scoped syntax
   docComment ?
-  "test! " ("[" declId ", " declId "] ")? ("smt ")? (ident " => ")? term : command
+  "test! " ("[" declId ", " declId "] ")? (ident " => ")? term : command
 scoped syntax
   docComment ?
-  "test? " ("[" declId ", " declId "] ")? ("smt ")? (ident " => ")? term : command
+  "test? " ("[" declId ", " declId "] ")? (ident " => ")? term : command
 
 macro_rules
 | `(command|
   $[ $outputComment:docComment ]?
-  test! $[ [ $fileId:ident , $testId:ident ] ]? $tm:ident => $code:term
+  test! $[ [ $fileId:ident , $testId:ident ] ]? $[$solverIdent?:ident =>]? $code:term
 ) => do
   let errPrefStrLit :=
     match (fileId, testId) with
     | (some fileId, some testId) =>
       Lean.Syntax.mkStrLit s!"[{fileId}.{testId}] test failed:\n"
     | _ => Lean.Syntax.mkStrLit "test failed"
+  let runFun ← `(term| cvc5.Env.run)
+  let toRun ←
+    if let some solverIdent := solverIdent? then
+      `(do
+          let $solverIdent:ident ← Solver.mk
+          $code:term
+      )
+    else `(do $code:term)
+
   `(
     $[ $outputComment:docComment ]?
     #guard_msgs in #eval IO.run do
-      let $tm:ident ← TermManager.new
-      match ← Solver.run $tm (do $code:term) with
+      let res ← $runFun:term $toRun
+      match res with
       | .ok res => return res
       | .error e =>
         IO.eprintln ($errPrefStrLit ++ (toString e))
         return default
   )
--- | `(command| test! $tm:ident => $code:term) => `(
---   /-- -/
---   #guard_msgs in #eval IO.run do
---     let $tm:ident ← TermManager.new
---     Solver.runWith! $tm do
---       $code:term
--- )
 | `(command|
-  $[ $outputComment:docComment ]?
-  test! $[ [ $fileId:ident , $testId:ident ] ]? smt $tm:ident => $code:term
-) => `(
-  $[$outputComment]?
-  test! $[ [ $fileId, $testId ] ]? $tm => cvc5.Solver.runWith! $tm $code
-)
-| `(command|
-  $[ $outputComment:docComment ]?
-  test! $[ [ $fileId:ident , $testId:ident ] ]? $code:term
-) => `(
-  $[$outputComment]?
-  test! $[ [ $fileId, $testId ] ]? _tm => $code
-)
-| `(command|
-  $[ $outputComment:docComment ]?
-  test? $[ [ $fileId:ident, $testId:ident ] ]? $tm:ident => $code:term
-) =>
+  $[ $_outputComment:docComment ]?
+  test? $[ [ $fileId:ident, $testId:ident ] ]? $[$solverIdent?:ident =>]? $code:term
+) => do
   let errPrefStrLit :=
     match (fileId, testId) with
     | (some fileId, some testId) =>
       Lean.Syntax.mkStrLit s!"[{fileId}.{testId}] test failed:\n"
     | _ => Lean.Syntax.mkStrLit "test failed"
+  let runFun ← `(term| cvc5.Env.run)
+  let mut code ←
+    if let some solverIdent := solverIdent? then
+      `(doSeq|
+        let $solverIdent:ident ← Solver.mk
+        $code:term
+      )
+    else `(doSeq| $code:term)
+
   `(
     #eval IO.run do
-      let $tm:ident ← TermManager.new
-      match ← Solver.run $tm (do $code:term) with
+      let res ← $runFun:term do $code
+      match res with
       | .ok res => return res
       | .error e =>
         IO.eprintln ($errPrefStrLit ++ (toString e))
         return default
   )
--- | `(command| $[ $_outputComment:docComment ]? test? $tm:ident => $code:term) => `(
---   #eval IO.run do
---     let $tm:ident ← TermManager.new
---     Solver.runWith! $tm do
---       $code:term
--- )
-| `(command|
-  $[ $outputComment:docComment ]?
-  test? $[ [ $fileId:ident , $testId:ident ] ]? smt $tm:ident => $code:term
-) => `(
-  $[$outputComment]?
-  test? $[ [ $fileId, $testId ] ]? $tm => cvc5.Solver.runWith! $tm $code
-)
-| `(command| $[$outputComment]? test? $[ [ $fileId, $testId ] ]? $code:term) => `(
-  $[$outputComment]?
-  test? $[ [ $fileId, $testId ] ]? _tm => $code
-)
 
 end Test
 

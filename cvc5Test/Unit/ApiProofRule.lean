@@ -7,24 +7,24 @@ import cvc5Test.Init
 
 namespace cvc5.Test
 
-test![TestApiBlackProofRule, proofRuleToString] _tm => do
+test![TestApiBlackProofRule, proofRuleToString] do
   for idx in [ProofRule.ASSUME.toCtorIdx : ProofRule.UNKNOWN.toCtorIdx] do
     let pr := ProofRule.ofNat idx
     -- if this assertion fails, the switch is missing rule `pr`.
     assertNe pr.toString "?"
 
-test![TestApiBlackProofRule, proofRuleHash] _tm => do
+test![TestApiBlackProofRule, proofRuleHash] do
   for idx in [ProofRule.ASSUME.toCtorIdx : ProofRule.UNKNOWN.toCtorIdx] do
     let pr := ProofRule.ofNat idx
     assertEq pr.hash ⟨pr.toCtorIdx⟩
 
-test![TestApiBlackProofRewriteRule, proofRuleToString] _tm => do
+test![TestApiBlackProofRewriteRule, proofRuleToString] do
   for idx in [ProofRule.ASSUME.toCtorIdx : ProofRule.UNKNOWN.toCtorIdx] do
     let pr := ProofRule.ofNat idx
     -- if this assertion fails, the switch is missing rule `pr`.
     assertNe pr.toString "?"
 
-test![TestApiBlackProofRewriteRule, proofRuleHash] _tm => do
+test![TestApiBlackProofRewriteRule, proofRuleHash] do
   for idx in [ProofRule.ASSUME.toCtorIdx : ProofRule.UNKNOWN.toCtorIdx] do
     let pr := ProofRule.ofNat idx
     assertEq pr.hash ⟨pr.toCtorIdx⟩
