@@ -297,12 +297,18 @@ inductive Error where
   | option (msg : String)
 deriving Repr
 
-/-- Cvc5 environment monad. -/
+/-- Cvc5 environment monad transformer.
+
+Most monadic functions in this API use the non-transformer monad `cvc5.Env`, where `m := BaseIO`.
+
+When using an `EnvT m α`, do make sure `m` is such that `MonadLiftT BaseIO m` which gives
+`MonadLiftT Env (EnvT m)`.
+-/
 def EnvT (m : Type → Type) (α : Type) : Type :=
   StateT TermManager (ExceptT Error m) α
 
-@[reducible]
-def Env (α : Type) := EnvT BaseIO α
+/-- Cvc5 environment monad in `BaseIO`. -/
+abbrev Env (α : Type) := EnvT BaseIO α
 
 namespace EnvT
 
@@ -312,9 +318,11 @@ private theorem typeDefT : EnvT m = StateT TermManager (ExceptT Error m) :=
 private theorem typeDef : Env = StateT TermManager (ExceptT Error BaseIO) :=
   by unfold Env ; rw [typeDefT]
 
+/-- Conversion from `EnvT`'s underlying monadic structure to `EnvT`. -/
 private def ofRaw : StateT TermManager (ExceptT Error m) α → EnvT m α :=
   by unfold EnvT ; exact id
 
+/-- Conversion from `EnvT` to its underlying monadic structure. -/
 private def toRaw : EnvT m α → StateT TermManager (ExceptT Error m) α :=
   by unfold EnvT ; exact id
 
@@ -322,9 +330,11 @@ private def toRaw : EnvT m α → StateT TermManager (ExceptT Error m) α :=
 example : @ofRaw m α ∘ @toRaw m α = id := rfl
 example : @toRaw m α ∘ @ofRaw m α = id := rfl
 
+/-- Applies a monadic function to the environment's state, *i.e.* the term manager. -/
 private def managerDoM (f : TermManager → EnvT m α) : EnvT m α :=
   ofRaw fun tm => (f tm |> toRaw) tm
 
+/-- Applies a function to the environment's state, *i.e.* the term manager. -/
 private def managerDo [Monad m] (f : TermManager → α) : EnvT m α :=
   ofRaw fun tm => return (f tm, tm)
 
@@ -343,7 +353,7 @@ instance [MonadLiftT BaseIO m] : MonadLift Env (EnvT m) := ⟨
 private scoped instance : MonadReader TermManager (EnvT m) where
   read := ofRaw fun tm => return (tm, tm)
 -- sanity
-example : MonadReader TermManager Env := inferInstance
+private example : MonadReader TermManager Env := inferInstance
 
 instance : MonadLift (ExceptT Error m) (EnvT m) := by rw [typeDefT] ; exact inferInstance
 -- sanity
@@ -368,6 +378,7 @@ example : MonadExcept Error Env := inferInstance
 
 end monad
 
+-- functions used by the underlying C++ layer
 section ffi variable [Monad m]
 
 @[export envT_pure]
@@ -408,6 +419,7 @@ private def Solver.Raw : Type := SolverImpl.type
 
 instance Solver.instNonemptySolver : Nonempty Solver.Raw := SolverImpl.property
 
+/-- A cvc5 solver. -/
 structure Solver where private mkRaw ::
   private solver : Solver.Raw
 
@@ -997,18 +1009,22 @@ end Proof
 
 namespace EnvT
 
+/-- Runs `EnvT` code. -/
 def run [Monad m] [MonadLiftT BaseIO m] (code : EnvT m α) : m (Except Error α) := do
   let tm ← TermManager.new
   Except.map Prod.fst <$> code.toRaw tm
 
 end EnvT
 
+@[inherit_doc EnvT.run]
 protected abbrev run := @EnvT.run
 
 namespace Env
 
+/-- Runs `Env` code. -/
 def run : Env α → BaseIO (Except Error α) := cvc5.run
 
+/-- Runs `Env` code in the `IO` monad, throws `cvc5.Error`s as `IO.Error`s. -/
 def runIO (code : Env α) : IO α := do
   match ← code.run with
   | .ok res => return res
@@ -1259,8 +1275,7 @@ with mkOp := @mkOpOfIndices
 namespace Solver
 
 @[inherit_doc mkSolver]
-def mk : Env Solver := do
-  -- println! "creating solver"
+def mk : Env Solver :=
   mkRaw <$> mkSolver
 
 /-- Get a string representation of the version of this solver. -/
