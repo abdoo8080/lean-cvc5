@@ -9,6 +9,8 @@ import cvc5Test.Init
 -/
 namespace cvc5.Test
 
+open Env
+
 test! do
   let _ ← getBooleanSort
 

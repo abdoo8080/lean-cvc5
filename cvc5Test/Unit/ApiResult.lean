@@ -7,6 +7,8 @@ import cvc5Test.Init
 
 namespace cvc5.Test
 
+open Env
+
 test![TestApiBlackResult, isNull] do
   -- lean API does not expose null results
   assertTrue true

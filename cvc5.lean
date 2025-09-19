@@ -393,9 +393,6 @@ instance Solver.instNonemptySolver : Nonempty Solver.Raw := SolverImpl.property
 structure Solver where private mkRaw ::
   private solver : Solver.Raw
 
-/-- Solver constructor, depends on the environment it's created in. -/
-private extern_def mkSolver : Env Solver.Raw
-
 /-- Accessor for the underlying unsafe solver. -/
 @[export ffi_solver_to_raw]
 private def ffi_solver_to_raw : Solver → Solver.Raw := Solver.solver
@@ -974,10 +971,8 @@ def runIO (code : Env α) : IO α := do
   | .ok res => return res
   | .error e => throw <| IO.Error.userError <| toString e
 
-end Env
-
-
-
+/-- Solver constructor, depends on the environment it's created in. -/
+private extern_def mkSolver : Env Solver.Raw
 
 /-- Get the Boolean sort. -/
 extern_def getBooleanSort : Env cvc5.Sort
@@ -1216,11 +1211,15 @@ If `args` is empty, the `Op` simply wraps the `cvc5.Kind`. The `Kind` can be use
 extern_def mkOpOfIndices : (kind : Kind) → (args : Array Nat := #[]) → Env Op
 with mkOp := @mkOpOfIndices
 
+end Env
+
+
+
 namespace Solver
 
-@[inherit_doc mkSolver]
+@[inherit_doc Env.mkSolver]
 def mk : Env Solver :=
-  mkRaw <$> mkSolver
+  mkRaw <$> Env.mkSolver
 
 /-- Get a string representation of the version of this solver. -/
 extern_def getVersion : (solver : Solver) → Env String

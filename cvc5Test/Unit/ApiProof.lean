@@ -13,7 +13,7 @@ import cvc5Test.Init
 
 namespace cvc5.Test
 
-section open Solver
+section open Solver Env
 
 def createProof (solver : Solver) : Env Proof := do
   solver.setOption "produce-proofs" "true"
