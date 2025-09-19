@@ -369,26 +369,8 @@ end monad
 -- functions used by the underlying C++ layer
 section ffi variable [Monad m]
 
-@[export envT_pure]
-private def envT_pure (a : α) : EnvT m α := return a
-
-@[export envT_throw]
-private def envT_throw (e : Error) : EnvT m α := throw e
-
-@[export envT_throw_string]
-private def envT_throw_string (e : String) : EnvT m α := throw <| (.error e)
-
 @[export env_pure]
 private def env_pure (a : α) : Env α := return a
-
-@[export test_fun]
-private def test_fun (a : Nat) : Nat := a
-
-@[export test_fun_base_io]
-private def test_fun_base_io (a : Nat) : BaseIO Nat := return a
-
-@[export test_fun_env]
-private def test_fun_env (a : Nat) : Env Nat := return a
 
 @[export env_throw]
 private def env_throw (e : Error) : Env α := throw e
