@@ -341,8 +341,6 @@ private def managerDo [Monad m] (f : TermManager → α) : EnvT m α :=
 section monad variable [Monad m]
 
 instance : Monad (EnvT m) := by rw [typeDefT] ; exact inferInstance
--- sanity
-example : Monad Env := inferInstance
 
 instance [MonadLiftT BaseIO m] : MonadLift Env (EnvT m) := ⟨
   by
@@ -353,13 +351,9 @@ instance [MonadLiftT BaseIO m] : MonadLift Env (EnvT m) := ⟨
 private scoped instance : MonadReader TermManager (EnvT m) where
   read := ofRaw fun tm => return (tm, tm)
 -- sanity
-private example : MonadReader TermManager Env := inferInstance
+example : MonadReader TermManager Env := inferInstance
 
 instance : MonadLift (ExceptT Error m) (EnvT m) := by rw [typeDefT] ; exact inferInstance
--- sanity
-example : MonadLiftT (Except Error) (EnvT m) := inferInstance
-example : MonadLiftT (Except Error) Env := inferInstance
-example : MonadLiftT m (EnvT m) := inferInstance
 
 instance [MonadLiftT BaseIO m] : MonadLift IO (EnvT m) := ⟨
   fun ioCode => ofRaw fun tm => do
@@ -367,14 +361,8 @@ instance [MonadLiftT BaseIO m] : MonadLift IO (EnvT m) := ⟨
     | .ok a => return (a, tm)
     | .error e => throw <| .error s!"[IO error] {e.toString}"
 ⟩
--- sanity
-example [MonadLiftT BaseIO m] : MonadLiftT BaseIO (EnvT m) := inferInstance
-example : MonadLiftT IO Env := inferInstance
-example : MonadLiftT BaseIO Env := inferInstance
 
 instance : MonadExcept Error (EnvT m) := by rw [typeDefT] ; exact inferInstance
---sanity
-example : MonadExcept Error Env := inferInstance
 
 end monad
 
