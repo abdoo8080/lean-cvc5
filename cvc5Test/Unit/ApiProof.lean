@@ -38,7 +38,7 @@ def createProof (solver : Solver) : Env Proof := do
   mkTerm Kind.GT #[zero, f_y] >>= solver.assertFormula
   mkTerm Kind.GT #[sum, one] >>= solver.assertFormula
   solver.assertFormula p_0
-  p_f_y.not >>= solver.assertFormula
+  mkTerm .NOT #[p_f_y] >>= solver.assertFormula
   let res ← solver.checkSat
   if ¬ res.isUnsat then
     fail "expected unsat result in proof creation"
