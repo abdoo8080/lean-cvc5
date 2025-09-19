@@ -7,7 +7,7 @@ import cvc5Test.Init
 
 namespace cvc5.Test
 
-test![TestApiTypes, printEnum] _tm => do
+test![TestApiTypes, printEnum] do
   let expected :=
     "LT ARRAY_SORT RTZ UNKNOWN_REASON literals preprocess full enum smt_lib_2_6 lfsc"
   let mut string := s!"\
