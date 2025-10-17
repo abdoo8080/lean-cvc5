@@ -686,6 +686,19 @@ LEAN_EXPORT lean_obj_res sort_getUninterpretedSortConstructor(lean_obj_arg s)
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
+LEAN_EXPORT lean_obj_res sort_getInstantiatedParameters(lean_obj_arg s)
+{
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  std::vector<Sort> params = sort_unbox(s)->getInstantiatedParameters();
+  lean_object* ps = lean_mk_empty_array();
+  for (const Sort& param : params)
+  {
+    ps = lean_array_push(ps, sort_box(new Sort(param)));
+  }
+  return except_ok(lean_box(0), ps);
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
+}
+
 LEAN_EXPORT lean_obj_arg sort_instantiate(lean_obj_arg s, lean_obj_arg params)
 {
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;

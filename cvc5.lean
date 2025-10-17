@@ -619,6 +619,12 @@ extern_def!? getNullableElementSort : cvc5.Sort → Except Error cvc5.Sort
 /-- Get the associated uninterpreted sort constructor of an instantiated uninterpreted sort. -/
 extern_def!? getUninterpretedSortConstructor : cvc5.Sort → Except Error cvc5.Sort
 
+/-- Get the sorts used to instantiate the sort parameters of a parametric sort.
+
+A parametric sort is a parametric datatype or an uninterpreted sort constructor sort.
+See `cvc5.Sort.instantiate`. -/
+extern_def!? getInstantiatedParameters : cvc5.Sort → Except Error (Array cvc5.Sort)
+
 /-- Instantiate a parameterized datatype sort or uninterpreted sort constructor sort.
 
 Create sort parameters with `TermManager.mkParamSort symbol`.
