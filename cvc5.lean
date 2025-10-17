@@ -5,8 +5,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Abdalrhman Mohamed, Adrien Champion
 -/
 
-import Std.Internal.Rat
-
 import cvc5.Init
 import cvc5.Kind
 import cvc5.ProofRule
@@ -329,14 +327,6 @@ private def toRaw : EnvT m α → StateT TermManager (ExceptT Error m) α :=
 -- sanity
 example : @ofRaw m α ∘ @toRaw m α = id := rfl
 example : @toRaw m α ∘ @ofRaw m α = id := rfl
-
-/-- Applies a monadic function to the environment's state, *i.e.* the term manager. -/
-private def managerDoM (f : TermManager → EnvT m α) : EnvT m α :=
-  ofRaw fun tm => (f tm |> toRaw) tm
-
-/-- Applies a function to the environment's state, *i.e.* the term manager. -/
-private def managerDo [Monad m] (f : TermManager → α) : EnvT m α :=
-  ofRaw fun tm => return (f tm, tm)
 
 section monad variable [Monad m]
 
@@ -849,7 +839,7 @@ extern_def!? getBitVectorValue : Term → UInt32 → Except Error String
 extern_def!? getIntegerValue : Term → Except Error Int
 
 /-- Get the native rational value of a real, rational-compatible value. -/
-extern_def!? getRationalValue : Term → Except Error Std.Internal.Rat
+extern_def!? getRationalValue : Term → Except Error Rat
 
 /-- Get the symbol of this term.
 
@@ -959,6 +949,9 @@ end EnvT
 
 @[inherit_doc EnvT.run]
 protected abbrev run := @EnvT.run
+
+def getManager [Monad m] : EnvT m TermManager :=
+  fun tm => return (tm, tm)
 
 namespace Env
 
@@ -1131,7 +1124,7 @@ with
 private extern_def mkRealFromString : (s : String) → Env Term
 with
   /-- Create a real-value term from a `Std.Internal.Rat`. -/
-  mkRealOfRat (rat : Std.Internal.Rat) : Env Term :=
+  mkRealOfRat (rat : Rat) : Env Term :=
     mkRealFromString s!"{rat.num}/{rat.den}"
   /-- Create a real-value term from numerator/denominator `Int`-s. -/
   mkReal
@@ -1142,7 +1135,7 @@ with
       | .ofNat 0 => by contradiction
       | .ofNat den => (num, den)
       | .negSucc denMinus1 => (-num, denMinus1.succ)
-    mkRealOfRat <| Std.Internal.mkRat num den
+    mkRealOfRat <| mkRat num den
 
 /-- Create n-ary term of given kind.
 
@@ -1371,5 +1364,7 @@ extern_def parseCommands : (solver : Solver) → (query : String) → Env String
 end Solver
 
 
+
+attribute [irreducible] EnvT
 
 end cvc5

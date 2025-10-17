@@ -2,7 +2,8 @@ import cvc5
 
 
 
-namespace cvc5.Test
+/-! # Class inference sanity checks -/
+namespace cvc5.Test.ClassInference
 
 variable [Monad m]
 
@@ -17,3 +18,5 @@ example : MonadLiftT IO Env := inferInstance
 example : MonadLiftT BaseIO Env := inferInstance
 
 example : MonadExcept Error Env := inferInstance
+
+end ClassInference

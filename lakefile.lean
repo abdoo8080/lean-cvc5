@@ -34,7 +34,7 @@ def cvc5.arch :=
 def cvc5.target := s!"{os}-{arch}-static"
 
 open IO.Process in
-def generateEnums (cppDir : FilePath) (pkg : NPackage _package.name) : IO Unit := do
+def generateEnums (cppDir : FilePath) (pkg : NPackage __name__) : IO Unit := do
   let { exitCode, stdout, stderr } ← output {
     cmd := "lean"
     args := #[
