@@ -8,23 +8,23 @@ import cvc5Test.Init
 namespace cvc5.Test
 
 test![TestApiBlackProofRule, proofRuleToString] _tm => do
-  for idx in [ProofRule.ASSUME.toCtorIdx : ProofRule.UNKNOWN.toCtorIdx] do
+  for idx in [ProofRule.ASSUME.ctorIdx : ProofRule.UNKNOWN.ctorIdx] do
     let pr := ProofRule.ofNat idx
     -- if this assertion fails, the switch is missing rule `pr`.
     assertNe pr.toString "?"
 
 test![TestApiBlackProofRule, proofRuleHash] _tm => do
-  for idx in [ProofRule.ASSUME.toCtorIdx : ProofRule.UNKNOWN.toCtorIdx] do
+  for idx in [ProofRule.ASSUME.ctorIdx : ProofRule.UNKNOWN.ctorIdx] do
     let pr := ProofRule.ofNat idx
-    assertEq pr.hash ⟨pr.toCtorIdx⟩
+    assertEq pr.hash ⟨pr.ctorIdx⟩
 
 test![TestApiBlackProofRewriteRule, proofRuleToString] _tm => do
-  for idx in [ProofRule.ASSUME.toCtorIdx : ProofRule.UNKNOWN.toCtorIdx] do
+  for idx in [ProofRule.ASSUME.ctorIdx : ProofRule.UNKNOWN.ctorIdx] do
     let pr := ProofRule.ofNat idx
     -- if this assertion fails, the switch is missing rule `pr`.
     assertNe pr.toString "?"
 
 test![TestApiBlackProofRewriteRule, proofRuleHash] _tm => do
-  for idx in [ProofRule.ASSUME.toCtorIdx : ProofRule.UNKNOWN.toCtorIdx] do
+  for idx in [ProofRule.ASSUME.ctorIdx : ProofRule.UNKNOWN.ctorIdx] do
     let pr := ProofRule.ofNat idx
-    assertEq pr.hash ⟨pr.toCtorIdx⟩
+    assertEq pr.hash ⟨pr.ctorIdx⟩
