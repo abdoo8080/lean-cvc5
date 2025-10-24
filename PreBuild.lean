@@ -501,7 +501,7 @@ def parseContentWith (p : Parser α) (content : String) (notEoiFail := true) : I
   match p content.iter with
   | .success _ a => return a
   | .error ι msg => do
-    let pretty ← prettyError ι content msg
+    let pretty ← prettyError ι content (toString msg)
     throw <| IO.Error.userError pretty
 
 def parseContent : String → IO Enums :=
