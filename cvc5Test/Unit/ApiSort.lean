@@ -13,25 +13,27 @@ import cvc5Test.Init
 
 namespace cvc5.Test
 
+open Env
+
 test![TestApiBlackSort, hash] tm => do
-  assertEq tm.getIntegerSort.hash tm.getIntegerSort.hash
-  assertNe tm.getIntegerSort.hash tm.getStringSort.hash
+  assertEq (← tm.getIntegerSort).hash (← tm.getIntegerSort).hash
+  assertNe (← tm.getIntegerSort).hash (← tm.getStringSort).hash
 
 test![TestApiBlackSort, operatorsComparison] tm => do
-  assertFalse (tm.getIntegerSort == Sort.null ())
-  assertTrue (tm.getIntegerSort != Sort.null ())
-  assertFalse (tm.getIntegerSort < Sort.null ())
-  assertFalse (tm.getIntegerSort ≤ Sort.null ())
-  assertTrue (tm.getIntegerSort > Sort.null ())
-  assertTrue (tm.getIntegerSort ≥ Sort.null ())
+  assertFalse <| (← tm.getIntegerSort) == Sort.null ()
+  assertTrue <| (← tm.getIntegerSort) != Sort.null ()
+  assertFalse <| (← tm.getIntegerSort) < Sort.null ()
+  assertFalse <| (← tm.getIntegerSort) ≤ Sort.null ()
+  assertTrue <| (← tm.getIntegerSort) > Sort.null ()
+  assertTrue <| (← tm.getIntegerSort) ≥ Sort.null ()
 
 test![TestApiBlackSort, getKind] tm => do
-  let b := tm.getBooleanSort
+  let b ← tm.getBooleanSort
   assertEq b.getKind SortKind.BOOLEAN_SORT
   -- let dtSort ← tm.createDatatypeSort -- should be (some variant of) `mkDatatypeSort`?
   -- assertEq dtSort.getKind SortKnd.DATATYPE_SORT
-  let r := tm.getRealSort
-  let i := tm.getIntegerSort
+  let r ← tm.getRealSort
+  let i ← tm.getIntegerSort
   let arr ← tm.mkArraySort r i
   assertEq arr.getKind SortKind.ARRAY_SORT
   let fp ← tm.mkFloatingPointSort 8 24
@@ -43,9 +45,9 @@ test![TestApiBlackSort, getKind] tm => do
 
 test![TestApiBlackSort, hasGetSymbol] tm => do
   let n := cvc5.Sort.null ()
-  let b := tm.getBooleanSort
-  let s0 := tm.mkParamSort "s0"
-  let s1 := tm.mkParamSort "|s1\\|"
+  let b ← tm.getBooleanSort
+  let s0 ← tm.mkParamSort "s0"
+  let s1 ← tm.mkParamSort "|s1\\|"
 
   assertError
     "invalid call to 'bool cvc5::Sort::hasSymbol() const', \
@@ -70,37 +72,37 @@ test![TestApiBlackSort, hasGetSymbol] tm => do
 test![TestApiBlackSort, isNull] tm => do
   let n := cvc5.Sort.null ()
   assertTrue n.isNull
-  assertFalse tm.getBooleanSort.isNull
+  assertFalse (← tm.getBooleanSort).isNull
 
 test![TestApiBlackSort, isBoolean] tm => do
-  assertTrue tm.getBooleanSort.isBoolean
+  assertTrue (← tm.getBooleanSort).isBoolean
   let n := cvc5.Sort.null ()
   assertFalse n.isBoolean
 
 test![TestApiBlackSort, isInteger] tm => do
-  assertTrue tm.getIntegerSort.isInteger
-  assertFalse tm.getRealSort.isInteger
+  assertTrue (← tm.getIntegerSort).isInteger
+  assertFalse (← tm.getRealSort).isInteger
   let n := cvc5.Sort.null ()
   assertFalse n.isInteger
 
 test![TestApiBlackSort, isReal] tm => do
-  assertTrue tm.getRealSort.isReal
-  assertFalse tm.getIntegerSort.isReal
+  assertTrue (← tm.getRealSort).isReal
+  assertFalse (← tm.getIntegerSort).isReal
   let n := cvc5.Sort.null ()
   assertFalse n.isReal
 
 test![TestApiBlackSort, isString] tm => do
-  assertTrue tm.getStringSort.isString
+  assertTrue (← tm.getStringSort).isString
   let n := cvc5.Sort.null ()
   assertFalse n.isString
 
 test![TestApiBlackSort, isRegExp] tm => do
-  assertTrue tm.getRegExpSort.isRegExp
+  assertTrue (← tm.getRegExpSort).isRegExp
   let n := cvc5.Sort.null ()
   assertFalse n.isRegExp
 
 test![TestApiBlackSort, isRoundingMode] tm => do
-  assertTrue tm.getRoundingModeSort.isRoundingMode
+  assertTrue (← tm.getRoundingModeSort).isRoundingMode
   let n := cvc5.Sort.null ()
   assertFalse n.isRoundingMode
 
@@ -162,47 +164,47 @@ test![TestApiBlackSort, isFloatingPoint] tm => do
 --   assertFalse n.isDatatypeUpdater
 
 test![TestApiBlackSort, isFunction] tm => do
-  assertTrue (← tm.mkFunctionSort #[tm.getBooleanSort] tm.getIntegerSort).isFunction
+  assertTrue (← tm.mkFunctionSort #[← tm.getBooleanSort] (← tm.getIntegerSort)).isFunction
   let n := cvc5.Sort.null ()
   assertFalse n.isFunction
 
 test![TestApiBlackSort, isPredicate] tm => do
-  assertTrue (← tm.mkPredicateSort #[tm.getRealSort]).isPredicate
+  assertTrue (← tm.mkPredicateSort #[← tm.getRealSort]).isPredicate
   let n := cvc5.Sort.null ()
   assertFalse n.isPredicate
 
 test![TestApiBlackSort, isTuple] tm => do
-  assertTrue (← tm.mkTupleSort #[tm.getRealSort]).isTuple
+  assertTrue (← tm.mkTupleSort #[← tm.getRealSort]).isTuple
   let n := cvc5.Sort.null ()
   assertFalse n.isTuple
 
 test![TestApiBlackSort, isNullable] tm => do
-  assertTrue (← tm.mkNullableSort tm.getRealSort).isNullable
+  assertTrue (← tm.mkNullableSort (← tm.getRealSort)).isNullable
   let n := cvc5.Sort.null ()
   assertFalse n.isNullable
 
 -- test![TestApiBlackSort, isRecord] tm => do
---   assertEq (← tm.mkRecordSort #[("asdf", tm.getRealSort)]).isRecord true
+--   assertEq (← mkRecordSort #[("asdf", ← getRealSort)]).isRecord true
 --   let n := cvc5.Sort.null ()
 --   assertFalse n.isRecord
 
 test![TestApiBlackSort, isArray] tm => do
-  assertTrue (← tm.mkArraySort tm.getRealSort tm.getIntegerSort).isArray
+  assertTrue (← tm.mkArraySort (← tm.getRealSort) (← tm.getIntegerSort)).isArray
   let n := cvc5.Sort.null ()
   assertFalse n.isArray
 
 test![TestApiBlackSort, isSet] tm => do
-  assertTrue (← tm.mkSetSort tm.getRealSort).isSet
+  assertTrue (← tm.mkSetSort (← tm.getRealSort)).isSet
   let n := cvc5.Sort.null ()
   assertFalse n.isSet
 
 test![TestApiBlackSort, isBag] tm => do
-  assertTrue (← tm.mkBagSort tm.getRealSort).isBag
+  assertTrue (← tm.mkBagSort (← tm.getRealSort)).isBag
   let n := cvc5.Sort.null ()
   assertFalse n.isBag
 
 test![TestApiBlackSort, isSequence] tm => do
-  assertTrue (← tm.mkSequenceSort tm.getRealSort).isSequence
+  assertTrue (← tm.mkSequenceSort (← tm.getRealSort)).isSequence
   let n := cvc5.Sort.null ()
   assertFalse n.isSequence
 
@@ -214,7 +216,7 @@ test![TestApiBlackSort, isAbstract] tm => do
   assertFalse n.isAbstract
 
 test![TestApiBlackSort, isUninterpreted] tm => do
-  assertTrue (tm.mkUninterpretedSort "asdf").isUninterpretedSort
+  assertTrue (← tm.mkUninterpretedSort "asdf").isUninterpretedSort
   let n := cvc5.Sort.null ()
   assertFalse n.isUninterpretedSort
 
@@ -225,15 +227,15 @@ test![TestApiBlackSort, isUninterpretedSortConstructor] tm => do
   assertTrue scSort2.isUninterpretedSortConstructor
 
 -- test![TestApiBlackSort, getDatatype] tm => do
---   let dTypeSort ← createDatatypeSort
+--   let dTypeSort ← tm.createDatatypeSort
 --   assertOkDiscard dTypeSort.getDatatype
 --   -- create bv sort, check should fail
 --   let bvSort ← tm.mkBitVectorSort 32
 --   assertError "failure" bvSort.getDatatype
 
 -- test![TestApiBlackSort, datatypeSorts] tm => do
---   let intSort := tm.getIntegerSort
---   let dTypeSort ← createDatatypeSort
+--   let intSort ← tm.getIntegerSort
+--   let dTypeSort ← tm.createDatatypeSort
 --   let dt ← dTypeSort.getDatatype
 --   assertFalse dTypeSort.isDatatypeConstructor
 --   assertError "failure" dTypeSort.getDatatypeConstructorCodomainSort
@@ -257,7 +259,7 @@ test![TestApiBlackSort, isUninterpretedSortConstructor] tm => do
 --   let testerTerm ← dCons.getTesterTerm
 --   assertTrue testerTerm.getSort.isDatatypeTester
 --   assertEq (← testerTerm.getSort.getDatatypeTesterDomainSort) dTypeSort
---   let booleanSort := tm.getBooleanSort
+--   let booleanSort ← tm.getBooleanSort
 --   assertEq (← testerTerm.getSort.getDatatypeTesterCodomainSort) booleanSort
 --   assertError "failure" booleanSort.getDatatypeTesterDomainSort
 --   assertError "failure" booleanSort.getDatatypeTesterCodomainSort
@@ -273,54 +275,54 @@ test![TestApiBlackSort, isUninterpretedSortConstructor] tm => do
 
 -- test![TestApiBlackSort, instantiate] tm => do
 --   -- instantiate parametric datatype, check should not fail
---   let paramDTypeSort ← createParamDatatypeSort
---   assertOkDiscard (paramDTypeSort.instantiate #[tm.getIntegerSort])
+--   let paramDTypeSort ← tm.createParamDatatypeSort
+--   assertOkDiscard (paramDTypeSort.instantiate #[getIntegerSort])
 --   -- instantiate non-parametric datatype sort, check should fail
 --   let mut dTypeSpec ← tm.mkDatatypeDecl "list"
 --   let mut cons ← tm.mkDatatypeConstructorDecl "cons"
---   cons := cons.addSelector "head" tm.getIntegerSort
+--   cons := cons.addSelector "head" getIntegerSort
 --   dTypeSpec := dTypeSpec.addConstructor cons
 --   let nil ← tm.mkDatatypeConstructorDecl "nil"
 --   dTypeSpec := dTypeSpec.addConstructor nil
 --   let dTypeSort ← tm.mkDatatypeSort dTypeSpec
---   assertError "failure" (dTypeSort.instantiate #[tm.getIntegerSort])
+--   assertError "failure" (dTypeSort.instantiate #[getIntegerSort])
 --   -- instantiate uninterpreted sort constructor
 --   let sortConsSort ← tm.mkUninterpretedSortConstructorSort 1 "s"
 --   assertOkDiscard (sortConsSort.instantiate #[tm.getIntegerSort])
 
-test![TestApiBlackSort, instantiate] tm => do
-  -- let paramDTypeSort ← createParamDatatypeSort
-  -- assertFalse paramDTypeSort.isInstantiated
-  -- let instParamDTypeSort ← paramDTypeSort.instantiate #[tm.getIntegerSort]
-  -- assertTrue instParamDTypeSort.isInstantiated
+-- test![TestApiBlackSort, instantiate] tm => do
+--   let paramDTypeSort ← tm.createParamDatatypeSort
+--   assertFalse paramDTypeSort.isInstantiated
+--   let instParamDTypeSort ← paramDTypeSort.instantiate #[tm.getIntegerSort]
+--   assertTrue instParamDTypeSort.isInstantiated
 
-  let sortConsSort ← tm.mkUninterpretedSortConstructorSort 1 "s"
-  assertFalse sortConsSort.isInstantiated
-  let instSortConsSort ← sortConsSort.instantiate #[tm.getIntegerSort]
-  assertTrue instSortConsSort.isInstantiated
+  -- let sortConsSort ← tm.mkUninterpretedSortConstructorSort 1 "s"
+  -- assertFalse sortConsSort.isInstantiated
+  -- let instSortConsSort ← sortConsSort.instantiate #[← tm.getIntegerSort]
+  -- assertTrue instSortConsSort.isInstantiated
 
-  assertFalse tm.getIntegerSort.isInstantiated
-  assertFalse (← tm.mkBitVectorSort 32 ).isInstantiated
+  -- assertFalse (← tm.getIntegerSort).isInstantiated
+  -- assertFalse (← tm.mkBitVectorSort 32 ).isInstantiated
 
 -- test![TestApiBlackSort, getInstantiatedParameters] tm => do
---   let intSort := tm.getIntegerSort
---   let realSort := tm.getRealSort
---   let boolSort := tm.getBooleanSort
+--   let intSort ← getIntegerSort
+--   let realSort ← getRealSort
+--   let boolSort ← getBooleanSort
 --   let bvSort ← tm.mkBitVectorSort 8
 
 --   -- parametric datatype instantiation
---   let p1 := tm.mkParamSort "p1"
---   let p2 := tm.mkParamSort "p2"
---   let mut pSpec ← tm.mkDatatypeDecl "pdtype" #[p1, p2]
---   let mut pCons1 ← tm.mkDatatypeConstructorDecl "cons1"
---   let mut pCons2 ← tm.mkDatatypeConstructorDecl "cons2"
---   let pNil ← tm.mkDatatypeConstructorDecl "nil"
+--   let p1 ← mkParamSort "p1"
+--   let p2 ← mkParamSort "p2"
+--   let mut pSpec ← mkDatatypeDecl "pdtype" #[p1, p2]
+--   let mut pCons1 ← mkDatatypeConstructorDecl "cons1"
+--   let mut pCons2 ← mkDatatypeConstructorDecl "cons2"
+--   let pNil ← mkDatatypeConstructorDecl "nil"
 --   pCons1 := pCons1.addSelector "sel" p1
 --   pCons2 := pCons2.addSelector "sel" p2
 --   pSpec := pSpec.addConstructor pCons1
 --   pSpec := pSpec.addConstructor pCons2
 --   pSpec := pSpec.addConstructor pNil
---   let paramDTypeSort ← tm.mkDatatypeSort pSpec
+--   let paramDTypeSort ← mkDatatypeSort pSpec
 
 --   assertError "failure" paramDTypeSort.getInstantiatedParameters
 
@@ -346,9 +348,9 @@ test![TestApiBlackSort, instantiate] tm => do
 --   assertError "failure" bvSort.getInstantiatedParameters
 
 test![TestApiBlackSort, getUninterpretedSortConstructor] tm => do
-  let intSort := tm.getIntegerSort
-  let realSort := tm.getRealSort
-  let boolSort := tm.getBooleanSort
+  let intSort ← tm.getIntegerSort
+  let realSort ← tm.getRealSort
+  let boolSort ← tm.getBooleanSort
   let bvSort ← tm.mkBitVectorSort 8
   let sortConsSort ← tm.mkUninterpretedSortConstructorSort 4 "s"
   sortConsSort.getUninterpretedSortConstructor
@@ -357,19 +359,19 @@ test![TestApiBlackSort, getUninterpretedSortConstructor] tm => do
   assertEq sortConsSort (← instSortConsSort.getUninterpretedSortConstructor)
 
 test![TestApiBlackSort, getFunctionArity] tm => do
-  let funSort ← tm.mkFunctionSort #[tm.mkUninterpretedSort "u"] tm.getIntegerSort
+  let funSort ← tm.mkFunctionSort #[← tm.mkUninterpretedSort "u"] (← tm.getIntegerSort)
   assertEq (← funSort.getFunctionArity) 1
   let bvSort ← tm.mkBitVectorSort 32
   assertError "not a function sort: (_ BitVec 32)" bvSort.getFunctionArity
 
 test![TestApiBlackSort, getFunctionDomainSorts] tm => do
-  let funSort ← tm.mkFunctionSort #[tm.mkUninterpretedSort "u"] tm.getIntegerSort
+  let funSort ← tm.mkFunctionSort #[← tm.mkUninterpretedSort "u"] (← tm.getIntegerSort)
   assertOkDiscard funSort.getFunctionDomainSorts
   let bvSort ← tm.mkBitVectorSort 32
   assertError "not a function sort: (_ BitVec 32)" bvSort.getFunctionDomainSorts
 
 test![TestApiBlackSort, getFunctionCodomainSort] tm => do
-  let funSort ← tm.mkFunctionSort #[tm.mkUninterpretedSort "u"] tm.getIntegerSort
+  let funSort ← tm.mkFunctionSort #[← tm.mkUninterpretedSort "u"] (← tm.getIntegerSort)
   assertOkDiscard funSort.getFunctionCodomainSort
   let bvSort ← tm.mkBitVectorSort 32
   assertError "not a function sort(_ BitVec 32)" bvSort.getFunctionCodomainSort
@@ -389,23 +391,23 @@ test![TestApiBlackSort, getArrayElementSort] tm => do
   assertError "not an array sort." indexSort.getArrayElementSort
 
 test![TestApiBlackSort, getSetElementSort] tm => do
-  let setSort ← tm.mkSetSort tm.getIntegerSort
+  let setSort ← tm.mkSetSort (← tm.getIntegerSort)
   let elementSort ← assertOk setSort.getSetElementSort
-  assertEq elementSort tm.getIntegerSort
+  assertEq elementSort (← tm.getIntegerSort)
   let bvSort ← tm.mkBitVectorSort 32
   assertError "not a set sort." bvSort.getSetElementSort
 
 test![TestApiBlackSort, getBagElementSort] tm => do
-  let bagSort ← tm.mkBagSort tm.getIntegerSort
+  let bagSort ← tm.mkBagSort (← tm.getIntegerSort)
   let elementSort ← assertOk bagSort.getBagElementSort
-  assertEq elementSort tm.getIntegerSort
+  assertEq elementSort (← tm.getIntegerSort)
   let bvSort ← tm.mkBitVectorSort 32
   assertError "not a bag sort." bvSort.getBagElementSort
 
 test![TestApiBlackSort, getSequenceElementSort] tm => do
-  let seqSort ← tm.mkSequenceSort tm.getIntegerSort
+  let seqSort ← tm.mkSequenceSort (← tm.getIntegerSort)
   let elementSort ← assertOk seqSort.getSequenceElementSort
-  assertEq elementSort tm.getIntegerSort
+  assertEq elementSort (← tm.getIntegerSort)
   let bvSort ← tm.mkBitVectorSort 32
   assertError "not a sequence sort." bvSort.getSequenceElementSort
 
@@ -424,7 +426,7 @@ test![TestApiBlackSort, getAbstractedKind] tm => do
     SortKind.ABSTRACT_SORT
 
 test![TestApiBlackSort, getSymbol] tm => do
-  let uSort := tm.mkUninterpretedSort "u"
+  let uSort ← tm.mkUninterpretedSort "u"
   assertEq (← uSort.getSymbol) "u"
   let bvSort ← tm.mkBitVectorSort 32
   assertError
@@ -452,7 +454,7 @@ test![TestApiBlackSort, getUninterpretedSortConstructorArity] tm => do
 test![TestApiBlackSort, getBitVectorSize] tm => do
   let bvSort ← tm.mkBitVectorSort 32
   assertEq (← bvSort.getBitVectorSize) 32
-  let setSort ← tm.mkSetSort tm.getIntegerSort
+  let setSort ← tm.mkSetSort (← tm.getIntegerSort)
   assertError "not a bit-vector sort." setSort.getBitVectorSize
 
 test![TestApiBlackSort, getFiniteFieldSize] tm => do
@@ -466,52 +468,52 @@ test![TestApiBlackSort, getFiniteFieldSize] tm => do
 test![TestApiBlackSort, getFloatingPointExponentSize] tm => do
   let fpSort ← tm.mkFloatingPointSort 4 8
   assertEq (← fpSort.getFloatingPointExponentSize) 4
-  let setSort ← tm.mkSetSort tm.getIntegerSort
+  let setSort ← tm.mkSetSort (← tm.getIntegerSort)
   assertError "not a floating-point sort." setSort.getFloatingPointExponentSize
 
 test![TestApiBlackSort, getFloatingPointSignificandSize] tm => do
   let fpSort ← tm.mkFloatingPointSort 4 8
   assertEq (← fpSort.getFloatingPointSignificandSize) 8
-  let setSort ← tm.mkSetSort tm.getIntegerSort
+  let setSort ← tm.mkSetSort (← tm.getIntegerSort)
   assertError "not a floating-point sort." setSort.getFloatingPointSignificandSize
 
 -- test![TestApiBlackSort, getDatatypeArity] tm => do
 --   -- create datatype sort, check should not fail
---   let mut dTypeSpec ← tm.mkDatatypeDecl "list"
---   let mut cons ← tm.mkDatatypeConstructorDecl "cons"
---   cons := addSelector "head" tm.getIntegerSort
+--   let mut dTypeSpec ← mkDatatypeDecl "list"
+--   let mut cons ← mkDatatypeConstructorDecl "cons"
+--   cons := addSelector "head" (← getIntegerSort)
 --   dTypeSpec := dTypeSpec.addConstructor cons
---   let nil ← tm.mkDatatypeConstructorDecl "nil"
+--   let nil ← mkDatatypeConstructorDecl "nil"
 --   dTypeSpec := dTypeSpec.addConstructor nil
---   let dTypeSort ← tm.mkDatatypeSort dTypeSpec
+--   let dTypeSort ← mkDatatypeSort dTypeSpec
 --   assertOkDiscard dTypeSort.getDatatypeArity
 --   -- create bv sort, check should fail
---   let bvSort ← tm.mkBitVectorSort 32
+--   let bvSort ← mkBitVectorSort 32
 --   assertError "failure" bvSort.getDatatypeArity
 
 test![TestApiBlackSort, getTupleLength] tm => do
-  let tupleSort ← tm.mkTupleSort #[tm.getIntegerSort, tm.getIntegerSort]
+  let tupleSort ← tm.mkTupleSort #[← tm.getIntegerSort, ← tm.getIntegerSort]
   assertEq (← tupleSort.getTupleLength) 2
   let bvSort ← tm.mkBitVectorSort 32
   assertError "not a tuple sort." bvSort.getTupleLength
 
 test![TestApiBlackSort, getTupleSorts] tm => do
-  let tupleSort ← tm.mkTupleSort #[tm.getIntegerSort, tm.getIntegerSort]
+  let tupleSort ← tm.mkTupleSort #[← tm.getIntegerSort, ← tm.getIntegerSort]
   assertOkDiscard tupleSort.getTupleSorts
   let bvSort ← tm.mkBitVectorSort 32
   assertError "not a tuple sort." bvSort.getTupleSorts
 
 test![TestApiBlackSort, getNullableElementSort] tm => do
-  let nullableSort ← tm.mkNullableSort tm.getIntegerSort
+  let nullableSort ← tm.mkNullableSort (← tm.getIntegerSort)
   assertOkDiscard nullableSort.getNullableElementSort
   let elementSort ← nullableSort.getNullableElementSort
-  assertEq elementSort tm.getIntegerSort
+  assertEq elementSort (← tm.getIntegerSort)
   let bvSort ← tm.mkBitVectorSort 32
   assertError "not a nullable sort." bvSort.getNullableElementSort
 
 test![TestApiBlackSort, sortCompare] tm => do
-  let boolSort := tm.getBooleanSort
-  let intSort := tm.getIntegerSort
+  let boolSort ← tm.getBooleanSort
+  let intSort ← tm.getIntegerSort
   let bvSort ← tm.mkBitVectorSort 32
   let bvSort2 ← tm.mkBitVectorSort 32
   assertTrue (bvSort ≥ bvSort2)
@@ -522,22 +524,22 @@ test![TestApiBlackSort, sortCompare] tm => do
 test![TestApiBlackSort, sortScopedToString] tm => do
   let name := "uninterp-sort"
   let bvSort8 ← tm.mkBitVectorSort 8
-  let uSort := tm.mkUninterpretedSort name
+  let uSort ← tm.mkUninterpretedSort name
   -- repetition present in the original test
   assertEq bvSort8.toString "(_ BitVec 8)"
   assertEq uSort.toString name
   assertEq bvSort8.toString "(_ BitVec 8)"
   assertEq uSort.toString name
 
-test![TestApiBlackSort, toString] tm => do
+test![TestApiBlackSort, toString] do
   -- useless test here, as `toString` is not expected to fail at all
   assertOkDiscard (return (Sort.null ()).toString)
 
 test![TestApiBlackSort, substitute] tm => do
-  let sortVar0 := tm.mkParamSort "T0"
-  let sortVar1 := tm.mkParamSort "T1"
-  let intSort := tm.getIntegerSort
-  let realSort := tm.getRealSort
+  let sortVar0 ← tm.mkParamSort "T0"
+  let sortVar1 ← tm.mkParamSort "T1"
+  let intSort ← tm.getIntegerSort
+  let realSort ← tm.getRealSort
   let arraySort0 ← tm.mkArraySort sortVar0 sortVar0
   let arraySort1 ← tm.mkArraySort sortVar0 sortVar1
   -- now create instantiations of the defined sorts

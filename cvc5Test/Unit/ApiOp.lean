@@ -7,6 +7,8 @@ import cvc5Test.Init
 
 namespace cvc5.Test
 
+open Env
+
 test! tm => do
   let bv1 ←
     tm.mkOp Kind.BITVECTOR_EXTRACT #[31, 1]
@@ -35,7 +37,8 @@ test! tm => do
   tm.mkOp Kind.ADD
   |> assertOkDiscard
   tm.mkOp Kind.BITVECTOR_EXTRACT
-  |> assertError "invalid number of indices for operator BITVECTOR_EXTRACT, expected 2 but got 0."
+  |> assertError
+    "invalid number of indices for operator BITVECTOR_EXTRACT, expected 2 but got 0."
 
 test! tm => do
   -- operators with 0 indices
@@ -103,7 +106,7 @@ test! tm => do
   assertEq plus.getNumIndices 0
 
   -- helper for 1/n-indexed operators
-  let check (op : Op) (idx : Nat) (intValue : Int) : cvc5.SolverM Unit :=
+  let check (op : Op) (idx : Nat) (intValue : Int) : cvc5.Env Unit :=
     if _ : idx < op.getNumIndices then
       assertEq op[idx].getIntegerValue! intValue
     else fail "illegal op index `{idx}` for {op}"
@@ -165,7 +168,7 @@ test! tm => do
 Not sure what to do for the end of the test below. Original test is
 
 ```cpp
-Op bitvector_repeat_ot = d_tm.mkOp(Kind::BITVECTOR_REPEAT, {5});
+Op bitvector_repeat_ot = d_mkOp(Kind::BITVECTOR_REPEAT, {5});
 std::string op_repr = bitvector_repeat_ot.toString();
 ASSERT_EQ(bitvector_repeat_ot.toString(), op_repr);
 {

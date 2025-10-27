@@ -278,7 +278,12 @@ private opaque TermManagerImpl : NonemptyType.{0}
 /-- Manager for cvc5 terms. -/
 def TermManager : Type := TermManagerImpl.type
 
-instance TermManager.instNonemptyTermManager : Nonempty TermManager := TermManagerImpl.property
+namespace TermManager
+
+private instance TermManager.instNonemptyTermManager : Nonempty TermManager :=
+  TermManagerImpl.property
+
+end TermManager
 
 /-- Error type. -/
 inductive Error where
@@ -289,18 +294,51 @@ inductive Error where
   | option (msg : String)
 deriving Repr
 
+/-- Cvc5 environment monad transformer.
+
+Most monadic functions in this API use the non-transformer monad `cvc5.Env`, where `m := BaseIO`.
+
+When using an `EnvT m α`, do make sure `m` is such that `MonadLiftT BaseIO m` which gives
+`MonadLiftT Env (EnvT m)`.
+-/
+abbrev EnvT (m : Type → Type) (α : Type) : Type :=
+  ExceptT Error m α
+
+/-- Cvc5 environment monad in `BaseIO`. -/
+abbrev Env (α : Type) := EnvT BaseIO α
+
+namespace EnvT
+
+-- functions used by the underlying C++ layer
+section ffi variable [Monad m]
+
+@[export env_pure]
+private def env_pure (a : α) : Env α := return a
+
+@[export env_throw]
+private def env_throw (e : Error) : Env α := throw e
+
+@[export env_throw_string]
+private def env_throw_string (e : String) : Env α := throw <| (.error e)
+
+end ffi
+
+end EnvT
+
 private opaque SolverImpl : NonemptyType.{0}
 
 /-- A cvc5 solver. -/
-def Solver : Type := SolverImpl.type
+private def Solver.Raw : Type := SolverImpl.type
 
-instance Solver.instNonemptySolver : Nonempty Solver := SolverImpl.property
+instance Solver.instNonemptySolver : Nonempty Solver.Raw := SolverImpl.property
 
-/-- Solver error/state-monad transformer. -/
-abbrev SolverT m := ExceptT Error (StateT Solver m)
+/-- A cvc5 solver. -/
+structure Solver where private mkRaw ::
+  private solver : Solver.Raw
 
-/-- Solver error/state-monad wrapped in `IO`. -/
-abbrev SolverM := SolverT IO
+/-- Accessor for the underlying unsafe solver. -/
+@[export ffi_solver_to_raw]
+private def ffi_solver_to_raw : Solver → Solver.Raw := Solver.solver
 
 namespace Error
 
@@ -361,7 +399,7 @@ end Result
 section ffi_except_constructors
 
 /-- Only used by FFI to inject values. -/
-@[export except_ok]
+@[export generic_except_ok]
 private def mkExceptOk {α : Type} : α → Except Error α :=
   .ok
 
@@ -627,7 +665,7 @@ extern_def!? getInstantiatedParameters : cvc5.Sort → Except Error (Array cvc5.
 
 /-- Instantiate a parameterized datatype sort or uninterpreted sort constructor sort.
 
-Create sort parameters with `TermManager.mkParamSort symbol`.
+Create sort parameters with `mkParamSort symbol`.
 
 - `params` The list of sort parameters to instantiate with.
 -/
@@ -651,7 +689,9 @@ instance : Repr cvc5.Sort := ⟨fun self _ => self.toString⟩
 
 end cvc5.Sort
 
-namespace cvc5.Op
+namespace cvc5
+
+namespace Op
 
 /-- The null operator. -/
 extern_def null : Unit → Op
@@ -764,8 +804,8 @@ extern_def!? getRationalValue : Term → Except Error Std.Internal.Rat
 
 Requires that this term has a symbol (see `hasSymbol`).
 
-The symbol of the term is the string that was provided when constructing it *via*
-`TermManager.mkConst` or `TermManager.mkVar`.
+The symbol of the term is the string that was provided when constructing it *via* `mkConst` or
+`mkVar`.
 -/
 extern_def!? getSymbol : Term → Except Error String
 
@@ -809,32 +849,6 @@ def getChildren (t : Term) : Array Term := Id.run do
   for ct in t do
     cts := cts.push ct
   cts
-
-/-- Boolean negation. -/
-protected extern_def!? not : (t : Term) → Except Error Term
-
-/-- Boolean and. -/
-protected extern_def!? and : (lft rgt : Term) → Except Error Term
-
-/-- Boolean or. -/
-protected extern_def!? or : (lft rgt : Term) → Except Error Term
-
-/-- Boolean exclusive or. -/
-protected extern_def!? xor : (lft rgt : Term) → Except Error Term
-
-/-- Equality. -/
-protected extern_def!? eq : (lft rgt : Term) → Except Error Term
-
-/-- Boolean implication. -/
-protected extern_def!? imp : (lft rgt : Term) → Except Error Term
-
-/-- If-then-else.
-
-- `cnd`: condition, must be a Boolean term;
-- `thn`: then-branch of some sort `S`;
-- `els`: else-branch of *the same* sort `S`.
--/
-protected extern_def!? ite : (cnd thn els : Term) → Except Error Term
 
 /-- A string representation of this term. -/
 protected extern_def toString : Term → String
@@ -886,69 +900,61 @@ end Proof
 namespace TermManager
 
 /-- Constructor. -/
-extern_def new : BaseIO TermManager
+extern_def new : Env TermManager
 
 /-- Get the Boolean sort. -/
-extern_def getBooleanSort : TermManager → cvc5.Sort
+extern_def getBooleanSort : TermManager → Env cvc5.Sort
 
 /-- Get the Integer sort. -/
-extern_def getIntegerSort : TermManager → cvc5.Sort
+extern_def getIntegerSort : TermManager → Env cvc5.Sort
 
 /-- Get the Real sort. -/
-extern_def getRealSort : TermManager → cvc5.Sort
+extern_def getRealSort : TermManager → Env cvc5.Sort
 
 /-- Get the regular expression sort. -/
-extern_def getRegExpSort : TermManager → cvc5.Sort
+extern_def getRegExpSort : TermManager → Env cvc5.Sort
 
 /-- Get the rounding mode sort. -/
-extern_def getRoundingModeSort : TermManager → cvc5.Sort
+extern_def getRoundingModeSort : TermManager → Env cvc5.Sort
 
 /-- Get the string sort. -/
-extern_def getStringSort : TermManager → cvc5.Sort
+extern_def getStringSort : TermManager → Env cvc5.Sort
 
 /-- Create an array sort.
 
 - `indexSort` The array index sort.
 - `elemSort` The array element sort.
 -/
-extern_def!? mkArraySort : TermManager → (indexSort elemSort : cvc5.Sort) → Except Error cvc5.Sort
+extern_def mkArraySort : TermManager → (indexSort elemSort : cvc5.Sort) → Env cvc5.Sort
 
 /-- Create a bit-vector sort.
 
 - `size` The bit-width of the bit-vector sort.
 -/
-extern_def!? mkBitVectorSort : TermManager → (size : UInt32) → Except Error cvc5.Sort
+extern_def mkBitVectorSort : TermManager → (size : UInt32) → Env cvc5.Sort
 
 /-- Create a floating-point sort.
 
 - `exp` The bit-width of the exponent of the floating-point sort.
 - `sig` The bit-width of the significand of the floating-point sort.
 -/
-extern_def!? mkFloatingPointSort : TermManager → (exp sig : UInt32) → Except Error cvc5.Sort
+extern_def mkFloatingPointSort : TermManager → (exp sig : UInt32) → Env cvc5.Sort
 
 /-- Create a finite-field sort from a given string of base n.
 
 - `size` The modulus of the field. Must be a prime.
 -/
-private extern_def mkFiniteFieldSortFromString : TermManager → (size : String) → (base : UInt32 := 10) → Except Error cvc5.Sort
-
-@[inherit_doc mkFiniteFieldSortFromString]
-abbrev mkFiniteFieldSort (tm : TermManager) : (size : Nat) → Except Error cvc5.Sort :=
-  (tm.mkFiniteFieldSortFromString · 10) ∘ toString
-@[inherit_doc mkFiniteFieldSortFromString]
-abbrev mkFiniteFieldSort! (tm : TermManager) : (size : Nat) → cvc5.Sort :=
-  Error.unwrap! ∘ (tm.mkFiniteFieldSortFromString · 10) ∘ toString
-@[inherit_doc mkFiniteFieldSortFromString]
-abbrev mkFiniteFieldSort? (tm : TermManager) : (size : Nat) → Option cvc5.Sort :=
-  Except.toOption ∘ (tm.mkFiniteFieldSortFromString · 10) ∘ toString
+extern_def mkFiniteFieldSortOfString : TermManager → (size : String) → (base : UInt32) → Env cvc5.Sort
+with
+  mkFiniteFieldSort (tm : TermManager) (size : Nat) (base : UInt32 := 10) : Env cvc5.Sort :=
+    mkFiniteFieldSortOfString tm (toString size) base
 
 /-- Create function sort.
 
 - `sorts` The sort of the function arguments.
 - `codomain` The sort of the function return value.
 -/
-extern_def!? mkFunctionSort
-: TermManager → (sorts : Array cvc5.Sort) → (codomain : cvc5.Sort) → Except Error cvc5.Sort
+extern_def mkFunctionSort : TermManager → (sorts : Array cvc5.Sort) → (cod : cvc5.Sort) → Env cvc5.Sort
 
 /-- Create a predicate sort.
 
@@ -956,13 +962,13 @@ This is equivalent to calling `mkFunctionSort` with Boolean sort as the codomain
 
 - `sorts` The list of sorts of the predicate.
 -/
-extern_def!? mkPredicateSort : TermManager → (sorts : Array cvc5.Sort) → Except Error cvc5.Sort
+extern_def mkPredicateSort : TermManager → (sorts : Array cvc5.Sort) → Env cvc5.Sort
 
 /-- Create a tuple sort.
 
 - `sorts` The sorts of the elements of the tuple.
 -/
-extern_def!? mkTupleSort : TermManager → (sorts : Array cvc5.Sort) → Except Error cvc5.Sort
+extern_def mkTupleSort : TermManager → (sorts : Array cvc5.Sort) → Env cvc5.Sort
 
 /-- Create an uninterpreted sort constructor sort.
 
@@ -971,26 +977,25 @@ An uninterpreted sort constructor is an uninterpreted sort with arity > 0.
 - `arity` The arity of the sort (must be > 0).
 - `symbol` The symbol of the sort.
 -/
-extern_def!? mkUninterpretedSortConstructorSort
-: TermManager → (arity : Nat) → (symbol : String) → Except Error cvc5.Sort
+extern_def mkUninterpretedSortConstructorSort : TermManager → (arity : Nat) → (symbol : String) → Env cvc5.Sort
 
 /-- Create a set parameter.
 
 - `elemSort` The sort of the set elements.
 -/
-extern_def!? mkSetSort : TermManager → (sort : cvc5.Sort) → Except Error cvc5.Sort
+extern_def mkSetSort : TermManager → (sort : cvc5.Sort) → Env cvc5.Sort
 
 /-- Create a set parameter.
 
 - `elemSort` The sort of the set elements.
 -/
-extern_def!? mkBagSort : TermManager → (sort : cvc5.Sort) → Except Error cvc5.Sort
+extern_def mkBagSort : TermManager → (sort : cvc5.Sort) → Env cvc5.Sort
 
 /-- Create a set parameter.
 
 - `elemSort` The sort of the set elements.
 -/
-extern_def!? mkSequenceSort : TermManager → (sort : cvc5.Sort) → Except Error cvc5.Sort
+extern_def mkSequenceSort : TermManager → (sort : cvc5.Sort) → Env cvc5.Sort
 
 /-- Create an abstract sort. An abstract sort represents a sort for a given kind whose parameters
 and arguments are unspecified.
@@ -1007,19 +1012,19 @@ sort of kind `k` whose arguments are the unspecified sort. For example, `mkAbstr
 SortKind.ARRAY_SORT` will return the sort `(ARRAY_SORT ? ?)` instead of the abstract sort whose
 abstract kind is `SortKind.ARRAY_SORT`.
 -/
-extern_def!? mkAbstractSort : TermManager → (k : SortKind) → Except Error cvc5.Sort
+extern_def mkAbstractSort : TermManager → (k : SortKind) → Env cvc5.Sort
 
 /-- Create an uninterpreted sort.
 
 - `symbol` The name of the sort.
 -/
-extern_def mkUninterpretedSort : TermManager → (symbol : String) → cvc5.Sort
+extern_def mkUninterpretedSort : TermManager →(symbol : String) → Env cvc5.Sort
 
 /-- Create a nullable sort.
 
 - `sort` The sort of the element of the nullable.
 -/
-extern_def!? mkNullableSort : TermManager → (sort : cvc5.Sort) → Except Error cvc5.Sort
+extern_def mkNullableSort : TermManager → (sort : cvc5.Sort) → Env cvc5.Sort
 
 /-- Create a sort parameter.
 
@@ -1027,44 +1032,82 @@ extern_def!? mkNullableSort : TermManager → (sort : cvc5.Sort) → Except Erro
 
 **Warning**: This function is experimental and may change in future versions.
 -/
-extern_def mkParamSort : TermManager → (symbol : String) → cvc5.Sort
+extern_def mkParamSort : TermManager → (symbol : String) → Env cvc5.Sort
+
+
 
 /-- Create a Boolean constant.
 
 - `b`: The Boolean constant.
 -/
-extern_def mkBoolean : TermManager → (b : Bool) → Term
+extern_def mkBoolean : TermManager → (b : Bool) → Env Term
 
 /-- Create an integer-value term.
 
 - `s`: the string representation of the constant, may represent an integer such as (`"123"`).
 -/
-private extern_def mkIntegerFromString : TermManager → (s : String) → Except Error Term
+private extern_def mkIntegerFromString : TermManager → (s : String) → Env Term
 with
   /-- Create an integer-value term. -/
-  mkInteger (tm : TermManager) : Int → Term :=
-    Error.unwrap! ∘ tm.mkIntegerFromString ∘ toString
+  mkInteger (tm : TermManager) : Int → Env Term := mkIntegerFromString tm ∘ toString
 
 /-- Create a real-value term.
 
 - `s`: the string representation of the constant, may represent an integer (`"123"`) or a real
   constant (`"12.34"`, `"12/34"`).
 -/
-private extern_def mkRealFromString : TermManager → (s : String) → Except Error Term
+private extern_def mkRealFromString : TermManager → (s : String) → Env Term
 with
   /-- Create a real-value term from a `Std.Internal.Rat`. -/
-  mkRealOfRat (tm : TermManager) (rat : Std.Internal.Rat) : Term :=
-    tm.mkRealFromString s!"{rat.num}/{rat.den}" |> Error.unwrap!
+  mkRealOfRat (tm : TermManager) (rat : Std.Internal.Rat) : Env Term :=
+    mkRealFromString tm s!"{rat.num}/{rat.den}"
   /-- Create a real-value term from numerator/denominator `Int`-s. -/
   mkReal (tm : TermManager)
     (num : Int) (den : Int := 1) (den_ne_0 : den ≠ 0 := by simp <;> omega)
-  : Term :=
+  : Env Term :=
     let (num, den) :=
       match h : den with
       | .ofNat 0 => by contradiction
       | .ofNat den => (num, den)
       | .negSucc denMinus1 => (-num, denMinus1.succ)
-    tm.mkRealOfRat <| Std.Internal.mkRat num den
+    mkRealOfRat tm <| Std.Internal.mkRat num den
+
+/-- Create n-ary term of given kind.
+
+- `kind` The kind of the term.
+- `children` The children of the term.
+-/
+extern_def mkTerm : TermManager → (kind : Kind) → (children : Array Term := #[]) → Env Term
+
+/-- Create n-ary term of given kind from a given operator.
+
+Create operators with `mkOp`.
+
+- `op` The operator.
+- `children` The children of the term.
+-/
+extern_def mkTermOfOp : TermManager → (op : Op) → (children : Array Term := #[]) → Env Term
+
+/-- Create a free constant.
+
+Note that the returned term is always fresh, even if the same arguments were provided on a
+previous call to `mkConst`.
+
+- `sort` The sort of the constant.
+- `symbol` The name of the constant (optional).
+-/
+extern_def mkConst : TermManager → (srt : cvc5.Sort) → (name : String := "") → Env Term
+
+/--
+Create a bound variable to be used in a binder (i.e., a quantifier, a lambda, or a witness binder).
+
+Note that the returned term is always fresh, even if the same arguments were provided on a previous
+call to `mkVar`.
+
+- `sort` The sort of the variable.
+- `symbol` The name of the variable (optional).
+-/
+extern_def mkVar : TermManager → (srt : cvc5.Sort) → (name : String := "") → Env Term
 
 /-- Create operator of Kind:
 
@@ -1093,102 +1136,73 @@ See `cvc5.Kind` for a description of the parameters.
 If `args` is empty, the `Op` simply wraps the `cvc5.Kind`. The `Kind` can be used in
 `Solver.mkTerm` directly without creating an `Op` first.
 -/
-extern_def!? mkOpOfIndices : TermManager → (kind : Kind) → (args : Array Nat := #[]) → Except Error Op
-
-@[inherit_doc mkOpOfIndices]
-abbrev mkOp := @mkOpOfIndices
-@[inherit_doc mkOpOfIndices!]
-abbrev mkOp! := @mkOpOfIndices!
-@[inherit_doc mkOpOfIndices?]
-abbrev mkOp? := @mkOpOfIndices?
-
-/-- Create operator of kind:
-
-- `Kind.DIVISIBLE` (to support arbitrary precision integers)
-
-See `cvc5.Kind` for a description of the parameters.
-
-- `kind` The kind of the operator.
-- `arg` The string argument to this operator.
--/
-extern_def!? mkOpOfString : TermManager → (kind : Kind) → (arg : String) → Except Error Op
-
-/-- Create n-ary term of given kind.
-
-- `kind` The kind of the term.
-- `children` The children of the term.
--/
-extern_def!? mkTerm : TermManager → (kind : Kind) → (children : Array Term := #[]) → Except Error Term
-
-/-- Create n-ary term of given kind from a given operator.
-
-Create operators with `mkOp`.
-
-- `op` The operator.
-- `children` The children of the term.
--/
-extern_def!? mkTermOfOp : TermManager → (op : Op) → (children : Array Term := #[]) → Except Error Term
-
-/-- **THIS FUNCTION MUST NOT BE EXPOSED.**
-
-**It produces a different (fresh) term every time it's called which is really bad for purity.**
-
-Create a free constant.
-
-Note that the returned term is always fresh, even if the same arguments were provided on a
-previous call to `mkConst`.
-
-- `sort` The sort of the constant.
-- `symbol` The name of the constant (optional).
--/
-private
-def mkConst (_ : TermManager) (_ : cvc5.Sort) (_ : String := "") : Term :=
-  panic! "illegal call to `cvc5.TermManager.mkConst"
+extern_def mkOpOfIndices : TermManager → (kind : Kind) → (args : Array Nat := #[]) → Env Op
+with mkOp := @mkOpOfIndices
 
 end TermManager
 
+namespace EnvT
+
+/-- Runs `EnvT` code. -/
+def run [Monad m] [MonadLiftT BaseIO m] (code : EnvT m α) : m (Except Error α) := code
+
+example [Monad m] [MonadLiftT BaseIO m] : MonadLift Env (EnvT m) where
+  monadLift code := do
+    match ← liftM <| run code with
+    | .ok a => return a
+    | .error e => throw e
+
+instance [Monad m] [MonadLiftT BaseIO m] : MonadLift IO (EnvT m) where
+  monadLift code := do
+    match ← code.toBaseIO with
+    | .ok a => return a
+    | .error e => throw <| Error.error <| toString e
+
+end EnvT
+
+@[inherit_doc EnvT.run]
+protected abbrev run := @EnvT.run
+
+namespace Env
+
+@[inherit_doc EnvT.run]
+def run : Env α → BaseIO (Except Error α) := cvc5.run
+
+/-- Runs `Env` code in the `IO` monad, throws `cvc5.Error`s as `IO.Error`s. -/
+def runIO (code : Env α) : IO α := do
+  match ← code.run with
+  | .ok res => return res
+  | .error e => throw <| IO.Error.userError <| toString e
+
+/-- Solver constructor. -/
+private extern_def newSolver : TermManager → Env Solver.Raw
+
+end Env
+
 namespace Solver
 
-variable [Monad m]
-
-/-- Only used by FFI to wrap *success* results. -/
-@[export solver_val]
-private def val (a : α) : SolverT m α := pure a
-
-/-- Only used by FFI to wrap errors. -/
-@[export solver_err]
-private def err (e : Error) : SolverT m α := throw e
-
-/-- Only used by FFI to wrap cvc5 errors. -/
-@[export solver_errOfString]
-private def errorOfString (msg : String) : SolverT m α := throw (.error msg)
-
-/-- Constructor.
-
-Constructs solver instance from a given term manager instance.
-
-- `tm`: The associated term manager.
--/
-private extern_def new : TermManager → Solver
+@[inherit_doc Env.newSolver]
+def new (tm : TermManager) : Env Solver :=
+  mkRaw <$> Env.newSolver tm
 
 /-- Get a string representation of the version of this solver. -/
-extern_def getVersion : SolverT m String
+extern_def getVersion : (solver : Solver) → Env String
 
 /-- Set option.
 
 - `option`: The option name.
 - `value`: The option value.
 -/
-extern_def setOption (option value : String) : SolverT m Unit
+extern_def setOption : (solver : Solver) → (option value : String) → Env Unit
 
 /-- Remove all assertions. -/
-extern_def resetAssertions : SolverT m Unit
+extern_def resetAssertions : (solver : Solver) → Env Unit
 
 /-- Set logic.
 
 - `logic`: The logic to set.
 -/
-extern_def setLogic : (logic : String) → SolverT m Unit
+extern_def setLogic : (solver : Solver) → (logic : String) → Env Unit
 
 /-- Simplify a term or formula based on rewriting and (optionally) applying substitutions for
 solved variables.
@@ -1199,7 +1213,7 @@ may replace occurrences of `x` with `0`.
 - `t` The term to simplify.
 - `applySubs` True to apply substitutions for solved variables.
 -/
-extern_def simplify : (term : Term) → (applySubs : Bool := false) → SolverT m Term
+extern_def simplify : (solver : Solver) → (term : Term) → (applySubs : Bool := false) → Env Term
 
 /--
 Declare n-ary function symbol.
@@ -1218,22 +1232,23 @@ SMT-LIB:
 - `fresh`: If true, then this method always returns a new Term. Otherwise, this method will always
   return the same Term for each call with the given sorts and symbol where fresh is false.
 -/
-extern_def declareFun (symbol : String) (sorts : Array cvc5.Sort) (sort : cvc5.Sort) (fresh := true) : SolverT m Term
+extern_def declareFun (solver : Solver)
+  (symbol : String) (sorts : Array cvc5.Sort) (sort : cvc5.Sort) (fresh := true) : Env Term
 
 /-- Assert a formula.
 
 - `term`: The formula to assert.
 -/
-extern_def assertFormula : Term → SolverT m Unit
+extern_def assertFormula : (solver : Solver) → Term → Env Unit
 
 /-- Check satisfiability. -/
-extern_def checkSat : SolverT m Result
+extern_def checkSat : (solver : Solver) → Env Result
 
 /-- Check satisfiability assuming the given formulas.
 
 - `assumptions`: The formulas to assume.
 -/
-extern_def checkSatAssuming : (assumptions : Array Term) → SolverT m Result
+extern_def checkSatAssuming : (solver : Solver) → (assumptions : Array Term) → Env Result
 
 /--
 Get the unsatisfiable core.
@@ -1255,13 +1270,13 @@ function.
 
 Returns a set of terms representing the unsatisfiable core.
 -/
-extern_def getUnsatCore : SolverT m (Array Term)
+extern_def getUnsatCore : (solver : Solver) → Env (Array Term)
 
 /-- Get a proof associated with the most recent call to `checkSat`.
 
 Requires to enable option `produce-proofs`.
 -/
-extern_def getProof : SolverT m (Array Proof)
+extern_def getProof : (solver : Solver) → Env (Array Proof)
 
 /--
 Get the values of the given term in the current model.
@@ -1276,7 +1291,7 @@ SMT-LIB:
 
 - `terms`: The term for which the value is queried.
 -/
-extern_def getValue (term : Term) : SolverT m Term
+extern_def getValue (solver : Solver) (term : Term) : Env Term
 
 /--
 Get the values of the given terms in the current model.
@@ -1291,7 +1306,7 @@ SMT-LIB:
 
 - `terms`: The terms for which the values are queried.
 -/
-extern_def getValues (terms : Array Term) : SolverT m (Array Term)
+extern_def getValues (solver : Solver) (terms : Array Term) : Env (Array Term)
 
 /--
 Get the domain elements of an uninterpreted sort in the current model.
@@ -1300,7 +1315,7 @@ The current model interprets the uninterpreted sort `s` as a finite sort whose d
 
 - `s`: The uninterpreted sort in question.
 -/
-extern_def getModelDomainElements (s : cvc5.Sort) : SolverT m (Array Term)
+extern_def getModelDomainElements (solver : Solver) (s : cvc5.Sort) : Env (Array Term)
 
 /-- Prints a proof as a string in a selected proof format mode.
 
@@ -1308,27 +1323,14 @@ Other aspects of printing are taken from the solver options.
 
 - `proof`: A proof, usually obtained from `getProof`.
 -/
-extern_def proofToString : Proof → SolverT m String
+extern_def proofToString : (solver : Solver) → Proof → Env String
 
 /-- Parse a string containing SMT-LIB commands.
 
 Commands that produce a result such as `(check-sat)`, `(get-model)`, ... are executed but the
 results are ignored.
 -/
-extern_def parseCommands : String → SolverT m (Array cvc5.Sort × Array Term)
-
-/-- Run a `query` given a term manager `tm`. -/
-def run (tm : TermManager) (query : SolverT m α) : m (Except Error α) :=
-  return match ← ExceptT.run query (new tm) with
-  | (.ok x, _) => .ok x
-  | (.error e, _) => .error e
-
-/-- Run a `query` given a term manager `tm`. -/
-def run! [Inhabited α] (tm : TermManager) (query : SolverT m α) : m α := do
-  match ← ExceptT.run query (new tm) with
-  | (.ok x, _) => return x
-  | (.error e, _) => do
-    panic! s!"{e}"
+extern_def parseCommands : (solver : Solver) → (query : String) → Env String
 
 end Solver
 

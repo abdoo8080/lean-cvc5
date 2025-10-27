@@ -7,20 +7,23 @@ import cvc5Test.Init
 
 namespace cvc5.Test
 
-test![TestApiBlackResult, isNull] tm => do
+open Env
+
+test![TestApiBlackResult, isNull] do
   -- lean API does not expose null results
   assertTrue true
 
 test![TestApiBlackResult, equalHash] tm => do
-  let u := tm.mkUninterpretedSort "u"
-  let x ← Solver.declareFun (m := IO) "x" #[] u
-  let x_eq_x ← x.eq x
-  Solver.assertFormula x_eq_x
+  let solver ← Solver.new tm
+  let u ← tm.mkUninterpretedSort "u"
+  let x ← solver.declareFun "x" #[] u
+  let x_eq_x ← tm.mkTerm .EQUAL #[x, x]
+  solver.assertFormula x_eq_x
   -- skipping null-result-related checks
-  let res1 ← Solver.checkSat
-  let res2 ← Solver.checkSat
-  Solver.assertFormula (← x_eq_x.not)
-  let res3 ← Solver.checkSat
+  let res1 ← solver.checkSat
+  let res2 ← solver.checkSat
+  solver.assertFormula (← tm.mkTerm .NOT #[x_eq_x])
+  let res3 ← solver.checkSat
   assertEq res1 res2
   assertNe res1 res3
   assertNe res2 res3
@@ -32,10 +35,11 @@ test![TestApiBlackResult, equalHash] tm => do
   assertNe res2.hash res3.hash
 
 test![TestApiBlackResult, isSat] tm => do
-  let u := tm.mkUninterpretedSort "u"
-  let x ← Solver.declareFun (m := IO) "x" #[] u
-  Solver.assertFormula (← x.eq x)
-  let res ← Solver.checkSat
+  let solver ← Solver.new tm
+  let u ← tm.mkUninterpretedSort "u"
+  let x ← solver.declareFun "x" #[] u
+  solver.assertFormula (← tm.mkTerm .EQUAL #[x, x])
+  let res ← solver.checkSat
   assertTrue res.isSat
   assertFalse res.isUnsat
   assertFalse res.isUnknown
@@ -46,10 +50,11 @@ test![TestApiBlackResult, isSat] tm => do
   assertEq res.getUnknownExplanation? none
 
 test![TestApiBlackResult, isUnsat] tm => do
-  let u := tm.mkUninterpretedSort "u"
-  let x ← Solver.declareFun (m := IO) "x" #[] u
-  Solver.assertFormula (← (← x.eq x).not)
-  let res ← Solver.checkSat
+  let solver ← Solver.new tm
+  let u ← tm.mkUninterpretedSort "u"
+  let x ← solver.declareFun "x" #[] u
+  solver.assertFormula (← tm.mkTerm .NOT #[← tm.mkTerm .EQUAL #[x, x]])
+  let res ← solver.checkSat
   assertFalse res.isSat
   assertTrue res.isUnsat
   assertFalse res.isUnknown
@@ -60,16 +65,17 @@ test![TestApiBlackResult, isUnsat] tm => do
   assertEq res.getUnknownExplanation? none
 
 test![TestApiBlackResult, isUnknown] tm => do
-  Solver.setLogic "QF_NIA"
-  Solver.setOption "incremental" "false"
-  Solver.setOption "solve-real-as-int" "true"
-  let realSort := tm.getRealSort
-  let x ← Solver.declareFun (m := IO) "x" #[] realSort
-  let zero := tm.mkReal 0
-  let one := tm.mkReal 1
-  Solver.assertFormula (← tm.mkTerm .LT #[zero, x])
-  Solver.assertFormula (← tm.mkTerm .LT #[x, one])
-  let res ← Solver.checkSat
+  let solver ← Solver.new tm
+  solver.setLogic "QF_NIA"
+  solver.setOption "incremental" "false"
+  solver.setOption "solve-real-as-int" "true"
+  let realSort ← tm.getRealSort
+  let x ← solver.declareFun "x" #[] realSort
+  let zero := ← tm.mkReal 0
+  let one := ← tm.mkReal 1
+  solver.assertFormula (← tm.mkTerm .LT #[zero, x])
+  solver.assertFormula (← tm.mkTerm .LT #[x, one])
+  let res ← solver.checkSat
   assertFalse res.isSat
   assertFalse res.isUnsat
   assertTrue res.isUnknown

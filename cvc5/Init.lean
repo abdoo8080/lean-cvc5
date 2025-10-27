@@ -113,6 +113,7 @@ $[ with $[
       else
         ident.getId.toString
     pref ++ "_" ++ id |> Syntax.mkStrLit
+  -- println! "extern name := `{externName}`"
   let mods ←
     match mods with
     | `(Parser.Command.declModifiersT|
