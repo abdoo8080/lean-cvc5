@@ -1175,15 +1175,15 @@ def runIO (code : Env α) : IO α := do
   | .error e => throw <| IO.Error.userError <| toString e
 
 /-- Solver constructor. -/
-private extern_def mkSolver : TermManager → Env Solver.Raw
+private extern_def newSolver : TermManager → Env Solver.Raw
 
 end Env
 
 namespace Solver
 
-@[inherit_doc Env.mkSolver]
+@[inherit_doc Env.newSolver]
 def new (tm : TermManager) : Env Solver :=
-  mkRaw <$> Env.mkSolver tm
+  mkRaw <$> Env.newSolver tm
 
 /-- Get a string representation of the version of this solver. -/
 extern_def getVersion : (solver : Solver) → Env String
