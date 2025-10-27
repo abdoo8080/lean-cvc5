@@ -5,8 +5,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Abdalrhman Mohamed, Adrien Champion
 -/
 
-import Std.Internal.Rat
-
 import cvc5.Init
 import cvc5.Kind
 import cvc5.ProofRule
@@ -798,7 +796,7 @@ extern_def!? getBitVectorValue : Term → UInt32 → Except Error String
 extern_def!? getIntegerValue : Term → Except Error Int
 
 /-- Get the native rational value of a real, rational-compatible value. -/
-extern_def!? getRationalValue : Term → Except Error Std.Internal.Rat
+extern_def!? getRationalValue : Term → Except Error Rat
 
 /-- Get the symbol of this term.
 
@@ -1058,8 +1056,8 @@ with
 -/
 private extern_def mkRealFromString : TermManager → (s : String) → Env Term
 with
-  /-- Create a real-value term from a `Std.Internal.Rat`. -/
-  mkRealOfRat (tm : TermManager) (rat : Std.Internal.Rat) : Env Term :=
+  /-- Create a real-value term from a `Rat`. -/
+  mkRealOfRat (tm : TermManager) (rat : Rat) : Env Term :=
     mkRealFromString tm s!"{rat.num}/{rat.den}"
   /-- Create a real-value term from numerator/denominator `Int`-s. -/
   mkReal (tm : TermManager)
@@ -1070,7 +1068,7 @@ with
       | .ofNat 0 => by contradiction
       | .ofNat den => (num, den)
       | .negSucc denMinus1 => (-num, denMinus1.succ)
-    mkRealOfRat tm <| Std.Internal.mkRat num den
+    mkRealOfRat tm <| mkRat num den
 
 /-- Create n-ary term of given kind.
 

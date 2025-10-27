@@ -940,16 +940,14 @@ LEAN_EXPORT lean_obj_res term_getIntegerValue(lean_obj_arg t)
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
-LEAN_EXPORT lean_obj_res l_Std_Internal_mkRat(lean_obj_arg num,
-                                              lean_obj_arg den);
+LEAN_EXPORT lean_obj_res l_mkRat(lean_obj_arg num, lean_obj_arg den);
 
 LEAN_EXPORT lean_obj_res term_getRationalValue(lean_obj_arg t)
 {
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
   std::string r = term_unbox(t)->getRealValue();
   size_t i = r.find('/');
-  return except_ok(
-      l_Std_Internal_mkRat(lean_cstr_to_int(r.substr(0, i).c_str()),
+  return except_ok(l_mkRat(lean_cstr_to_int(r.substr(0, i).c_str()),
                            lean_cstr_to_nat(r.substr(i + 1).c_str())));
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
