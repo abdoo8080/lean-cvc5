@@ -1115,8 +1115,7 @@ static inline TermManager* mut_tm_unbox(b_lean_obj_arg tm)
   return static_cast<TermManager*>(lean_get_external_data(tm));
 }
 
-LEAN_EXPORT lean_obj_res termManager_new(lean_obj_arg unit,
-                                         lean_obj_arg ioWorld)
+LEAN_EXPORT lean_obj_res termManager_new(lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(tm_box(new TermManager()), ioWorld);
