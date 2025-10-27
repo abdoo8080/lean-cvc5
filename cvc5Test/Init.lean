@@ -6,6 +6,14 @@ namespace cvc5
 
 namespace Test
 
+/-! ## A few sanity tests -/
+
+example [Monad m] : MonadLiftT m (EnvT m) := inferInstance
+example : MonadLift IO Env := inferInstance
+example : MonadLift BaseIO Env := inferInstance
+
+/-! ## Helpers for the rest of the tests -/
+
 def IO.run : IO Unit → IO Unit :=
   id
 
@@ -113,15 +121,15 @@ namespace Test
 
 scoped syntax
   docComment ?
-  "test! " ("[" declId ", " declId "] ")? (ident " => ")? term : command
+  "test! " ("[" declId ", " declId "] ")? (ident (ident)? " => ")? term : command
 scoped syntax
   docComment ?
-  "test? " ("[" declId ", " declId "] ")? (ident " => ")? term : command
+  "test? " ("[" declId ", " declId "] ")? (ident (ident)? " => ")? term : command
 
 macro_rules
 | `(command|
   $[ $outputComment:docComment ]?
-  test! $[ [ $fileId:ident , $testId:ident ] ]? $[$solverIdent?:ident =>]? $code:term
+  test! $[ [ $fileId:ident , $testId:ident ] ]? $[$tmIdent?:ident =>]? $code:term
 ) => do
   let errPrefStrLit :=
     match (fileId, testId) with
@@ -130,9 +138,9 @@ macro_rules
     | _ => Lean.Syntax.mkStrLit "test failed"
   let runFun ← `(term| cvc5.Env.run)
   let toRun ←
-    if let some solverIdent := solverIdent? then
+    if let some tmIdent := tmIdent? then
       `(do
-          let $solverIdent:ident ← Solver.mk
+          let $tmIdent:ident ← TermManager.new
           $code:term
       )
     else `(do $code:term)
@@ -149,7 +157,7 @@ macro_rules
   )
 | `(command|
   $[ $_outputComment:docComment ]?
-  test? $[ [ $fileId:ident, $testId:ident ] ]? $[$solverIdent?:ident =>]? $code:term
+  test? $[ [ $fileId:ident, $testId:ident ] ]? $[$tmIdent?:ident =>]? $code:term
 ) => do
   let errPrefStrLit :=
     match (fileId, testId) with
@@ -158,9 +166,9 @@ macro_rules
     | _ => Lean.Syntax.mkStrLit "test failed"
   let runFun ← `(term| cvc5.Env.run)
   let mut code ←
-    if let some solverIdent := solverIdent? then
+    if let some tmIdent := tmIdent? then
       `(doSeq|
-        let $solverIdent:ident ← Solver.mk
+        let $tmIdent:ident ← TermManager.new
         $code:term
       )
     else `(doSeq| $code:term)

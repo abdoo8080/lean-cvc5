@@ -5,8 +5,9 @@ namespace cvc5.Test
 open Env
 
 def solver1Parse : IO Unit := Env.runIO do
+  let tm ← TermManager.new
   let query : Env (Option Bool) := do
-    let solver ← Solver.mk
+    let solver ← Solver.new tm
     _ ← solver.parseCommands "
 (set-logic QF_LIA)
 
@@ -31,7 +32,7 @@ def solver1Parse : IO Unit := Env.runIO do
 
 
   let query : Env (Array Proof) := do
-    let solver ← Solver.mk
+    let solver ← Solver.new tm
     _ ← solver.parseCommands "
 (set-option :produce-proofs true)
 

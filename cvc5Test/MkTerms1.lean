@@ -6,10 +6,11 @@ open Env
 
 def mkTerms1 : IO Unit := Env.runIO do
   let boolKind := Kind.CONST_BOOLEAN
+  let tm ← TermManager.new
 
   let (tru, fls) := (
-    ← mkBoolean true,
-    ← mkBoolean false,
+    ← tm.mkBoolean true,
+    ← tm.mkBoolean false,
   )
   assertEq tru.getKind boolKind
   assertEq tru.getSort.toString "Bool"
@@ -19,10 +20,10 @@ def mkTerms1 : IO Unit := Env.runIO do
   let intKind := Kind.CONST_INTEGER
 
   let (one, three, seven, eleven) := (
-    ← mkInteger 1,
-    ← mkInteger 3,
-    ← mkInteger 7,
-    ← mkInteger 11,
+    ← tm.mkInteger 1,
+    ← tm.mkInteger 3,
+    ← tm.mkInteger 7,
+    ← tm.mkInteger 11,
   )
   assertEq one.getKind intKind
   assertEq one.getSort.toString "Int"
@@ -33,19 +34,19 @@ def mkTerms1 : IO Unit := Env.runIO do
   assertEq eleven.getKind intKind
   assertEq eleven.getSort.toString "Int"
 
-  let ite1 ← mkTerm Kind.ITE #[fls, three, seven]
+  let ite1 ← tm.mkTerm Kind.ITE #[fls, three, seven]
   assertEq ite1.getKind Kind.ITE
   assertEq ite1.getSort.toString "Int"
 
-  let eq1 ← mkTerm Kind.EQUAL #[ite1, eleven]
+  let eq1 ← tm.mkTerm Kind.EQUAL #[ite1, eleven]
   assertEq eq1.getKind Kind.EQUAL
   assertEq eq1.getSort.toString "Bool"
 
-  let eq1' ← mkTerm Kind.EQUAL #[ite1, eleven, one]
+  let eq1' ← tm.mkTerm Kind.EQUAL #[ite1, eleven, one]
   assertEq eq1'.getKind Kind.AND
   assertEq eq1'.getSort.toString "Bool"
 
-  let ite2 ← mkTerm Kind.ITE #[tru, eq1, fls]
+  let ite2 ← tm.mkTerm Kind.ITE #[tru, eq1, fls]
   assertEq ite2.getKind Kind.ITE
   assertEq ite2.getSort.toString "Bool"
 

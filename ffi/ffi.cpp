@@ -54,49 +54,46 @@ lean_obj_res except_err(lean_obj_arg alpha, lean_obj_arg msg);
 
 lean_obj_res env_pure(lean_obj_arg alpha,
                         lean_obj_arg a,
-                        lean_obj_arg tm,
                         lean_obj_arg ioWorld);
 
-lean_obj_res env_val(lean_obj_arg val, lean_obj_arg tm, lean_obj_arg ioWorld){
-  return env_pure(lean_box(0), val, tm, ioWorld);
+lean_obj_res env_val(lean_obj_arg val, lean_obj_arg ioWorld){
+  return env_pure(lean_box(0), val, ioWorld);
 }
 
 lean_obj_res env_throw(lean_obj_arg alpha,
                         lean_obj_arg e,
-                        lean_obj_arg tm,
                         lean_obj_arg ioWorld);
 
-lean_obj_res env_error(lean_obj_arg e, lean_obj_arg tm, lean_obj_arg ioWorld){
-  return env_throw(lean_box(0), e, tm, ioWorld);
+lean_obj_res env_error(lean_obj_arg e, lean_obj_arg ioWorld){
+  return env_throw(lean_box(0), e, ioWorld);
 }
 
 lean_obj_res env_throw_string(lean_obj_arg alpha,
                                 lean_obj_arg msg,
-                                lean_obj_arg tm,
                                 lean_obj_arg ioWorld);
 
-lean_obj_res env_error_string(lean_obj_arg e, lean_obj_arg tm, lean_obj_arg ioWorld) {
-  return env_throw_string(lean_box(0), e, tm, ioWorld);
+lean_obj_res env_error_string(lean_obj_arg e, lean_obj_arg ioWorld) {
+  return env_throw_string(lean_box(0), e, ioWorld);
 }
 
 #define CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN \
   try                                        \
   {
-#define CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld)                   \
+#define CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld)                   \
   }                                                                        \
   catch (CVC5ApiException & e)                                             \
   {                                                                        \
-    return env_error_string(lean_mk_string(e.what()), tm, ioWorld); \
+    return env_error_string(lean_mk_string(e.what()), ioWorld); \
   }                                                                        \
   catch (char const* e)                                                    \
   {                                                                        \
-    return env_error_string(lean_mk_string(e), tm, ioWorld);               \
+    return env_error_string(lean_mk_string(e), ioWorld);               \
   }                                                                        \
   catch (...)                                                              \
   {                                                                        \
     return env_error_string(                                               \
         lean_mk_string("cvc5 raised an unexpected exception"),             \
-        tm, ioWorld);                                                      \
+        ioWorld);                                                      \
   }
 
 inline lean_obj_res mk_unit_unit() { return lean_box(0); }
@@ -1119,9 +1116,13 @@ static inline TermManager* mut_tm_unbox(b_lean_obj_arg tm)
   return static_cast<TermManager*>(lean_get_external_data(tm));
 }
 
-LEAN_EXPORT lean_obj_res termManager_new(lean_obj_arg unit)
+LEAN_EXPORT lean_obj_res termManager_new(lean_obj_arg unit, lean_obj_arg ioWorld)
 {
-  return lean_io_result_mk_ok(tm_box(new TermManager()));
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  return env_val(
+    tm_box(new TermManager()),
+     ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
 static void solver_finalize(void* obj) { delete static_cast<Solver*>(obj); }
@@ -1152,94 +1153,94 @@ static inline Solver* solver_unbox(b_lean_obj_arg s)
 
 // # Sorts
 
-LEAN_EXPORT lean_obj_res env_getBooleanSort(lean_obj_arg tm, lean_obj_arg ioWorld) {
+LEAN_EXPORT lean_obj_res termManager_getBooleanSort(lean_obj_arg tm, lean_obj_arg ioWorld) {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(
     sort_box(new Sort(mut_tm_unbox(tm)->getBooleanSort())),
-    tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+     ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res env_getIntegerSort(lean_obj_arg tm, lean_obj_arg ioWorld) {
+LEAN_EXPORT lean_obj_res termManager_getIntegerSort(lean_obj_arg tm, lean_obj_arg ioWorld) {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(
     sort_box(new Sort(mut_tm_unbox(tm)->getIntegerSort())),
-    tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+     ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res env_getRealSort(lean_obj_arg tm, lean_obj_arg ioWorld) {
+LEAN_EXPORT lean_obj_res termManager_getRealSort(lean_obj_arg tm, lean_obj_arg ioWorld) {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(
     sort_box(new Sort(mut_tm_unbox(tm)->getRealSort())),
-    tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+     ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res env_getRegExpSort(
+LEAN_EXPORT lean_obj_res termManager_getRegExpSort(
   lean_obj_arg tm, lean_obj_arg ioWorld
 )
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(
     sort_box(new Sort(mut_tm_unbox(tm)->getRegExpSort())),
-    tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+     ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res env_getRoundingModeSort(lean_obj_arg tm, lean_obj_arg ioWorld) {
+LEAN_EXPORT lean_obj_res termManager_getRoundingModeSort(lean_obj_arg tm, lean_obj_arg ioWorld) {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(
     sort_box(new Sort(mut_tm_unbox(tm)->getRoundingModeSort())),
-    tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+     ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res env_getStringSort(lean_obj_arg tm, lean_obj_arg ioWorld) {
+LEAN_EXPORT lean_obj_res termManager_getStringSort(lean_obj_arg tm, lean_obj_arg ioWorld) {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(
     sort_box(new Sort(mut_tm_unbox(tm)->getStringSort())),
-    tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+     ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res env_mkArraySort(
-  lean_obj_arg idxSort, lean_obj_arg elmSort, lean_obj_arg tm, lean_obj_arg ioWorld
+LEAN_EXPORT lean_obj_res termManager_mkArraySort(
+  lean_obj_arg tm, lean_obj_arg idxSort, lean_obj_arg elmSort, lean_obj_arg ioWorld
 ) {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(
     sort_box(new Sort(mut_tm_unbox(tm)->mkArraySort(*sort_unbox(idxSort), *sort_unbox(elmSort)))),
-    tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+     ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res env_mkBitVectorSort(uint32_t size, lean_obj_arg tm, lean_obj_arg ioWorld) {
+LEAN_EXPORT lean_obj_res termManager_mkBitVectorSort(lean_obj_arg tm, uint32_t size, lean_obj_arg ioWorld) {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(
-    sort_box(new Sort(mut_tm_unbox(tm)->mkBitVectorSort(size))), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+    sort_box(new Sort(mut_tm_unbox(tm)->mkBitVectorSort(size))),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res env_mkFloatingPointSort(
-  uint32_t exp, uint32_t sig, lean_obj_arg tm, lean_obj_arg ioWorld
+LEAN_EXPORT lean_obj_res termManager_mkFloatingPointSort(
+  lean_obj_arg tm, uint32_t exp, uint32_t sig, lean_obj_arg ioWorld
 ) {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(
-    sort_box(new Sort(mut_tm_unbox(tm)->mkFloatingPointSort(exp, sig))), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+    sort_box(new Sort(mut_tm_unbox(tm)->mkFloatingPointSort(exp, sig))),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res env_mkFiniteFieldSortOfString(
-    lean_obj_arg size, uint32_t base, lean_obj_arg tm, lean_obj_arg ioWorld
+LEAN_EXPORT lean_obj_res termManager_mkFiniteFieldSortOfString(
+    lean_obj_arg tm, lean_obj_arg size, uint32_t base, lean_obj_arg ioWorld
 ) {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(
     sort_box(new Sort(mut_tm_unbox(tm)->mkFiniteFieldSort(lean_string_cstr(size), base))),
-    tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+     ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res env_mkFunctionSort(lean_obj_arg sorts, lean_obj_arg codomain, lean_obj_arg tm, lean_obj_arg ioWorld) {
+LEAN_EXPORT lean_obj_res termManager_mkFunctionSort(lean_obj_arg tm, lean_obj_arg sorts, lean_obj_arg codomain, lean_obj_arg ioWorld) {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   std::vector<Sort> cvc5Sorts;
   for (size_t i = 0, n = lean_array_size(sorts); i < n; ++i)
@@ -1249,11 +1250,11 @@ LEAN_EXPORT lean_obj_res env_mkFunctionSort(lean_obj_arg sorts, lean_obj_arg cod
   }
   return env_val(
     sort_box(new Sort(mut_tm_unbox(tm)->mkFunctionSort(cvc5Sorts, *sort_unbox(codomain)))),
-    tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+     ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res env_mkPredicateSort(lean_obj_arg sorts, lean_obj_arg tm, lean_obj_arg ioWorld) {
+LEAN_EXPORT lean_obj_res termManager_mkPredicateSort(lean_obj_arg tm, lean_obj_arg sorts, lean_obj_arg ioWorld) {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   std::vector<Sort> cvc5Sorts;
   for (size_t i = 0, n = lean_array_size(sorts); i < n; ++i)
@@ -1262,11 +1263,11 @@ LEAN_EXPORT lean_obj_res env_mkPredicateSort(lean_obj_arg sorts, lean_obj_arg tm
         lean_array_get(sort_box(new Sort()), sorts, lean_usize_to_nat(i))));
   }
   return env_val(
-      sort_box(new Sort(mut_tm_unbox(tm)->mkPredicateSort(cvc5Sorts))), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+      sort_box(new Sort(mut_tm_unbox(tm)->mkPredicateSort(cvc5Sorts))),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_arg env_mkTupleSort(lean_object* sorts, lean_object* tm, lean_object* ioWorld)
+LEAN_EXPORT lean_obj_res termManager_mkTupleSort(lean_obj_arg tm, lean_obj_arg sorts, lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   std::vector<Sort> cvc5Sorts;
@@ -1275,111 +1276,111 @@ LEAN_EXPORT lean_obj_arg env_mkTupleSort(lean_object* sorts, lean_object* tm, le
     cvc5Sorts.push_back(*sort_unbox(
         lean_array_get(sort_box(new Sort()), sorts, lean_usize_to_nat(i))));
   }
-  return env_val(sort_box(new Sort(mut_tm_unbox(tm)->mkTupleSort(cvc5Sorts))), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+  return env_val(sort_box(new Sort(mut_tm_unbox(tm)->mkTupleSort(cvc5Sorts))),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res env_mkSetSort(lean_obj_arg sort, lean_obj_arg tm, lean_obj_arg ioWorld)
+LEAN_EXPORT lean_obj_res termManager_mkSetSort(lean_obj_arg tm, lean_obj_arg sort, lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(
-      sort_box(new Sort(mut_tm_unbox(tm)->mkSetSort(*sort_unbox(sort)))), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+      sort_box(new Sort(mut_tm_unbox(tm)->mkSetSort(*sort_unbox(sort)))),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res env_mkBagSort(lean_obj_arg sort, lean_obj_arg tm, lean_obj_arg ioWorld)
+LEAN_EXPORT lean_obj_res termManager_mkBagSort(lean_obj_arg tm, lean_obj_arg sort, lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(
-      sort_box(new Sort(mut_tm_unbox(tm)->mkBagSort(*sort_unbox(sort)))), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+      sort_box(new Sort(mut_tm_unbox(tm)->mkBagSort(*sort_unbox(sort)))),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res env_mkSequenceSort(lean_obj_arg sort, lean_obj_arg tm, lean_obj_arg ioWorld)
+LEAN_EXPORT lean_obj_res termManager_mkSequenceSort(lean_obj_arg tm, lean_obj_arg sort, lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(
-      sort_box(new Sort(mut_tm_unbox(tm)->mkSequenceSort(*sort_unbox(sort)))), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+      sort_box(new Sort(mut_tm_unbox(tm)->mkSequenceSort(*sort_unbox(sort)))),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res env_mkAbstractSort(uint16_t kind, lean_obj_arg tm, lean_obj_arg ioWorld)
+LEAN_EXPORT lean_obj_res termManager_mkAbstractSort(lean_obj_arg tm, uint16_t kind, lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   SortKind k = static_cast<SortKind>(static_cast<int32_t>(kind) - 2);
   return env_val(
-                   sort_box(new Sort(mut_tm_unbox(tm)->mkAbstractSort(k))), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+                   sort_box(new Sort(mut_tm_unbox(tm)->mkAbstractSort(k))),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res env_mkUninterpretedSort(lean_obj_arg symbol, lean_obj_arg tm, lean_obj_arg ioWorld)
+LEAN_EXPORT lean_obj_res termManager_mkUninterpretedSort(lean_obj_arg tm, lean_obj_arg symbol, lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(sort_box(new Sort(
-      mut_tm_unbox(tm)->mkUninterpretedSort(lean_string_cstr(symbol)))), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+      mut_tm_unbox(tm)->mkUninterpretedSort(lean_string_cstr(symbol)))),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_arg env_mkUninterpretedSortConstructorSort(
-    lean_obj_arg arity, lean_obj_arg symbol, lean_obj_arg tm, lean_obj_arg ioWorld)
+LEAN_EXPORT lean_obj_arg termManager_mkUninterpretedSortConstructorSort(
+    lean_obj_arg tm, lean_obj_arg arity, lean_obj_arg symbol, lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(
       sort_box(new Sort(mut_tm_unbox(tm)->mkUninterpretedSortConstructorSort(
-          lean_usize_of_nat(arity), lean_string_cstr(symbol)))), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+          lean_usize_of_nat(arity), lean_string_cstr(symbol)))),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res env_mkNullableSort(lean_obj_arg sort, lean_obj_arg tm, lean_obj_arg ioWorld)
+LEAN_EXPORT lean_obj_res termManager_mkNullableSort(lean_obj_arg tm, lean_obj_arg sort, lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(
-      sort_box(new Sort(mut_tm_unbox(tm)->mkNullableSort(*sort_unbox(sort)))), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+      sort_box(new Sort(mut_tm_unbox(tm)->mkNullableSort(*sort_unbox(sort)))),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res env_mkParamSort(lean_obj_arg symbol, lean_obj_arg tm, lean_obj_arg ioWorld)
+LEAN_EXPORT lean_obj_res termManager_mkParamSort(lean_obj_arg tm, lean_obj_arg symbol, lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(sort_box(
-      new Sort(mut_tm_unbox(tm)->mkParamSort(lean_string_cstr(symbol)))), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+      new Sort(mut_tm_unbox(tm)->mkParamSort(lean_string_cstr(symbol)))),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
 
 
 // # Terms
 
-LEAN_EXPORT lean_obj_res env_mkBoolean(uint8_t val, lean_obj_arg tm, lean_obj_arg ioWorld)
+LEAN_EXPORT lean_obj_res termManager_mkBoolean(lean_obj_arg tm, uint8_t val, lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(
     term_box(new Term(mut_tm_unbox(tm)->mkBoolean(bool_unbox(val)))),
-    tm, ioWorld
+     ioWorld
   );
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res env_mkIntegerFromString(lean_obj_arg val, lean_obj_arg tm, lean_obj_arg ioWorld)
+LEAN_EXPORT lean_obj_res termManager_mkIntegerFromString(lean_obj_arg tm, lean_obj_arg val, lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(
-      term_box(new Term(mut_tm_unbox(tm)->mkInteger(lean_string_cstr(val)))), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+      term_box(new Term(mut_tm_unbox(tm)->mkInteger(lean_string_cstr(val)))),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res env_mkRealFromString(
-                                                      lean_obj_arg val, lean_obj_arg tm, lean_obj_arg ioWorld)
+LEAN_EXPORT lean_obj_res termManager_mkRealFromString(
+                                                      lean_obj_arg tm, lean_obj_arg val, lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(
-      term_box(new Term(mut_tm_unbox(tm)->mkReal(lean_string_cstr(val)))), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+      term_box(new Term(mut_tm_unbox(tm)->mkReal(lean_string_cstr(val)))),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res env_mkTerm(
-                                            uint16_t kind,
-                                            lean_obj_arg children, lean_obj_arg tm, lean_obj_arg ioWorld)
+LEAN_EXPORT lean_obj_res termManager_mkTerm(
+                                            lean_obj_arg tm, uint16_t kind,
+                                            lean_obj_arg children, lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   Kind k = static_cast<Kind>(static_cast<int32_t>(kind) - 2);
@@ -1390,13 +1391,13 @@ LEAN_EXPORT lean_obj_res env_mkTerm(
         lean_array_get(term_box(new Term()), children, lean_usize_to_nat(i))));
   }
   return env_val(
-                   term_box(new Term(mut_tm_unbox(tm)->mkTerm(k, cs))), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+                   term_box(new Term(mut_tm_unbox(tm)->mkTerm(k, cs))),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res env_mkTermOfOp(
-                                                lean_obj_arg op,
-                                                lean_obj_arg children, lean_obj_arg tm, lean_obj_arg ioWorld)
+LEAN_EXPORT lean_obj_res termManager_mkTermOfOp(
+                                                lean_obj_arg tm, lean_obj_arg op,
+                                                lean_obj_arg children, lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   std::vector<Term> cs;
@@ -1406,33 +1407,33 @@ LEAN_EXPORT lean_obj_res env_mkTermOfOp(
         lean_array_get(term_box(new Term()), children, lean_usize_to_nat(i))));
   }
   return env_val(
-      term_box(new Term(mut_tm_unbox(tm)->mkTerm(*op_unbox(op), cs))), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+      term_box(new Term(mut_tm_unbox(tm)->mkTerm(*op_unbox(op), cs))),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res env_mkConst(
-                                             lean_obj_arg sort,
-                                             lean_obj_arg symbol, lean_obj_arg tm, lean_obj_arg ioWorld)
+LEAN_EXPORT lean_obj_res termManager_mkConst(
+                                             lean_obj_arg tm, lean_obj_arg sort,
+                                             lean_obj_arg symbol, lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(term_box(new Term(
-      mut_tm_unbox(tm)->mkConst(*sort_unbox(sort), lean_string_cstr(symbol)))), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+      mut_tm_unbox(tm)->mkConst(*sort_unbox(sort), lean_string_cstr(symbol)))),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res env_mkVar(
-                                             lean_obj_arg sort,
-                                             lean_obj_arg symbol, lean_obj_arg tm, lean_obj_arg ioWorld)
+LEAN_EXPORT lean_obj_res termManager_mkVar(
+                                             lean_obj_arg tm, lean_obj_arg sort,
+                                             lean_obj_arg symbol, lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(term_box(new Term(
-      mut_tm_unbox(tm)->mkVar(*sort_unbox(sort), lean_string_cstr(symbol)))), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+      mut_tm_unbox(tm)->mkVar(*sort_unbox(sort), lean_string_cstr(symbol)))),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res env_mkOpOfIndices(
-                                                   uint16_t kind,
-                                                   lean_obj_arg args, lean_obj_arg tm , lean_obj_arg ioWorld)
+LEAN_EXPORT lean_obj_res termManager_mkOpOfIndices(
+                                                   lean_obj_arg tm , uint16_t kind,
+                                                   lean_obj_arg args, lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   Kind k = static_cast<Kind>(static_cast<int32_t>(kind) - 2);
@@ -1442,8 +1443,8 @@ LEAN_EXPORT lean_obj_res env_mkOpOfIndices(
     indices.push_back(lean_uint32_of_nat_mk(
         lean_array_get(lean_usize_to_nat(0), args, lean_usize_to_nat(i))));
   }
-  return env_val(op_box(new Op(mut_tm_unbox(tm)->mkOp(k, indices))), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+  return env_val(op_box(new Op(mut_tm_unbox(tm)->mkOp(k, indices))),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
 // ### Solver imports/helpers
@@ -1451,8 +1452,8 @@ LEAN_EXPORT lean_obj_res env_mkOpOfIndices(
 LEAN_EXPORT lean_obj_res env_mkSolver(lean_obj_arg tm, lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
-  return env_val(solver_box(new Solver(*mut_tm_unbox(tm))), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+  return env_val(solver_box(new Solver(*mut_tm_unbox(tm))),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
 // Retrieves the lean-obj for the "raw" (C++) solver.
@@ -1465,59 +1466,57 @@ static inline Solver* extract_solver(b_lean_obj_arg safe_solver)
 }
 
 LEAN_EXPORT lean_obj_res solver_getVersion(b_lean_obj_arg solver,
-lean_obj_arg tm,
 lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
-  return env_val(lean_mk_string(extract_solver(solver)->getVersion().c_str()), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+  return env_val(lean_mk_string(extract_solver(solver)->getVersion().c_str()),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
 LEAN_EXPORT lean_obj_res solver_setOption(lean_obj_arg solver,
                                           lean_object* option,
                                           lean_object* value,
-                                        lean_obj_arg tm,
                                       lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   extract_solver(solver)->setOption(lean_string_cstr(option),
                                     lean_string_cstr(value));
-  return env_val(mk_unit_unit(), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+  return env_val(mk_unit_unit(),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
 LEAN_EXPORT lean_obj_res solver_resetAssertions(lean_obj_arg solver,
-lean_obj_arg tm,
+
 lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   extract_solver(solver)->resetAssertions();
-  return env_val(mk_unit_unit(), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+  return env_val(mk_unit_unit(),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
 LEAN_EXPORT lean_obj_res solver_setLogic(lean_obj_arg solver,
                                          lean_object* logic,
-                                        lean_obj_arg tm,
+                                        
                                       lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   extract_solver(solver)->setLogic(lean_string_cstr(logic));
-  return env_val(mk_unit_unit(), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+  return env_val(mk_unit_unit(),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
 LEAN_EXPORT lean_obj_res solver_simplify(lean_obj_arg solver,
                                          lean_obj_arg term,
                                          lean_obj_arg applySubs,
-                                        lean_obj_arg tm,
+                                        
                                       lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   Term value = extract_solver(solver)->simplify(
       *term_unbox(term), bool_unbox(lean_unbox(applySubs)));
-  return env_val(term_box(new Term(value)), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+  return env_val(term_box(new Term(value)),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
 LEAN_EXPORT lean_obj_res solver_declareFun(lean_obj_arg solver,
@@ -1525,7 +1524,7 @@ LEAN_EXPORT lean_obj_res solver_declareFun(lean_obj_arg solver,
                                            lean_obj_arg sorts,
                                            lean_obj_arg sort,
                                            uint8_t fresh,
-                                          lean_obj_arg tm,
+                                          
                                         lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
@@ -1537,31 +1536,31 @@ LEAN_EXPORT lean_obj_res solver_declareFun(lean_obj_arg solver,
   }
   Term f = extract_solver(solver)->declareFun(
       lean_string_cstr(symbol), ss, *sort_unbox(sort), bool_unbox(fresh));
-  return env_val(term_box(new Term(f)), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+  return env_val(term_box(new Term(f)),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
 LEAN_EXPORT lean_obj_res solver_assertFormula(lean_obj_arg solver,
                                               lean_object* term,
-                                            lean_obj_arg tm,
+                                            
                                           lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   extract_solver(solver)->assertFormula(*term_unbox(term));
-  return env_val(mk_unit_unit(), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+  return env_val(mk_unit_unit(),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res solver_checkSat(lean_obj_arg solver, lean_obj_arg tm, lean_obj_arg ioWorld)
+LEAN_EXPORT lean_obj_res solver_checkSat(lean_obj_arg solver,  lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
-  return env_val(result_box(new Result(extract_solver(solver)->checkSat())), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+  return env_val(result_box(new Result(extract_solver(solver)->checkSat())),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
 LEAN_EXPORT lean_obj_res solver_checkSatAssuming(lean_obj_arg solver,
                                                  lean_obj_arg assumptions,
-                                                lean_obj_arg tm,
+                                                
                                               lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
@@ -1572,11 +1571,11 @@ LEAN_EXPORT lean_obj_res solver_checkSatAssuming(lean_obj_arg solver,
         term_box(new Term()), assumptions, lean_usize_to_nat(i))));
   }
   Result res = extract_solver(solver)->checkSatAssuming(formulas);
-  return env_val(result_box(new Result(res)), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+  return env_val(result_box(new Result(res)),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res solver_getUnsatCore(lean_obj_arg solver, lean_obj_arg tm, lean_obj_arg ioWorld)
+LEAN_EXPORT lean_obj_res solver_getUnsatCore(lean_obj_arg solver,  lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   std::vector<Term> assertions = solver_unbox(solver)->getUnsatCore();
@@ -1585,12 +1584,12 @@ LEAN_EXPORT lean_obj_res solver_getUnsatCore(lean_obj_arg solver, lean_obj_arg t
   {
     as = lean_array_push(as, term_box(new Term(assertion)));
   }
-  return env_val(as, tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+  return env_val(as,  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
 LEAN_EXPORT lean_obj_res solver_getProof(lean_obj_arg solver,
-lean_obj_arg tm,
+
 lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
@@ -1600,23 +1599,23 @@ lean_obj_arg ioWorld)
   {
     ps = lean_array_push(ps, proof_box(new Proof(proof)));
   }
-  return env_val(ps, tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+  return env_val(ps,  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
 LEAN_EXPORT lean_obj_res solver_getValue(lean_obj_arg solver, lean_obj_arg term,
-lean_obj_arg tm,
+
 lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(
-      term_box(new Term(extract_solver(solver)->getValue(*term_unbox(term)))), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+      term_box(new Term(extract_solver(solver)->getValue(*term_unbox(term)))),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
 LEAN_EXPORT lean_obj_res solver_getValues(lean_obj_arg solver,
                                           lean_obj_arg terms,
-                                        lean_obj_arg tm,
+                                        
                                       lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
@@ -1632,12 +1631,12 @@ LEAN_EXPORT lean_obj_res solver_getValues(lean_obj_arg solver,
   {
     vs = lean_array_push(vs, term_box(new Term(value)));
   }
-  return env_val(vs, tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+  return env_val(vs,  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
 LEAN_EXPORT lean_obj_res solver_getModelDomainElements(lean_obj_arg solver, lean_obj_arg sort,
-                                                       lean_obj_arg tm,lean_obj_arg ioWorld)
+                                                       lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   std::vector<Term> elements = solver_unbox(solver)->getModelDomainElements(*sort_unbox(sort));
@@ -1646,24 +1645,24 @@ LEAN_EXPORT lean_obj_res solver_getModelDomainElements(lean_obj_arg solver, lean
   {
     es = lean_array_push(es, term_box(new Term(element)));
   }
-  return env_val(es, tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+  return env_val(es,  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
 LEAN_EXPORT lean_obj_res solver_proofToString(lean_obj_arg solver,
                                               lean_obj_arg proof,
-                                            lean_obj_arg tm,
+                                            
                                           lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(lean_mk_string(
-      extract_solver(solver)->proofToString(*proof_unbox(proof)).c_str()), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+      extract_solver(solver)->proofToString(*proof_unbox(proof)).c_str()),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
 LEAN_EXPORT lean_obj_res solver_parseCommands(lean_obj_arg solver,
                                               lean_obj_arg query,
-                                            lean_obj_arg tm,
+                                            
                                           lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
@@ -1688,8 +1687,8 @@ LEAN_EXPORT lean_obj_res solver_parseCommands(lean_obj_arg solver,
     // to out
     cmd.invoke(slv, sm, out);
   }
-  return env_val(mk_unit_unit(), tm, ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(tm, ioWorld);
+  return env_val(mk_unit_unit(),  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
 }

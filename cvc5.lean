@@ -5,6 +5,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Abdalrhman Mohamed, Adrien Champion
 -/
 
+import Std.Internal.Rat
+
 import cvc5.Init
 import cvc5.Kind
 import cvc5.ProofRule
@@ -274,15 +276,12 @@ instance Proof.instNonemptyProof : Nonempty Proof := ProofImpl.property
 private opaque TermManagerImpl : NonemptyType.{0}
 
 /-- Manager for cvc5 terms. -/
-private def TermManager : Type := TermManagerImpl.type
+def TermManager : Type := TermManagerImpl.type
 
 namespace TermManager
 
 private instance TermManager.instNonemptyTermManager : Nonempty TermManager :=
   TermManagerImpl.property
-
-/-- Constructor. -/
-private extern_def new : BaseIO TermManager
 
 end TermManager
 
@@ -302,59 +301,13 @@ Most monadic functions in this API use the non-transformer monad `cvc5.Env`, whe
 When using an `EnvT m α`, do make sure `m` is such that `MonadLiftT BaseIO m` which gives
 `MonadLiftT Env (EnvT m)`.
 -/
-def EnvT (m : Type → Type) (α : Type) : Type :=
-  StateT TermManager (ExceptT Error m) α
+abbrev EnvT (m : Type → Type) (α : Type) : Type :=
+  ExceptT Error m α
 
 /-- Cvc5 environment monad in `BaseIO`. -/
 abbrev Env (α : Type) := EnvT BaseIO α
 
 namespace EnvT
-
-private theorem typeDefT : EnvT m = StateT TermManager (ExceptT Error m) :=
-  by unfold EnvT ; rfl
-
-private theorem typeDef : Env = StateT TermManager (ExceptT Error BaseIO) :=
-  by unfold Env ; rw [typeDefT]
-
-/-- Conversion from `EnvT`'s underlying monadic structure to `EnvT`. -/
-private def ofRaw : StateT TermManager (ExceptT Error m) α → EnvT m α :=
-  by unfold EnvT ; exact id
-
-/-- Conversion from `EnvT` to its underlying monadic structure. -/
-private def toRaw : EnvT m α → StateT TermManager (ExceptT Error m) α :=
-  by unfold EnvT ; exact id
-
--- sanity
-example : @ofRaw m α ∘ @toRaw m α = id := rfl
-example : @toRaw m α ∘ @ofRaw m α = id := rfl
-
-section monad variable [Monad m]
-
-instance : Monad (EnvT m) := by rw [typeDefT] ; exact inferInstance
-
-instance [MonadLiftT BaseIO m] : MonadLift Env (EnvT m) := ⟨
-  by
-    unfold Env ; rewrite [typeDefT, typeDefT] ; unfold ExceptT
-    exact fun code tm => liftM <| code tm
-⟩
-
-private scoped instance : MonadReader TermManager (EnvT m) where
-  read := ofRaw fun tm => return (tm, tm)
--- sanity
-example : MonadReader TermManager Env := inferInstance
-
-instance : MonadLift (ExceptT Error m) (EnvT m) := by rw [typeDefT] ; exact inferInstance
-
-instance [MonadLiftT BaseIO m] : MonadLift IO (EnvT m) := ⟨
-  fun ioCode => ofRaw fun tm => do
-    match ← ioCode.toBaseIO with
-    | .ok a => return (a, tm)
-    | .error e => throw <| .error s!"[IO error] {e.toString}"
-⟩
-
-instance : MonadExcept Error (EnvT m) := by rw [typeDefT] ; exact inferInstance
-
-end monad
 
 -- functions used by the underlying C++ layer
 section ffi variable [Monad m]
@@ -839,7 +792,7 @@ extern_def!? getBitVectorValue : Term → UInt32 → Except Error String
 extern_def!? getIntegerValue : Term → Except Error Int
 
 /-- Get the native rational value of a real, rational-compatible value. -/
-extern_def!? getRationalValue : Term → Except Error Rat
+extern_def!? getRationalValue : Term → Except Error Std.Internal.Rat
 
 /-- Get the symbol of this term.
 
@@ -938,88 +891,64 @@ instance : Hashable Proof := ⟨Proof.hash⟩
 
 end Proof
 
-namespace EnvT
+namespace TermManager
 
-/-- Runs `EnvT` code. -/
-def run [Monad m] [MonadLiftT BaseIO m] (code : EnvT m α) : m (Except Error α) := do
-  let tm ← TermManager.new
-  Except.map Prod.fst <$> code.toRaw tm
-
-end EnvT
-
-@[inherit_doc EnvT.run]
-protected abbrev run := @EnvT.run
-
-def getManager [Monad m] : EnvT m TermManager :=
-  fun tm => return (tm, tm)
-
-namespace Env
-
-/-- Runs `Env` code. -/
-def run : Env α → BaseIO (Except Error α) := cvc5.run
-
-/-- Runs `Env` code in the `IO` monad, throws `cvc5.Error`s as `IO.Error`s. -/
-def runIO (code : Env α) : IO α := do
-  match ← code.run with
-  | .ok res => return res
-  | .error e => throw <| IO.Error.userError <| toString e
-
-/-- Solver constructor, depends on the environment it's created in. -/
-private extern_def mkSolver : Env Solver.Raw
+/-- Constructor. -/
+extern_def new : Env TermManager
 
 /-- Get the Boolean sort. -/
-extern_def getBooleanSort : Env cvc5.Sort
+extern_def getBooleanSort : TermManager → Env cvc5.Sort
 
 /-- Get the Integer sort. -/
-extern_def getIntegerSort : Env cvc5.Sort
+extern_def getIntegerSort : TermManager → Env cvc5.Sort
 
 /-- Get the Real sort. -/
-extern_def getRealSort : Env cvc5.Sort
+extern_def getRealSort : TermManager → Env cvc5.Sort
 
 /-- Get the regular expression sort. -/
-extern_def getRegExpSort : Env cvc5.Sort
+extern_def getRegExpSort : TermManager → Env cvc5.Sort
 
 /-- Get the rounding mode sort. -/
-extern_def getRoundingModeSort : Env cvc5.Sort
+extern_def getRoundingModeSort : TermManager → Env cvc5.Sort
 
 /-- Get the string sort. -/
-extern_def getStringSort : Env cvc5.Sort
+extern_def getStringSort : TermManager → Env cvc5.Sort
 
 /-- Create an array sort.
 
 - `indexSort` The array index sort.
 - `elemSort` The array element sort.
 -/
-extern_def mkArraySort : (indexSort elemSort : cvc5.Sort) → Env cvc5.Sort
+extern_def mkArraySort : TermManager → (indexSort elemSort : cvc5.Sort) → Env cvc5.Sort
 
 /-- Create a bit-vector sort.
 
 - `size` The bit-width of the bit-vector sort.
 -/
-extern_def mkBitVectorSort : (size : UInt32) → Env cvc5.Sort
+extern_def mkBitVectorSort : TermManager → (size : UInt32) → Env cvc5.Sort
 
 /-- Create a floating-point sort.
 
 - `exp` The bit-width of the exponent of the floating-point sort.
 - `sig` The bit-width of the significand of the floating-point sort.
 -/
-extern_def mkFloatingPointSort : (exp sig : UInt32) → Env cvc5.Sort
+extern_def mkFloatingPointSort : TermManager → (exp sig : UInt32) → Env cvc5.Sort
 
 /-- Create a finite-field sort from a given string of base n.
 
 - `size` The modulus of the field. Must be a prime.
 -/
-extern_def mkFiniteFieldSortOfString : (size : String) → (base : UInt32) → Env cvc5.Sort
+extern_def mkFiniteFieldSortOfString : TermManager → (size : String) → (base : UInt32) → Env cvc5.Sort
 with
-  mkFiniteFieldSort (size : Nat) (base : UInt32 := 10) : Env cvc5.Sort :=
-    mkFiniteFieldSortOfString (toString size) base
+  mkFiniteFieldSort (tm : TermManager) (size : Nat) (base : UInt32 := 10) : Env cvc5.Sort :=
+    mkFiniteFieldSortOfString tm (toString size) base
 
 /-- Create function sort.
 
 - `sorts` The sort of the function arguments.
 - `codomain` The sort of the function return value.
 -/
-extern_def mkFunctionSort : (sorts : Array cvc5.Sort) → (cod : cvc5.Sort) → Env cvc5.Sort
+extern_def mkFunctionSort : TermManager → (sorts : Array cvc5.Sort) → (cod : cvc5.Sort) → Env cvc5.Sort
 
 /-- Create a predicate sort.
 
@@ -1027,13 +956,13 @@ This is equivalent to calling `mkFunctionSort` with Boolean sort as the codomain
 
 - `sorts` The list of sorts of the predicate.
 -/
-extern_def mkPredicateSort : (sorts : Array cvc5.Sort) → Env cvc5.Sort
+extern_def mkPredicateSort : TermManager → (sorts : Array cvc5.Sort) → Env cvc5.Sort
 
 /-- Create a tuple sort.
 
 - `sorts` The sorts of the elements of the tuple.
 -/
-extern_def mkTupleSort : (sorts : Array cvc5.Sort) → Env cvc5.Sort
+extern_def mkTupleSort : TermManager → (sorts : Array cvc5.Sort) → Env cvc5.Sort
 
 /-- Create an uninterpreted sort constructor sort.
 
@@ -1042,25 +971,25 @@ An uninterpreted sort constructor is an uninterpreted sort with arity > 0.
 - `arity` The arity of the sort (must be > 0).
 - `symbol` The symbol of the sort.
 -/
-extern_def mkUninterpretedSortConstructorSort : (arity : Nat) → (symbol : String) → Env cvc5.Sort
+extern_def mkUninterpretedSortConstructorSort : TermManager → (arity : Nat) → (symbol : String) → Env cvc5.Sort
 
 /-- Create a set parameter.
 
 - `elemSort` The sort of the set elements.
 -/
-extern_def mkSetSort : (sort : cvc5.Sort) → Env cvc5.Sort
+extern_def mkSetSort : TermManager → (sort : cvc5.Sort) → Env cvc5.Sort
 
 /-- Create a set parameter.
 
 - `elemSort` The sort of the set elements.
 -/
-extern_def mkBagSort : (sort : cvc5.Sort) → Env cvc5.Sort
+extern_def mkBagSort : TermManager → (sort : cvc5.Sort) → Env cvc5.Sort
 
 /-- Create a set parameter.
 
 - `elemSort` The sort of the set elements.
 -/
-extern_def mkSequenceSort : (sort : cvc5.Sort) → Env cvc5.Sort
+extern_def mkSequenceSort : TermManager → (sort : cvc5.Sort) → Env cvc5.Sort
 
 /-- Create an abstract sort. An abstract sort represents a sort for a given kind whose parameters
 and arguments are unspecified.
@@ -1077,19 +1006,19 @@ sort of kind `k` whose arguments are the unspecified sort. For example, `mkAbstr
 SortKind.ARRAY_SORT` will return the sort `(ARRAY_SORT ? ?)` instead of the abstract sort whose
 abstract kind is `SortKind.ARRAY_SORT`.
 -/
-extern_def mkAbstractSort : (k : SortKind) → Env cvc5.Sort
+extern_def mkAbstractSort : TermManager → (k : SortKind) → Env cvc5.Sort
 
 /-- Create an uninterpreted sort.
 
 - `symbol` The name of the sort.
 -/
-extern_def mkUninterpretedSort : (symbol : String) → Env cvc5.Sort
+extern_def mkUninterpretedSort : TermManager →(symbol : String) → Env cvc5.Sort
 
 /-- Create a nullable sort.
 
 - `sort` The sort of the element of the nullable.
 -/
-extern_def mkNullableSort : (sort : cvc5.Sort) → Env cvc5.Sort
+extern_def mkNullableSort : TermManager → (sort : cvc5.Sort) → Env cvc5.Sort
 
 /-- Create a sort parameter.
 
@@ -1097,7 +1026,7 @@ extern_def mkNullableSort : (sort : cvc5.Sort) → Env cvc5.Sort
 
 **Warning**: This function is experimental and may change in future versions.
 -/
-extern_def mkParamSort : (symbol : String) → Env cvc5.Sort
+extern_def mkParamSort : TermManager → (symbol : String) → Env cvc5.Sort
 
 
 
@@ -1105,29 +1034,29 @@ extern_def mkParamSort : (symbol : String) → Env cvc5.Sort
 
 - `b`: The Boolean constant.
 -/
-extern_def mkBoolean : (b : Bool) → Env Term
+extern_def mkBoolean : TermManager → (b : Bool) → Env Term
 
 /-- Create an integer-value term.
 
 - `s`: the string representation of the constant, may represent an integer such as (`"123"`).
 -/
-private extern_def mkIntegerFromString : (s : String) → Env Term
+private extern_def mkIntegerFromString : TermManager → (s : String) → Env Term
 with
   /-- Create an integer-value term. -/
-  mkInteger : Int → Env Term := mkIntegerFromString ∘ toString
+  mkInteger (tm : TermManager) : Int → Env Term := mkIntegerFromString tm ∘ toString
 
 /-- Create a real-value term.
 
 - `s`: the string representation of the constant, may represent an integer (`"123"`) or a real
   constant (`"12.34"`, `"12/34"`).
 -/
-private extern_def mkRealFromString : (s : String) → Env Term
+private extern_def mkRealFromString : TermManager → (s : String) → Env Term
 with
   /-- Create a real-value term from a `Std.Internal.Rat`. -/
-  mkRealOfRat (rat : Rat) : Env Term :=
-    mkRealFromString s!"{rat.num}/{rat.den}"
+  mkRealOfRat (tm : TermManager) (rat : Std.Internal.Rat) : Env Term :=
+    mkRealFromString tm s!"{rat.num}/{rat.den}"
   /-- Create a real-value term from numerator/denominator `Int`-s. -/
-  mkReal
+  mkReal (tm : TermManager)
     (num : Int) (den : Int := 1) (den_ne_0 : den ≠ 0 := by simp <;> omega)
   : Env Term :=
     let (num, den) :=
@@ -1135,14 +1064,14 @@ with
       | .ofNat 0 => by contradiction
       | .ofNat den => (num, den)
       | .negSucc denMinus1 => (-num, denMinus1.succ)
-    mkRealOfRat <| mkRat num den
+    mkRealOfRat tm <| Std.Internal.mkRat num den
 
 /-- Create n-ary term of given kind.
 
 - `kind` The kind of the term.
 - `children` The children of the term.
 -/
-extern_def mkTerm : (kind : Kind) → (children : Array Term := #[]) → Env Term
+extern_def mkTerm : TermManager → (kind : Kind) → (children : Array Term := #[]) → Env Term
 
 /-- Create n-ary term of given kind from a given operator.
 
@@ -1151,7 +1080,7 @@ Create operators with `mkOp`.
 - `op` The operator.
 - `children` The children of the term.
 -/
-extern_def mkTermOfOp : (op : Op) → (children : Array Term := #[]) → Env Term
+extern_def mkTermOfOp : TermManager → (op : Op) → (children : Array Term := #[]) → Env Term
 
 /-- Create a free constant.
 
@@ -1161,7 +1090,7 @@ previous call to `mkConst`.
 - `sort` The sort of the constant.
 - `symbol` The name of the constant (optional).
 -/
-extern_def mkConst : (srt : cvc5.Sort) → (name : String := "") → Env Term
+extern_def mkConst : TermManager → (srt : cvc5.Sort) → (name : String := "") → Env Term
 
 /--
 Create a bound variable to be used in a binder (i.e., a quantifier, a lambda, or a witness binder).
@@ -1172,7 +1101,7 @@ call to `mkVar`.
 - `sort` The sort of the variable.
 - `symbol` The name of the variable (optional).
 -/
-extern_def mkVar : (srt : cvc5.Sort) → (name : String := "") → Env Term
+extern_def mkVar : TermManager → (srt : cvc5.Sort) → (name : String := "") → Env Term
 
 /-- Create operator of Kind:
 
@@ -1201,18 +1130,54 @@ See `cvc5.Kind` for a description of the parameters.
 If `args` is empty, the `Op` simply wraps the `cvc5.Kind`. The `Kind` can be used in
 `Solver.mkTerm` directly without creating an `Op` first.
 -/
-extern_def mkOpOfIndices : (kind : Kind) → (args : Array Nat := #[]) → Env Op
+extern_def mkOpOfIndices : TermManager → (kind : Kind) → (args : Array Nat := #[]) → Env Op
 with mkOp := @mkOpOfIndices
 
+end TermManager
+
+namespace EnvT
+
+/-- Runs `EnvT` code. -/
+def run [Monad m] [MonadLiftT BaseIO m] (code : EnvT m α) : m (Except Error α) := code
+
+example [Monad m] [MonadLiftT BaseIO m] : MonadLift Env (EnvT m) where
+  monadLift code := do
+    match ← liftM <| run code with
+    | .ok a => return a
+    | .error e => throw e
+
+instance [Monad m] [MonadLiftT BaseIO m] : MonadLift IO (EnvT m) where
+  monadLift code := do
+    match ← code.toBaseIO with
+    | .ok a => return a
+    | .error e => throw <| Error.error <| toString e
+
+end EnvT
+
+@[inherit_doc EnvT.run]
+protected abbrev run := @EnvT.run
+
+namespace Env
+
+@[inherit_doc EnvT.run]
+def run : Env α → BaseIO (Except Error α) := cvc5.run
+
+/-- Runs `Env` code in the `IO` monad, throws `cvc5.Error`s as `IO.Error`s. -/
+def runIO (code : Env α) : IO α := do
+  match ← code.run with
+  | .ok res => return res
+  | .error e => throw <| IO.Error.userError <| toString e
+
+/-- Solver constructor. -/
+private extern_def mkSolver : TermManager → Env Solver.Raw
+
 end Env
-
-
 
 namespace Solver
 
 @[inherit_doc Env.mkSolver]
-def mk : Env Solver :=
-  mkRaw <$> Env.mkSolver
+def new (tm : TermManager) : Env Solver :=
+  mkRaw <$> Env.mkSolver tm
 
 /-- Get a string representation of the version of this solver. -/
 extern_def getVersion : (solver : Solver) → Env String
@@ -1362,9 +1327,5 @@ results are ignored.
 extern_def parseCommands : (solver : Solver) → (query : String) → Env String
 
 end Solver
-
-
-
-attribute [irreducible] EnvT
 
 end cvc5
