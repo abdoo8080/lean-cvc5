@@ -682,7 +682,7 @@ LEAN_EXPORT lean_obj_res sort_getInstantiatedParameters(lean_obj_arg s)
   {
     ps = lean_array_push(ps, sort_box(new Sort(param)));
   }
-  return except_ok(lean_box(0), ps);
+  return except_ok(ps);
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
