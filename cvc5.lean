@@ -1144,7 +1144,7 @@ namespace EnvT
 /-- Runs `EnvT` code. -/
 def run [Monad m] [MonadLiftT BaseIO m] (code : EnvT m α) : m (Except Error α) := code
 
-example [Monad m] [MonadLiftT BaseIO m] : MonadLift Env (EnvT m) where
+instance [Monad m] [MonadLiftT BaseIO m] : MonadLift Env (EnvT m) where
   monadLift code := do
     match ← liftM <| run code with
     | .ok a => return a
@@ -1328,7 +1328,7 @@ extern_def proofToString : (solver : Solver) → Proof → Env String
 Commands that produce a result such as `(check-sat)`, `(get-model)`, ... are executed but the
 results are ignored.
 -/
-extern_def parseCommands : (solver : Solver) → (query : String) → Env String
+extern_def parseCommands : (solver : Solver) → (query : String) → Env (Array cvc5.Sort × Array Term)
 
 end Solver
 

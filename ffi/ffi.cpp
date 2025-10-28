@@ -1746,7 +1746,19 @@ LEAN_EXPORT lean_obj_res solver_parseCommands(lean_obj_arg solver,
     // to out
     cmd.invoke(slv, sm, out);
   }
-  return env_val(mk_unit_unit(), ioWorld);
+  std::vector<Sort> sortVars = sm->getDeclaredSorts();
+  lean_object* svs = lean_mk_empty_array();
+  for (const Sort& sortVar : sortVars)
+  {
+    svs = lean_array_push(svs, sort_box(new Sort(sortVar)));
+  }
+  std::vector<Term> termVars = sm->getDeclaredTerms();
+  lean_object* tvs = lean_mk_empty_array();
+  for (const Term& termVar : termVars)
+  {
+    tvs = lean_array_push(tvs, term_box(new Term(termVar)));
+  }
+  return env_val(prod_mk(lean_box(0), lean_box(0), svs, tvs), ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 }
