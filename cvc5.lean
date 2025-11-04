@@ -301,6 +301,9 @@ section ffi variable [Monad m]
 @[export env_pure]
 private def env_pure (a : α) : Env α := return a
 
+@[export env_bool]
+private def env_bool (b : Bool) : Env Bool := return b
+
 @[export env_throw]
 private def env_throw (e : Error) : Env α := throw e
 
@@ -341,6 +344,34 @@ extern_def new : Env TermManager
 
 end TermManager
 
+private opaque SymbolManagerImpl : NonemptyType.{0}
+
+/-- Symbol manager.
+
+Internally, this class manages a symbol table and other meta-information pertaining to SMT2 file
+inputs (*e.g.* named assertions, declared functions, *etc.*).
+
+A symbol manager can be modified by invoking commands, see `Command.invoke`.
+
+A symbol manager can be provided when constructing an `InputParser`, in which case that
+`InputParser` has symbols of this symbol manager preloaded.
+
+The symbol manager's interface is otherwise not publicly available.
+-/
+def SymbolManager : Type := SymbolManagerImpl.type
+
+namespace SymbolManager
+
+instance SymbolManager.instNonempty : Nonempty SymbolManager := SymbolManagerImpl.property
+
+/-- Constructor.
+
+- `tm` The associated term manager instance.
+-/
+extern_def new : (tm : TermManager) → Env SymbolManager
+
+end SymbolManager
+
 private opaque SolverImpl : NonemptyType.{0}
 
 /-- A cvc5 solver. -/
@@ -350,8 +381,11 @@ namespace Solver
 
 instance Solver.instNonempty : Nonempty Solver := SolverImpl.property
 
-/-- Solver constructor. -/
-extern_def new : TermManager → Env Solver
+/-- Constructor.
+
+- `tm` The associated term manager instance.
+-/
+extern_def new : (tm : TermManager) → Env Solver
 
 end Solver
 
@@ -1170,10 +1204,14 @@ def runIO (code : Env α) : IO α := do
   | .ok res => return res
   | .error e => throw <| IO.Error.userError <| toString e
 
-@[inherit_doc Solver.new]
-def newSolver : TermManager → Env Solver := Solver.new
-
 end Env
+
+namespace SymbolManager
+
+/-- Determine if the logic of this symbol manager has been set. -/
+extern_def isLogicSet : SymbolManager → Env Bool
+
+end SymbolManager
 
 namespace Solver
 
