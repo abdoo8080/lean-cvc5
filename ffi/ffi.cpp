@@ -1504,21 +1504,11 @@ LEAN_EXPORT lean_obj_res env_newSolver(lean_obj_arg tm, lean_obj_arg ioWorld)
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-// Retrieves the lean-obj for the "raw" (C++) solver.
-b_lean_obj_res ffi_solver_to_raw(b_lean_obj_arg safe_solver);
-
-// Builds on `ffi_lover_to_raw` to return the lean-unboxed "raw" (C++) solver.
-static inline Solver* extract_solver(b_lean_obj_arg safe_solver)
-{
-  return static_cast<Solver*>(
-      lean_get_external_data(ffi_solver_to_raw(safe_solver)));
-}
-
 LEAN_EXPORT lean_obj_res solver_getVersion(b_lean_obj_arg solver,
                                            lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
-  return env_val(lean_mk_string(extract_solver(solver)->getVersion().c_str()),
+  return env_val(lean_mk_string(solver_unbox(solver)->getVersion().c_str()),
                  ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
@@ -1529,7 +1519,7 @@ LEAN_EXPORT lean_obj_res solver_setOption(lean_obj_arg solver,
                                           lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
-  extract_solver(solver)->setOption(lean_string_cstr(option),
+  solver_unbox(solver)->setOption(lean_string_cstr(option),
                                     lean_string_cstr(value));
   return env_val(mk_unit_unit(), ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
@@ -1540,7 +1530,7 @@ LEAN_EXPORT lean_obj_res solver_resetAssertions(lean_obj_arg solver,
                                                 lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
-  extract_solver(solver)->resetAssertions();
+  solver_unbox(solver)->resetAssertions();
   return env_val(mk_unit_unit(), ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
@@ -1551,7 +1541,7 @@ LEAN_EXPORT lean_obj_res solver_setLogic(lean_obj_arg solver,
                                          lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
-  extract_solver(solver)->setLogic(lean_string_cstr(logic));
+  solver_unbox(solver)->setLogic(lean_string_cstr(logic));
   return env_val(mk_unit_unit(), ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
@@ -1563,7 +1553,7 @@ LEAN_EXPORT lean_obj_res solver_simplify(lean_obj_arg solver,
                                          lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
-  Term value = extract_solver(solver)->simplify(
+  Term value = solver_unbox(solver)->simplify(
       *term_unbox(term), bool_unbox(lean_unbox(applySubs)));
   return env_val(term_box(new Term(value)), ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
@@ -1584,7 +1574,7 @@ LEAN_EXPORT lean_obj_res solver_declareFun(lean_obj_arg solver,
     ss.push_back(*sort_unbox(
         lean_array_get(sort_box(new Sort()), sorts, lean_usize_to_nat(i))));
   }
-  Term f = extract_solver(solver)->declareFun(
+  Term f = solver_unbox(solver)->declareFun(
       lean_string_cstr(symbol), ss, *sort_unbox(sort), bool_unbox(fresh));
   return env_val(term_box(new Term(f)), ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
@@ -1596,7 +1586,7 @@ LEAN_EXPORT lean_obj_res solver_assertFormula(lean_obj_arg solver,
                                               lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
-  extract_solver(solver)->assertFormula(*term_unbox(term));
+  solver_unbox(solver)->assertFormula(*term_unbox(term));
   return env_val(mk_unit_unit(), ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
@@ -1605,7 +1595,7 @@ LEAN_EXPORT lean_obj_res solver_checkSat(lean_obj_arg solver,
                                          lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
-  return env_val(result_box(new Result(extract_solver(solver)->checkSat())),
+  return env_val(result_box(new Result(solver_unbox(solver)->checkSat())),
                  ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
@@ -1622,7 +1612,7 @@ LEAN_EXPORT lean_obj_res solver_checkSatAssuming(lean_obj_arg solver,
     formulas.push_back(*term_unbox(lean_array_get(
         term_box(new Term()), assumptions, lean_usize_to_nat(i))));
   }
-  Result res = extract_solver(solver)->checkSatAssuming(formulas);
+  Result res = solver_unbox(solver)->checkSatAssuming(formulas);
   return env_val(result_box(new Result(res)), ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
@@ -1646,7 +1636,7 @@ LEAN_EXPORT lean_obj_res solver_getProof(lean_obj_arg solver,
                                          lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
-  std::vector<Proof> proofs = extract_solver(solver)->getProof();
+  std::vector<Proof> proofs = solver_unbox(solver)->getProof();
   lean_object* ps = lean_mk_empty_array();
   for (const Proof& proof : proofs)
   {
@@ -1663,7 +1653,7 @@ LEAN_EXPORT lean_obj_res solver_getValue(lean_obj_arg solver,
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(
-      term_box(new Term(extract_solver(solver)->getValue(*term_unbox(term)))),
+      term_box(new Term(solver_unbox(solver)->getValue(*term_unbox(term)))),
       ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
@@ -1680,7 +1670,7 @@ LEAN_EXPORT lean_obj_res solver_getValues(lean_obj_arg solver,
     ts.push_back(*term_unbox(
         lean_array_get(term_box(new Term()), terms, lean_usize_to_nat(i))));
   }
-  std::vector<Term> values = extract_solver(solver)->getValue(ts);
+  std::vector<Term> values = solver_unbox(solver)->getValue(ts);
   lean_object* vs = lean_mk_empty_array();
   for (const Term& value : values)
   {
@@ -1714,7 +1704,7 @@ LEAN_EXPORT lean_obj_res solver_proofToString(lean_obj_arg solver,
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(
       lean_mk_string(
-          extract_solver(solver)->proofToString(*proof_unbox(proof)).c_str()),
+          solver_unbox(solver)->proofToString(*proof_unbox(proof)).c_str()),
       ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
@@ -1725,7 +1715,7 @@ LEAN_EXPORT lean_obj_res solver_parseCommands(lean_obj_arg solver,
                                               lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
-  Solver* slv = extract_solver(solver);
+  Solver* slv = solver_unbox(solver);
   // construct an input parser associated the solver above
   parser::InputParser parser(slv);
   // get the symbol manager of the parser, used when invoking commands below

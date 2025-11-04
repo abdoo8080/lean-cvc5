@@ -283,6 +283,13 @@ private instance TermManager.instNonemptyTermManager : Nonempty TermManager :=
 
 end TermManager
 
+private opaque SolverImpl : NonemptyType.{0}
+
+/-- A cvc5 solver. -/
+def Solver : Type := SolverImpl.type
+
+instance Solver.instNonempty : Nonempty Solver := SolverImpl.property
+
 /-- Error type. -/
 inductive Error where
   | missingValue
@@ -322,21 +329,6 @@ private def env_throw_string (e : String) : Env α := throw <| (.error e)
 end ffi
 
 end EnvT
-
-private opaque SolverImpl : NonemptyType.{0}
-
-/-- A cvc5 solver. -/
-private def Solver.Raw : Type := SolverImpl.type
-
-instance Solver.instNonemptySolver : Nonempty Solver.Raw := SolverImpl.property
-
-/-- A cvc5 solver. -/
-structure Solver where private mkRaw ::
-  private solver : Solver.Raw
-
-/-- Accessor for the underlying unsafe solver. -/
-@[export ffi_solver_to_raw]
-private def ffi_solver_to_raw : Solver → Solver.Raw := Solver.solver
 
 namespace Error
 
@@ -1173,15 +1165,14 @@ def runIO (code : Env α) : IO α := do
   | .error e => throw <| IO.Error.userError <| toString e
 
 /-- Solver constructor. -/
-private extern_def newSolver : TermManager → Env Solver.Raw
+private extern_def newSolver : TermManager → Env Solver
 
 end Env
 
 namespace Solver
 
 @[inherit_doc Env.newSolver]
-def new (tm : TermManager) : Env Solver :=
-  mkRaw <$> Env.newSolver tm
+def new : (tm : TermManager) → Env Solver := Env.newSolver
 
 /-- Get a string representation of the version of this solver. -/
 extern_def getVersion : (solver : Solver) → Env String
