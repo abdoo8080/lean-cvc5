@@ -1497,7 +1497,7 @@ LEAN_EXPORT lean_obj_res termManager_mkOpOfIndices(lean_obj_arg tm,
 
 // ### Solver imports/helpers
 
-LEAN_EXPORT lean_obj_res env_newSolver(lean_obj_arg tm, lean_obj_arg ioWorld)
+LEAN_EXPORT lean_obj_res solver_new(lean_obj_arg tm, lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(solver_box(new Solver(*mut_tm_unbox(tm))), ioWorld);

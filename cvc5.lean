@@ -271,25 +271,6 @@ def Proof : Type := ProofImpl.type
 
 instance Proof.instNonemptyProof : Nonempty Proof := ProofImpl.property
 
-private opaque TermManagerImpl : NonemptyType.{0}
-
-/-- Manager for cvc5 terms. -/
-def TermManager : Type := TermManagerImpl.type
-
-namespace TermManager
-
-private instance TermManager.instNonemptyTermManager : Nonempty TermManager :=
-  TermManagerImpl.property
-
-end TermManager
-
-private opaque SolverImpl : NonemptyType.{0}
-
-/-- A cvc5 solver. -/
-def Solver : Type := SolverImpl.type
-
-instance Solver.instNonempty : Nonempty Solver := SolverImpl.property
-
 /-- Error type. -/
 inductive Error where
   | missingValue
@@ -345,6 +326,34 @@ instance : ToString Error :=
   ⟨Error.toString⟩
 
 end Error
+
+private opaque TermManagerImpl : NonemptyType.{0}
+
+/-- Manager for cvc5 terms. -/
+def TermManager : Type := TermManagerImpl.type
+
+namespace TermManager
+
+instance : Nonempty TermManager := TermManagerImpl.property
+
+/-- Constructor. -/
+extern_def new : Env TermManager
+
+end TermManager
+
+private opaque SolverImpl : NonemptyType.{0}
+
+/-- A cvc5 solver. -/
+def Solver : Type := SolverImpl.type
+
+namespace Solver
+
+instance Solver.instNonempty : Nonempty Solver := SolverImpl.property
+
+/-- Solver constructor. -/
+extern_def new : TermManager → Env Solver
+
+end Solver
 
 namespace Result
 
@@ -889,9 +898,6 @@ end Proof
 
 namespace TermManager
 
-/-- Constructor. -/
-extern_def new : Env TermManager
-
 /-- Get the Boolean sort. -/
 extern_def getBooleanSort : TermManager → Env cvc5.Sort
 
@@ -1164,15 +1170,12 @@ def runIO (code : Env α) : IO α := do
   | .ok res => return res
   | .error e => throw <| IO.Error.userError <| toString e
 
-/-- Solver constructor. -/
-private extern_def newSolver : TermManager → Env Solver
+@[inherit_doc Solver.new]
+def newSolver : TermManager → Env Solver := Solver.new
 
 end Env
 
 namespace Solver
-
-@[inherit_doc Env.newSolver]
-def new : (tm : TermManager) → Env Solver := Env.newSolver
 
 /-- Get a string representation of the version of this solver. -/
 extern_def getVersion : (solver : Solver) → Env String
