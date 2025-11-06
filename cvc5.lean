@@ -406,17 +406,25 @@ end SymbolManager
 
 private opaque InputParserImpl : NonemptyType.{0}
 
-/-- Symbol manager.
+/-- This type is the main interface for retrieving commands and expressions from an input using a
+  parser.
 
-Internally, this class manages a symbol table and other meta-information pertaining to SMT2 file
-inputs (*e.g.* named assertions, declared functions, *etc.*).
+After construction, it is expected that an input is first configured via, e.g.,
+`InputParser.setFileInput`, `InputParser.setStreamInput`, `InputParser.setStringInput` or
+`InputParser.setIncrementalStringInput` and `InputParser.appendIncrementalStringInput`. Then,
+functions `InputParser.nextCommand` and `InputParser.nextExpression` can be invoked to parse the
+input.
 
-A symbol manager can be modified by invoking commands, see `Command.invoke`.
+The input parser interacts with a symbol manager, which determines which symbols are defined in the
+current context, based on the background logic and user-defined symbols. If no symbol manager is
+provided, then the input parser will construct (an initially empty) one.
 
-A symbol manager can be provided when constructing an `InputParser`, in which case that
-`InputParser` has symbols of this symbol manager preloaded.
+If provided, the symbol manager must have a logic that is compatible with the provided solver. That
+is, if both the solver and symbol manager have their logics set (`SymbolManager.isLogicSet` and
+`Solver.isLogicSet`), then their logics must be the same.
 
-The symbol manager's interface is otherwise not publicly available.
+Upon setting an input source, if either the solver (resp. symbol manager) has its logic set, then
+the symbol manager (resp. solver) is set to use that logic, if its logic is not already set.
 -/
 def InputParser : Type := InputParserImpl.type
 
