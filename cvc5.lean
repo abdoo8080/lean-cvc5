@@ -344,6 +344,38 @@ extern_def new : Env TermManager
 
 end TermManager
 
+private opaque SolverImpl : NonemptyType.{0}
+
+/-- A cvc5 solver. -/
+def Solver : Type := SolverImpl.type
+
+namespace Solver
+
+instance : Nonempty Solver := SolverImpl.property
+
+/-- Constructor.
+
+- `tm` The associated term manager instance.
+-/
+extern_def new : (tm : TermManager) → Env Solver
+
+end Solver
+
+private opaque CommandImpl : NonemptyType.{0}
+
+/-- Encapsulation of a command.
+
+Commands are constructed by the `InputParser` and can be invoked on the `Solver` and
+`Command`.
+-/
+def Command : Type := CommandImpl.type
+
+namespace Command
+
+instance : Nonempty Command := CommandImpl.property
+
+end Command
+
 private opaque SymbolManagerImpl : NonemptyType.{0}
 
 /-- Symbol manager.
@@ -372,22 +404,46 @@ extern_def new : (tm : TermManager) → Env SymbolManager
 
 end SymbolManager
 
-private opaque SolverImpl : NonemptyType.{0}
+private opaque InputParserImpl : NonemptyType.{0}
 
-/-- A cvc5 solver. -/
-def Solver : Type := SolverImpl.type
+/-- Symbol manager.
 
-namespace Solver
+Internally, this class manages a symbol table and other meta-information pertaining to SMT2 file
+inputs (*e.g.* named assertions, declared functions, *etc.*).
 
-instance Solver.instNonempty : Nonempty Solver := SolverImpl.property
+A symbol manager can be modified by invoking commands, see `Command.invoke`.
 
-/-- Constructor.
+A symbol manager can be provided when constructing an `InputParser`, in which case that
+`InputParser` has symbols of this symbol manager preloaded.
 
-- `tm` The associated term manager instance.
+The symbol manager's interface is otherwise not publicly available.
 -/
-extern_def new : (tm : TermManager) → Env Solver
+def InputParser : Type := InputParserImpl.type
 
-end Solver
+namespace InputParser
+
+instance : Nonempty InputParser := InputParserImpl.property
+
+/-- Construct an input parser with an initially empty symbol manager.
+
+- `solver`: The solver (e.g. for constructing terms and sorts).
+-/
+private extern_def ofSolver : (solver : Solver) → Env InputParser
+
+/-- Construct an input parser.
+
+- `solver` The solver (e.g. for constructing terms and sorts).
+- `sm` The symbol manager, which contains a symbol table that maps symbols to terms and sorts. Must
+  have a logic that is compatible with the solver.
+-/
+private extern_def ofSolverAndSM : (solver : Solver) → (sm : SymbolManager) → Env InputParser
+
+@[inherit_doc ofSolverAndSM]
+def new (solver : Solver) : (sm : Option SymbolManager := none) → Env InputParser
+  | none => ofSolver solver
+  | some sm => ofSolverAndSM solver sm
+
+end InputParser
 
 namespace Result
 
@@ -1206,12 +1262,65 @@ def runIO (code : Env α) : IO α := do
 
 end Env
 
+namespace Command
+
+/-- Invoke the command on the solver and symbol manager sm, prints the result to a string.
+
+- `solver` The solver to invoke the command on.
+- `sm` The symbol manager to invoke the command on.
+-/
+extern_def invoke : Command → Solver → SymbolManager → Env String
+
+end Command
+
 namespace SymbolManager
 
 /-- Determine if the logic of this symbol manager has been set. -/
 extern_def isLogicSet : SymbolManager → Env Bool
 
+/-- Get the logic configured for this symbol manager.
+
+Asserts `SymbolManager.isLogicSet`.
+-/
+extern_def getLogic : SymbolManager → Env String
+
+/-- Get the list of sorts that have been declared via `declare-sort` commands.
+
+These are the sorts that are printed as part of a response to a `get-model` command.
+-/
+extern_def getDeclaredSorts : SymbolManager → Env (Array cvc5.Sort)
+
+/-- Get the list of terms that have been declared via `declare-fun` and `declare-const`.
+
+These are the terms that are printed in response to a `get-model` command.
+-/
+extern_def getDeclaredTerms : SymbolManager → Env (Array Term)
+
+/-- Get a mapping from terms to names that have been given to them via the `:named` attribute. -/
+extern_def getNamedTerms : SymbolManager → Env (Array (Term × String))
+
 end SymbolManager
+
+namespace InputParser
+
+/-- Get the associated symbol manager of this input parser. -/
+extern_def getSymbolManager : InputParser → Env SymbolManager
+
+/-- Configure a given concrete input string as the input to this parser.
+
+- `input` The input string.
+- `lang` The input language of the input string, default `InputLanguage::SMT_LIB_2_6`.
+-/
+extern_def setStringInput : InputParser → String → (lang : InputLanguage := .SMT_LIB_2_6) → Env Unit
+
+/-- Parse and return the next command.
+
+Will initialize the logic to "ALL" or the forced logic if no logic is set prior to this point and a
+command is read that requires initializing the logic.
+-/
+extern_def nextCommand : InputParser → Env Command
+
+end InputParser
 
 namespace Solver
 
