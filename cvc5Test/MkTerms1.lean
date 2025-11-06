@@ -2,8 +2,6 @@ import cvc5Test.Init
 
 namespace cvc5.Test
 
-open Env
-
 def mkTerms1 : IO Unit := Env.runIO do
   let boolKind := Kind.CONST_BOOLEAN
   let tm ← TermManager.new

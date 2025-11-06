@@ -7,8 +7,6 @@ import cvc5Test.Init
 
 namespace cvc5.Test
 
-open Env
-
 test! tm => do
   let bv1 ←
     tm.mkOp Kind.BITVECTOR_EXTRACT #[31, 1]

@@ -13,8 +13,6 @@ import cvc5Test.Init
 
 namespace cvc5.Test
 
-open Env
-
 test![TestApiBlackSort, hash] tm => do
   assertEq (← tm.getIntegerSort).hash (← tm.getIntegerSort).hash
   assertNe (← tm.getIntegerSort).hash (← tm.getStringSort).hash

@@ -2,8 +2,6 @@ import cvc5Test.Init
 
 namespace cvc5.Test
 
-open Env
-
 def solver1Parse : IO Unit := Env.runIO do
   let tm ← TermManager.new
   let query : Env (Option Bool) := do
