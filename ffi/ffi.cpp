@@ -11,7 +11,7 @@ lean_obj_res prod_mk(lean_obj_arg T,
                      lean_obj_arg t,
                      lean_obj_arg u);
 
-// ## `Except Error α` constructors
+// # `Except Error α` constructors
 
 lean_obj_res generic_except_ok(lean_obj_arg alpha, lean_obj_arg val);
 
@@ -30,7 +30,7 @@ lean_obj_res except_ok_u32(uint32_t val);
 
 lean_obj_res except_err(lean_obj_arg alpha, lean_obj_arg msg);
 
-// ## Exception-catching macro for `Except`
+// # Exception-catching macro for `Except`
 //
 // Runs `code`, `return`s an `Except Error α` error on exceptions.
 
@@ -51,9 +51,11 @@ lean_obj_res except_err(lean_obj_arg alpha, lean_obj_arg msg);
         lean_mk_string("cvc5's term manager raised an unexpected exception")); \
   }
 
-// ## `Env` constructors
+// # `Env` constructors
 
 lean_obj_res env_pure(lean_obj_arg alpha, lean_obj_arg a, lean_obj_arg ioWorld);
+
+lean_obj_res env_bool(uint8_t b, lean_obj_arg ioWorld);
 
 lean_obj_res env_val(lean_obj_arg val, lean_obj_arg ioWorld)
 {
@@ -1144,6 +1146,134 @@ static inline Solver* solver_unbox(b_lean_obj_arg s)
   return static_cast<Solver*>(lean_get_external_data(s));
 }
 
+static void command_finalize(void* obj)
+{
+  delete static_cast<cvc5::parser::Command*>(obj);
+}
+
+static void command_foreach(void*, b_lean_obj_arg)
+{
+  // do nothing since `Command` does not contain nested Lean objects
+}
+
+static lean_external_class* g_command_class = nullptr;
+
+static inline lean_obj_res cmd_box(cvc5::parser::Command* cmd)
+{
+  if (g_command_class == nullptr)
+  {
+    g_command_class =
+        lean_register_external_class(command_finalize, command_foreach);
+  }
+  return lean_alloc_external(g_command_class, cmd);
+}
+
+static inline const cvc5::parser::Command* cmd_unbox(b_lean_obj_arg cmd)
+{
+  return static_cast<cvc5::parser::Command*>(lean_get_external_data(cmd));
+}
+
+static inline cvc5::parser::Command* mut_cmd_unbox(b_lean_obj_arg cmd)
+{
+  return static_cast<cvc5::parser::Command*>(lean_get_external_data(cmd));
+}
+
+static void symbolManager_finalize(void* obj)
+{
+  delete static_cast<cvc5::parser::SymbolManager*>(obj);
+}
+
+static void symbolManager_foreach(void*, b_lean_obj_arg)
+{
+  // do nothing since `SymbolManager` does not contain nested Lean objects
+}
+
+static lean_external_class* g_symbolManager_class = nullptr;
+
+static inline lean_obj_res sm_box(cvc5::parser::SymbolManager* sm)
+{
+  if (g_symbolManager_class == nullptr)
+  {
+    g_symbolManager_class = lean_register_external_class(symbolManager_finalize,
+                                                         symbolManager_foreach);
+  }
+  return lean_alloc_external(g_symbolManager_class, sm);
+}
+
+static inline const cvc5::parser::SymbolManager* sm_unbox(b_lean_obj_arg sm)
+{
+  return static_cast<cvc5::parser::SymbolManager*>(lean_get_external_data(sm));
+}
+
+static inline cvc5::parser::SymbolManager* mut_sm_unbox(b_lean_obj_arg sm)
+{
+  return static_cast<cvc5::parser::SymbolManager*>(lean_get_external_data(sm));
+}
+
+LEAN_EXPORT lean_obj_res symbolManager_new(lean_obj_arg tm,
+                                           lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  return env_val(sm_box(new cvc5::parser::SymbolManager(*mut_tm_unbox(tm))),
+                 ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+static void inputParser_finalize(void* obj)
+{
+  delete static_cast<cvc5::parser::InputParser*>(obj);
+}
+
+static void inputParser_foreach(void*, b_lean_obj_arg)
+{
+  // do nothing since `InputParser` does not contain nested Lean objects
+}
+
+static lean_external_class* g_inputParser_class = nullptr;
+
+static inline lean_obj_res parser_box(cvc5::parser::InputParser* parser)
+{
+  if (g_inputParser_class == nullptr)
+  {
+    g_inputParser_class =
+        lean_register_external_class(inputParser_finalize, inputParser_foreach);
+  }
+  return lean_alloc_external(g_inputParser_class, parser);
+}
+
+static inline const cvc5::parser::InputParser* parser_unbox(
+    b_lean_obj_arg parser)
+{
+  return static_cast<cvc5::parser::InputParser*>(
+      lean_get_external_data(parser));
+}
+
+static inline cvc5::parser::InputParser* mut_parser_unbox(b_lean_obj_arg parser)
+{
+  return static_cast<cvc5::parser::InputParser*>(
+      lean_get_external_data(parser));
+}
+
+LEAN_EXPORT lean_obj_res inputParser_ofSolver(lean_obj_arg solver,
+                                              lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  return env_val(
+      parser_box(new cvc5::parser::InputParser(solver_unbox(solver))), ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+LEAN_EXPORT lean_obj_res inputParser_ofSolverAndSM(lean_obj_arg solver,
+                                                   lean_obj_arg sm,
+                                                   lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  return env_val(parser_box(new cvc5::parser::InputParser(solver_unbox(solver),
+                                                          mut_sm_unbox(sm))),
+                 ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
 // # Sorts
 
 LEAN_EXPORT lean_obj_res termManager_getBooleanSort(lean_obj_arg tm,
@@ -1495,30 +1625,137 @@ LEAN_EXPORT lean_obj_res termManager_mkOpOfIndices(lean_obj_arg tm,
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-// ### Solver imports/helpers
+// # Command imports
 
-LEAN_EXPORT lean_obj_res env_newSolver(lean_obj_arg tm, lean_obj_arg ioWorld)
+LEAN_EXPORT lean_obj_res command_invoke(lean_obj_arg command,
+                                        b_lean_obj_arg solver,
+                                        b_lean_obj_arg sm,
+                                        lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  std::stringstream out;
+  mut_cmd_unbox(command)->invoke(solver_unbox(solver), mut_sm_unbox(sm), out);
+  std::string str;
+  out >> str;
+  return env_val(lean_mk_string(str.c_str()), ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+// # Symbol manager imports
+
+LEAN_EXPORT lean_obj_res symbolManager_isLogicSet(b_lean_obj_arg sm,
+                                                  lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  return env_bool(sm_unbox(sm)->isLogicSet(), ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+LEAN_EXPORT lean_obj_res symbolManager_getLogic(b_lean_obj_arg sm,
+                                                lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  return env_val(lean_mk_string(sm_unbox(sm)->getLogic().c_str()), ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+LEAN_EXPORT lean_obj_res symbolManager_getDeclaredSorts(b_lean_obj_arg sm,
+                                                        lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  std::vector<Sort> sortVars = sm_unbox(sm)->getDeclaredSorts();
+  lean_object* declaredSorts = lean_mk_empty_array();
+  for (const Sort& sortVar : sortVars)
+  {
+    declaredSorts = lean_array_push(declaredSorts, sort_box(new Sort(sortVar)));
+  }
+  return env_val(declaredSorts, ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+LEAN_EXPORT lean_obj_res symbolManager_getDeclaredTerms(b_lean_obj_arg sm,
+                                                        lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  std::vector<Term> termVars = sm_unbox(sm)->getDeclaredTerms();
+  lean_object* declaredTerms = lean_mk_empty_array();
+  for (const Term& termVar : termVars)
+  {
+    declaredTerms = lean_array_push(declaredTerms, term_box(new Term(termVar)));
+  }
+  return env_val(declaredTerms, ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+LEAN_EXPORT lean_obj_res symbolManager_getNamedTerms(b_lean_obj_arg sm,
+                                                     lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  std::map<Term, std::string> namedTerms = sm_unbox(sm)->getNamedTerms();
+  lean_object* nt = lean_mk_empty_array();
+  for (const auto& pair : namedTerms)
+  {
+    nt = lean_array_push(nt,
+                         prod_mk(lean_box(0),
+                                 lean_box(0),
+                                 term_box(new Term(pair.first)),
+                                 lean_mk_string(pair.second.c_str())));
+  }
+  return env_val(nt, ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+// # Input parser imports
+
+LEAN_EXPORT lean_obj_res inputParser_getSymbolManager(lean_obj_arg parser,
+                                                      lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  return env_val(sm_box(new cvc5::parser::SymbolManager(
+                     *mut_parser_unbox(parser)->getSymbolManager())),
+                 ioWorld);
+  // return env_val(sm_box(mut_parser_unbox(parser)->getSymbolManager()),
+  // ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+LEAN_EXPORT lean_obj_res inputParser_setStringInput(lean_obj_arg parser,
+                                                    lean_obj_arg query,
+                                                    uint8_t inLang,
+                                                    lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  modes::InputLanguage lang = static_cast<modes::InputLanguage>(inLang);
+  mut_parser_unbox(parser)->setStringInput(
+      lang, lean_string_cstr(query), "lean-cvc5");
+  return env_val(mk_unit_unit(), ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+LEAN_EXPORT lean_obj_res inputParser_nextCommand(lean_obj_arg parser,
+                                                 lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  return env_val(
+      cmd_box(new parser::Command(mut_parser_unbox(parser)->nextCommand())),
+      ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+// # Solver imports/helpers
+
+LEAN_EXPORT lean_obj_res solver_new(lean_obj_arg tm, lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(solver_box(new Solver(*mut_tm_unbox(tm))), ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-// Retrieves the lean-obj for the "raw" (C++) solver.
-b_lean_obj_res ffi_solver_to_raw(b_lean_obj_arg safe_solver);
-
-// Builds on `ffi_lover_to_raw` to return the lean-unboxed "raw" (C++) solver.
-static inline Solver* extract_solver(b_lean_obj_arg safe_solver)
-{
-  return static_cast<Solver*>(
-      lean_get_external_data(ffi_solver_to_raw(safe_solver)));
-}
-
 LEAN_EXPORT lean_obj_res solver_getVersion(b_lean_obj_arg solver,
                                            lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
-  return env_val(lean_mk_string(extract_solver(solver)->getVersion().c_str()),
+  return env_val(lean_mk_string(solver_unbox(solver)->getVersion().c_str()),
                  ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
@@ -1529,8 +1766,8 @@ LEAN_EXPORT lean_obj_res solver_setOption(lean_obj_arg solver,
                                           lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
-  extract_solver(solver)->setOption(lean_string_cstr(option),
-                                    lean_string_cstr(value));
+  solver_unbox(solver)->setOption(lean_string_cstr(option),
+                                  lean_string_cstr(value));
   return env_val(mk_unit_unit(), ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
@@ -1540,7 +1777,7 @@ LEAN_EXPORT lean_obj_res solver_resetAssertions(lean_obj_arg solver,
                                                 lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
-  extract_solver(solver)->resetAssertions();
+  solver_unbox(solver)->resetAssertions();
   return env_val(mk_unit_unit(), ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
@@ -1551,7 +1788,7 @@ LEAN_EXPORT lean_obj_res solver_setLogic(lean_obj_arg solver,
                                          lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
-  extract_solver(solver)->setLogic(lean_string_cstr(logic));
+  solver_unbox(solver)->setLogic(lean_string_cstr(logic));
   return env_val(mk_unit_unit(), ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
@@ -1563,7 +1800,7 @@ LEAN_EXPORT lean_obj_res solver_simplify(lean_obj_arg solver,
                                          lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
-  Term value = extract_solver(solver)->simplify(
+  Term value = solver_unbox(solver)->simplify(
       *term_unbox(term), bool_unbox(lean_unbox(applySubs)));
   return env_val(term_box(new Term(value)), ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
@@ -1584,7 +1821,7 @@ LEAN_EXPORT lean_obj_res solver_declareFun(lean_obj_arg solver,
     ss.push_back(*sort_unbox(
         lean_array_get(sort_box(new Sort()), sorts, lean_usize_to_nat(i))));
   }
-  Term f = extract_solver(solver)->declareFun(
+  Term f = solver_unbox(solver)->declareFun(
       lean_string_cstr(symbol), ss, *sort_unbox(sort), bool_unbox(fresh));
   return env_val(term_box(new Term(f)), ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
@@ -1596,7 +1833,7 @@ LEAN_EXPORT lean_obj_res solver_assertFormula(lean_obj_arg solver,
                                               lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
-  extract_solver(solver)->assertFormula(*term_unbox(term));
+  solver_unbox(solver)->assertFormula(*term_unbox(term));
   return env_val(mk_unit_unit(), ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
@@ -1605,7 +1842,7 @@ LEAN_EXPORT lean_obj_res solver_checkSat(lean_obj_arg solver,
                                          lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
-  return env_val(result_box(new Result(extract_solver(solver)->checkSat())),
+  return env_val(result_box(new Result(solver_unbox(solver)->checkSat())),
                  ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
@@ -1622,7 +1859,7 @@ LEAN_EXPORT lean_obj_res solver_checkSatAssuming(lean_obj_arg solver,
     formulas.push_back(*term_unbox(lean_array_get(
         term_box(new Term()), assumptions, lean_usize_to_nat(i))));
   }
-  Result res = extract_solver(solver)->checkSatAssuming(formulas);
+  Result res = solver_unbox(solver)->checkSatAssuming(formulas);
   return env_val(result_box(new Result(res)), ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
@@ -1646,7 +1883,7 @@ LEAN_EXPORT lean_obj_res solver_getProof(lean_obj_arg solver,
                                          lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
-  std::vector<Proof> proofs = extract_solver(solver)->getProof();
+  std::vector<Proof> proofs = solver_unbox(solver)->getProof();
   lean_object* ps = lean_mk_empty_array();
   for (const Proof& proof : proofs)
   {
@@ -1663,7 +1900,7 @@ LEAN_EXPORT lean_obj_res solver_getValue(lean_obj_arg solver,
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(
-      term_box(new Term(extract_solver(solver)->getValue(*term_unbox(term)))),
+      term_box(new Term(solver_unbox(solver)->getValue(*term_unbox(term)))),
       ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
@@ -1680,7 +1917,7 @@ LEAN_EXPORT lean_obj_res solver_getValues(lean_obj_arg solver,
     ts.push_back(*term_unbox(
         lean_array_get(term_box(new Term()), terms, lean_usize_to_nat(i))));
   }
-  std::vector<Term> values = extract_solver(solver)->getValue(ts);
+  std::vector<Term> values = solver_unbox(solver)->getValue(ts);
   lean_object* vs = lean_mk_empty_array();
   for (const Term& value : values)
   {
@@ -1714,7 +1951,7 @@ LEAN_EXPORT lean_obj_res solver_proofToString(lean_obj_arg solver,
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(
       lean_mk_string(
-          extract_solver(solver)->proofToString(*proof_unbox(proof)).c_str()),
+          solver_unbox(solver)->proofToString(*proof_unbox(proof)).c_str()),
       ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
@@ -1725,7 +1962,7 @@ LEAN_EXPORT lean_obj_res solver_parseCommands(lean_obj_arg solver,
                                               lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
-  Solver* slv = extract_solver(solver);
+  Solver* slv = solver_unbox(solver);
   // construct an input parser associated the solver above
   parser::InputParser parser(slv);
   // get the symbol manager of the parser, used when invoking commands below
