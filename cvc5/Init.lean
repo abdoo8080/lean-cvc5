@@ -305,7 +305,7 @@ unsafe def multidefsImpl : CommandElab
       if let super::_ := ns.componentsRev then
         let mut super := super.toString
         if 0 < super.length then
-          super := super.get 0 |>.toLower |> super.set 0
+          super := String.Pos.Raw.get super 0 |>.toLower |> String.Pos.Raw.set super 0
         -- println! "-> `{super}`"
         pure super
       else
