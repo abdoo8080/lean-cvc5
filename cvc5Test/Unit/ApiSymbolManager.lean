@@ -15,7 +15,7 @@ def parseCommand (solver : Solver) (parser : InputParser) (cmd : String)
   let output ← cmd.invoke solver (← parser.getSymbolManager)
   checkOutput output
 
-def parseLogic (solver : Solver) (parser : InputParser) (logic : String) : Env Unit :=
+def parseAndSetLogic (solver : Solver) (parser : InputParser) (logic : String) : Env Unit :=
   parseCommand solver parser s!"(set-logic {logic})"
 
 test![TestApiBlackSymbolManager, isLogicSet] tm => do
@@ -23,7 +23,7 @@ test![TestApiBlackSymbolManager, isLogicSet] tm => do
   let parser ← InputParser.new solver
   let sm ← parser.getSymbolManager
   assertFalse (← sm.isLogicSet)
-  parseLogic solver parser "QF_LIA"
+  parseAndSetLogic solver parser "QF_LIA"
   assertTrue (← sm.isLogicSet)
 
 test![TestApiBlackSymbolManager, getLogic] tm => do
@@ -32,7 +32,7 @@ test![TestApiBlackSymbolManager, getLogic] tm => do
   let sm ← parser.getSymbolManager
   assertError "invalid call to 'getLogic', logic has not yet been set"
     sm.getLogic
-  parseLogic solver parser "QF_LIA"
+  parseAndSetLogic solver parser "QF_LIA"
   assertEq (← sm.getLogic) "QF_LIA"
 
 test![TestApiBlackSymbolManager, getDeclaredTermsAndSorts] tm => do
