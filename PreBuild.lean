@@ -28,9 +28,9 @@ structure Enum where
 
 /-- Lowercases the first letter of `ident`. -/
 def Enum.toExternPref (e : Enum) :=
-  e.ident.get 0
+  String.Pos.Raw.get e.ident 0
   |>.toLower
-  |> e.ident.set 0
+  |> String.Pos.Raw.set e.ident 0
 
 abbrev Enums := Array Enum
 
@@ -427,7 +427,7 @@ def prettyError
   let pos := Parsec.Input.pos ι
   let map := content.toFileMap
   let position := map.toPosition pos
-  let char := content.get? pos
+  let char := String.Pos.Raw.get? content pos
   let charStr := match char with
   | none => "'<eof>'"
   | '\n' | '\r' => "'<newline>'"
@@ -441,8 +441,7 @@ def prettyError
   let padding := toString position.line.succ |>.length
   let lpad (line? : Option Nat) : String :=
     let s := line?.map toString |>.getD ""
-    ⟨s.data.leftpad padding ' '⟩
-
+    List.asString <| s.data.leftpad padding ' '
   return (
     s!"error at {position.line}-{position.column} on character {charStr}"
   ) ++ "\n" ++ (
@@ -464,7 +463,7 @@ def presentError (ι : String.Iterator) (content : String) (msg : String) : IO L
   let pos := Parsec.Input.pos ι
   let map := content.toFileMap
   let position := map.toPosition pos
-  let char := content.get? pos
+  let char := String.Pos.Raw.get? content pos
   let charStr := match char with
   | none => "'<eof>'"
   | '\n' | '\r' => "'<newline>'"
@@ -478,7 +477,7 @@ def presentError (ι : String.Iterator) (content : String) (msg : String) : IO L
   let padding := toString position.line.succ |>.length
   let lpad (line? : Option Nat) : String :=
     let s := line?.map toString |>.getD ""
-    ⟨s.data.leftpad padding ' '⟩
+    List.asString <| s.data.leftpad padding ' '
   if 0 < line then
     IO.eprintln s!" {lpad position.line.pred} | {getLine line.pred}"
   else
