@@ -105,8 +105,8 @@ input_file libcvc5 where
 input_file libcvc5parser where
   path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "cvc5parser" true
 
--- input_file libgmp where
---   path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "gmp" true
+input_file libgmp where
+  path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "gmp" true
 
 -- input_file libgmpxx where
 --   path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "gmpxx" true
@@ -122,9 +122,9 @@ input_file libucrt where
 
 def libs : Array (Target FilePath) :=
   if Platform.isWindows then
-    #[ffi.o, libcadical, libcvc5, libcvc5parser, libpicpoly, libpicpolyxx]
+    #[ffi.o, libcadical, libcvc5, libcvc5parser, libgmp, libpicpoly, libpicpolyxx]
   else
-    #[ffi.o, libcadical, libcvc5, libcvc5parser, libpicpoly, libpicpolyxx]
+    #[ffi.o, libcadical, libcvc5, libcvc5parser, libgmp, libpicpoly, libpicpolyxx]
 
 @[default_target]
 lean_lib cvc5 where
