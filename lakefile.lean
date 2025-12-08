@@ -122,9 +122,9 @@ input_file libucrt where
 
 def libs : Array (Target FilePath) :=
   if Platform.isWindows then
-    #[ffi.o, libcadical, libcvc5, libcvc5parser, libgmp, libgmpxx, libpicpoly, libpicpolyxx]
+    #[ffi.o, libcadical, libcvc5, libcvc5parser, libpicpoly, libpicpolyxx]
   else
-    #[ffi.o, libcadical, libcvc5, libcvc5parser, libgmp, libgmpxx, libpicpoly, libpicpolyxx]
+    #[ffi.o, libcadical, libcvc5, libcvc5parser, libpicpoly, libpicpolyxx]
 
 @[default_target]
 lean_lib cvc5 where
