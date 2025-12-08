@@ -1272,6 +1272,9 @@ end Env
 
 namespace Command
 
+/-- True if the command is null. -/
+extern_def isNull : Command → Bool
+
 /-- Invoke the command on the solver and symbol manager sm, prints the result to a string.
 
 - `solver` The solver to invoke the command on.
@@ -1314,12 +1317,40 @@ namespace InputParser
 /-- Get the associated symbol manager of this input parser. -/
 extern_def getSymbolManager : InputParser → Env SymbolManager
 
+/-- Is this parser done reading input? -/
+extern_def isDone : InputParser → Env Bool
+
+/-- Configure given file as input.
+
+- `fileName` The name of the file to configure.
+- `lang` The input language of the input string, default `InputLanguage::SMT_LIB_2_6`.
+-/
+extern_def setFileInput :
+  InputParser → (fileName : String) → (lang : InputLanguage := .SMT_LIB_2_6) → Env Unit
+
 /-- Configure a given concrete input string as the input to this parser.
 
 - `input` The input string.
 - `lang` The input language of the input string, default `InputLanguage::SMT_LIB_2_6`.
+- `name` The name to use as input stream name for error messages, default `"lean-cvc5"`.
 -/
-extern_def setStringInput : InputParser → String → (lang : InputLanguage := .SMT_LIB_2_6) → Env Unit
+extern_def setStringInput : InputParser → String →
+  (lang : InputLanguage := .SMT_LIB_2_6) → (name : String := "lean-cvc5") → Env Unit
+
+/-- Configure that we will be feeding strings to this parser via `appendIncrementalStringInput`.
+
+- `lang` The input language, default `InputLanguage::SMT_LIB_2_6`.
+- `name` The name of the stream, for use in error messages, default `"lean-cvc5"`.
+-/
+extern_def setIncrementalStringInput :
+  InputParser → (lang : InputLanguage := .SMT_LIB_2_6) → (name : String := "lean-cvc5") → Env Unit
+
+/-- Append string to the input being parsed by this parser. Should be called after calling
+`setIncrementalStringInput`.
+
+- `input` The input string.
+-/
+extern_def appendIncrementalStringInput : InputParser → (input : String) → Env Unit
 
 /-- Parse and return the next command.
 
@@ -1327,6 +1358,19 @@ Will initialize the logic to "ALL" or the forced logic if no logic is set prior 
 command is read that requires initializing the logic.
 -/
 extern_def nextCommand : InputParser → Env Command
+  with
+    /-- Parse and returns the next command if any, or `none` if the parser is at end-of-input. -/
+    nextCommand? (parser : InputParser) : Env (Option Command) := do
+      let cmd ← parser.nextCommand
+      if cmd.isNull then return none else return cmd
+
+/-- Parse and return the next term. Requires setting the logic prior to this point. -/
+extern_def nextTerm : InputParser → Env Term
+  with
+    /-- Parse and returns the next term if any, or `none` if the parser is at end-of-input. -/
+    nextTerm? (parser : InputParser) : Env (Option Term) := do
+      let term ← parser.nextTerm
+      if term.isNull then return none else return term
 
 end InputParser
 
@@ -1350,6 +1394,19 @@ extern_def resetAssertions : (solver : Solver) → Env Unit
 - `logic`: The logic to set.
 -/
 extern_def setLogic : (solver : Solver) → (logic : String) → Env Unit
+
+/-- Determine if `setLogic` has been called. -/
+extern_def isLogicSet : (solver : Solver) → Env Bool
+
+/-- Get the logic set the solver.
+
+Asserts `isLogicSet`.
+-/
+extern_def getLogic : (solver : Solver) → Env String
+  with
+    /-- The logic previously set if any, `none` otherwise. -/
+    getLogic? (solver : Solver) : Env (Option String) := do
+      if ← solver.isLogicSet then solver.getLogic else return none
 
 /-- Simplify a term or formula based on rewriting and (optionally) applying substitutions for
 solved variables.
