@@ -105,11 +105,11 @@ input_file libcvc5 where
 input_file libcvc5parser where
   path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "cvc5parser" true
 
-input_file libgmp where
-  path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "gmp" true
+-- input_file libgmp where
+--   path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "gmp" true
 
-input_file libgmpxx where
-  path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "gmpxx" true
+-- input_file libgmpxx where
+--   path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "gmpxx" true
 
 input_file libpicpoly where
   path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "picpoly" true
