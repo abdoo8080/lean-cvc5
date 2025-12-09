@@ -374,6 +374,14 @@ namespace Command
 
 instance : Nonempty Command := CommandImpl.property
 
+/-- Get a string representation of this command. -/
+protected extern_def toString : Command → String
+
+instance : ToString Command := ⟨Command.toString⟩
+
+/-- Get the name for this command, e.g., `"assert"`. -/
+protected extern_def getCommandName : Command → String
+
 end Command
 
 private opaque SymbolManagerImpl : NonemptyType.{0}

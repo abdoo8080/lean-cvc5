@@ -1632,6 +1632,16 @@ LEAN_EXPORT uint8_t command_isNull(lean_obj_arg cmd)
   return bool_box(cmd_unbox(cmd)->isNull());
 }
 
+LEAN_EXPORT lean_obj_res command_toString(lean_obj_arg cmd)
+{
+  return lean_mk_string(cmd_unbox(cmd)->toString().c_str());
+}
+
+LEAN_EXPORT lean_obj_res command_getCommandName(lean_obj_arg cmd)
+{
+  return lean_mk_string(cmd_unbox(cmd)->getCommandName().c_str());
+}
+
 LEAN_EXPORT lean_obj_res command_invoke(lean_obj_arg command,
                                         b_lean_obj_arg solver,
                                         b_lean_obj_arg sm,
