@@ -1632,6 +1632,16 @@ LEAN_EXPORT uint8_t command_isNull(lean_obj_arg cmd)
   return bool_box(cmd_unbox(cmd)->isNull());
 }
 
+LEAN_EXPORT lean_obj_res command_toString(lean_obj_arg cmd)
+{
+  return lean_mk_string(cmd_unbox(cmd)->toString().c_str());
+}
+
+LEAN_EXPORT lean_obj_res command_getCommandName(lean_obj_arg cmd)
+{
+  return lean_mk_string(cmd_unbox(cmd)->getCommandName().c_str());
+}
+
 LEAN_EXPORT lean_obj_res command_invoke(lean_obj_arg command,
                                         b_lean_obj_arg solver,
                                         b_lean_obj_arg sm,
@@ -1640,8 +1650,7 @@ LEAN_EXPORT lean_obj_res command_invoke(lean_obj_arg command,
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   std::stringstream out;
   mut_cmd_unbox(command)->invoke(solver_unbox(solver), mut_sm_unbox(sm), out);
-  std::string str;
-  out >> str;
+  std::string str = out.str();
   return env_val(lean_mk_string(str.c_str()), ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }

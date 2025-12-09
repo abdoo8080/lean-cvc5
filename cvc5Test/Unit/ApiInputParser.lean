@@ -1,6 +1,13 @@
+/-
+Copyright (c) 2023-2024 by the authors listed in the file AUTHORS and their
+institutional affiliations. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Abdalrhman Mohamed, Adrien Champion
+-/
+
 import cvc5Test.Init
 
-/-! # Black box testing of the `SymbolManager` type
+/-! # Black box testing of the `InputParser` type
 
 - <https://github.com/cvc5/cvc5/blob/main/test/unit/api/cpp/api_input_parser_black.cpp>
 -/
@@ -12,16 +19,16 @@ def parseLogicCommand (parser : InputParser) (logic : String) : Env Command := d
   parser.appendIncrementalStringInput s!"(set-logic {logic})"
   parser.nextCommand
 
-test![TestApiBlackSymbolManager, constructSymbolManager] tm => do
+test![TestApiBlackInputParser, constructSymbolManager] tm => do
   let _ ← SymbolManager.new tm
 
-test![TestApiBlackSymbolManager, setFileInput] tm => do
+test![TestApiBlackInputParser, setFileInput] tm => do
   let solver ← Solver.new tm
   let parser ← InputParser.new solver
   assertError "Couldn't open file: nonexistent.smt2" do
     parser.setFileInput "nonexistent.smt2"
 
-test![TestApiBlackSymbolManager, setStreamInput] tm => do
+test![TestApiBlackInputParser, setStreamInput] tm => do
   let solver ← Solver.new tm
   let parser ← InputParser.new solver
   let symbols ← parser.getSymbolManager
@@ -36,7 +43,7 @@ test![TestApiBlackSymbolManager, setStreamInput] tm => do
   loop ()
   assertTrue (← parser.isDone)
 
-test![TestApiBlackSymbolManager, setStreamInput'] tm => do
+test![TestApiBlackInputParser, setStreamInput'] tm => do
   let solver ← Solver.new tm
   let parser ← InputParser.new solver
   let symbols ← parser.getSymbolManager
@@ -52,7 +59,7 @@ test![TestApiBlackSymbolManager, setStreamInput'] tm => do
   loop ()
   assertTrue (← parser.isDone)
 
-test![TestApiBlackSymbolManager, setAndAppendIncrementalStringInput] tm => do
+test![TestApiBlackInputParser, setAndAppendIncrementalStringInput] tm => do
   let solver ← Solver.new tm
   let parser ← InputParser.new solver
   let symbols ← parser.getSymbolManager
@@ -75,7 +82,7 @@ test![TestApiBlackSymbolManager, setAndAppendIncrementalStringInput] tm => do
   assertTrue cmd.isNull
   assertTrue (← parser.isDone)
 
-test![TestApiBlackSymbolManager, setAndAppendIncrementalStringInputInterleave] tm => do
+test![TestApiBlackInputParser, setAndAppendIncrementalStringInputInterleave] tm => do
   let solver ← Solver.new tm
   let parser ← InputParser.new solver
   let symbols ← parser.getSymbolManager
@@ -98,13 +105,13 @@ test![TestApiBlackSymbolManager, setAndAppendIncrementalStringInputInterleave] t
   assertTrue cmd.isNull
   assertTrue (← parser.isDone)
 
-test![TestApiBlackSymbolManager, appendIncrementalNoSet] tm => do
+test![TestApiBlackInputParser, appendIncrementalNoSet] tm => do
   let solver ← Solver.new tm
   let parser ← InputParser.new solver
   assertError "Input to parser not initialized" do
     parser.appendIncrementalStringInput "(set-logic ALL)"
 
-test![TestApiBlackSymbolManager, setStringInput] tm => do
+test![TestApiBlackInputParser, setStringInput] tm => do
   let solver ← Solver.new tm
   let parser ← InputParser.new solver
   let symbols ← parser.getSymbolManager
@@ -115,14 +122,14 @@ test![TestApiBlackSymbolManager, setStringInput] tm => do
   let cmd ← parser.nextCommand
   assertTrue cmd.isNull
 
-test![TestApiBlackSymbolManager, nextCommandNoInput] tm => do
+test![TestApiBlackInputParser, nextCommandNoInput] tm => do
   let solver ← Solver.new tm
   let parser ← InputParser.new solver
   parser.setStringInput "" (name := "input_parser_black")
   let cmd ← parser.nextCommand
   assertTrue cmd.isNull
 
-test![TestApiBlackSymbolManager, nextCommandNoIncrementalInput] tm => do
+test![TestApiBlackInputParser, nextCommandNoIncrementalInput] tm => do
   let solver ← Solver.new tm
   let parser ← InputParser.new solver
   parser.setIncrementalStringInput (name := "input_parser_black")
@@ -131,7 +138,7 @@ test![TestApiBlackSymbolManager, nextCommandNoIncrementalInput] tm => do
   let term ← parser.nextTerm
   assertTrue term.isNull
 
-test![TestApiBlackSymbolManager, nextTerm] tm => do
+test![TestApiBlackInputParser, nextTerm] tm => do
   let solver ← Solver.new tm
   let parser ← InputParser.new solver
   assertError "Input to parser not initialized" parser.nextTerm
@@ -139,7 +146,7 @@ test![TestApiBlackSymbolManager, nextTerm] tm => do
   let term ← parser.nextTerm
   assertTrue term.isNull
 
-test![TestApiBlackSymbolManager, nextTerm2] tm => do
+test![TestApiBlackInputParser, nextTerm2] tm => do
   let solver ← Solver.new tm
   -- adding a set-logic compared to the original test to silence warnings
   solver.setLogic "ALL"
@@ -163,7 +170,7 @@ test![TestApiBlackSymbolManager, nextTerm2] tm => do
   parser.appendIncrementalStringInput "(+ b 1)\n"
   assertError "Symbol 'b' not declared as a variable" parser.nextTerm
 
-test![TestApiBlackSymbolManager, setAndAppendIncrementalStringInput] tm => do
+test![TestApiBlackInputParser, setAndAppendIncrementalStringInput] tm => do
   let solver1 ← Solver.new tm
   let parser1 ← InputParser.new solver1
   let symbols ← parser1.getSymbolManager
@@ -208,7 +215,7 @@ test![TestApiBlackSymbolManager, setAndAppendIncrementalStringInput] tm => do
     "Logic mismatch when initializing InputParser.\n\
     The solver's logic: QF_LRA\nThe symbol manager's logic: QF_LIA"
 
-test![TestApiBlackSymbolManager, incrementalSetString] tm => do
+test![TestApiBlackInputParser, incrementalSetString] tm => do
   let solver ← Solver.new tm
   let parser ← InputParser.new solver
   let symbols ← parser.getSymbolManager
@@ -223,7 +230,7 @@ test![TestApiBlackSymbolManager, incrementalSetString] tm => do
     out := s!"{out}{output}"
   assertEq out ""
 
-test![TestApiBlackSymbolManager, getDeclaredTermsAndSorts] tm => do
+test![TestApiBlackInputParser, getDeclaredTermsAndSorts] tm => do
   let solver ← Solver.new tm
   let parser ← InputParser.new solver
   let symbols ← parser.getSymbolManager
