@@ -1640,8 +1640,7 @@ LEAN_EXPORT lean_obj_res command_invoke(lean_obj_arg command,
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   std::stringstream out;
   mut_cmd_unbox(command)->invoke(solver_unbox(solver), mut_sm_unbox(sm), out);
-  std::string str;
-  out >> str;
+  std::string str = out.str();
   return env_val(lean_mk_string(str.c_str()), ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
