@@ -44,6 +44,8 @@ test![TestApiBlackCommand, toString] tm => do
 
 test![TestApiBlackCommand, getCommandName] tm => do
   let solver ← Solver.new tm
+  -- not in original test, silences the stderr warnings since the logic is not set otherwise
+  solver.setLogic "ALL"
   let parser ← InputParser.new solver
   parser.setIncrementalStringInput
   let cmd ← parseCommand parser "(get-model)"
