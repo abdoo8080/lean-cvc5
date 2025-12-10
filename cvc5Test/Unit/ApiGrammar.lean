@@ -19,116 +19,116 @@ def sygusSolver (tm : TermManager) : Env Solver := do
   solver.setOption "sygus" "true"
   return solver
 
--- test![TestApiBlackGrammar, toString] tm => do
---   let solver ← sygusSolver tm
---   let bool ← tm.getBooleanSort
---   let start ← tm.mkVar bool "start"
---   let mut grammar ← solver.mkGrammar #[] #[start]
---   assertEq grammar.toString ""
---   grammar ← grammar.addRule start (← tm.mkBoolean false)
---   assertEq grammar.toString "((start Bool) )((start Bool (false)))"
+test![TestApiBlackGrammar, toString] tm => do
+  let solver ← sygusSolver tm
+  let bool ← tm.getBooleanSort
+  let start ← tm.mkVar bool "start"
+  let mut grammar ← solver.mkGrammar #[] #[start]
+  assertEq grammar.toString ""
+  grammar ← grammar.addRule start (← tm.mkBoolean false)
+  assertEq grammar.toString "((start Bool) )((start Bool (false)))"
 
--- test![TestApiBlackGrammar, addRule] tm => do
---   let solver ← sygusSolver tm
---   let bool ← tm.getBooleanSort
---   let nullTerm := Term.null ()
---   let start ← tm.mkVar bool "start"
---   let nts ← tm.mkVar bool "nts"
---   let mut grammar ← solver.mkGrammar #[] #[start]
---   let fls ← tm.mkBoolean false
+test![TestApiBlackGrammar, addRule] tm => do
+  let solver ← sygusSolver tm
+  let bool ← tm.getBooleanSort
+  let nullTerm := Term.null ()
+  let start ← tm.mkVar bool "start"
+  let nts ← tm.mkVar bool "nts"
+  let mut grammar ← solver.mkGrammar #[] #[start]
+  let fls ← tm.mkBoolean false
 
---   grammar ← grammar.addRule start fls |> assertOk
+  grammar ← grammar.addRule start fls |> assertOk
 
---   grammar.addRule nullTerm fls |> assertError
---     "invalid null argument for 'ntSymbol'"
---   grammar.addRule start nullTerm |> assertError
---     "invalid null argument for 'rule'"
---   grammar.addRule nts fls |> assertError
---     "invalid argument 'nts' for 'ntSymbol', \
---     expected ntSymbol to be one of the non-terminal symbols given in the predeclaration"
---   grammar.addRule start (← tm.mkInteger 0) |> assertError
---     "expected ntSymbol and rule to have the same sort"
+  grammar.addRule nullTerm fls |> assertError
+    "invalid null argument for 'ntSymbol'"
+  grammar.addRule start nullTerm |> assertError
+    "invalid null argument for 'rule'"
+  grammar.addRule nts fls |> assertError
+    "invalid argument 'nts' for 'ntSymbol', \
+    expected ntSymbol to be one of the non-terminal symbols given in the predeclaration"
+  grammar.addRule start (← tm.mkInteger 0) |> assertError
+    "expected ntSymbol and rule to have the same sort"
 
---   solver.synthFun "f" #[] bool grammar |> assertOkDiscard
+  solver.synthFun "f" #[] bool grammar |> assertOkDiscard
 
---   grammar.addRule start fls |> assertError
---     "Grammar cannot be modified after passing it as an argument to synthFun"
+  grammar.addRule start fls |> assertError
+    "Grammar cannot be modified after passing it as an argument to synthFun"
 
--- test![TestApiBlackGrammar, addRules] tm => do
---   let solver ← sygusSolver tm
---   let bool ← tm.getBooleanSort
---   let nullTerm := Term.null ()
---   let start ← tm.mkVar bool "start"
---   let nts ← tm.mkVar bool "nts"
---   let mut grammar ← solver.mkGrammar #[] #[start]
---   let fls ← tm.mkBoolean false
+test![TestApiBlackGrammar, addRules] tm => do
+  let solver ← sygusSolver tm
+  let bool ← tm.getBooleanSort
+  let nullTerm := Term.null ()
+  let start ← tm.mkVar bool "start"
+  let nts ← tm.mkVar bool "nts"
+  let mut grammar ← solver.mkGrammar #[] #[start]
+  let fls ← tm.mkBoolean false
 
---   grammar ← grammar.addRules start #[fls] |> assertOk
+  grammar ← grammar.addRules start #[fls] |> assertOk
 
---   grammar.addRules nullTerm #[fls] |> assertError
---     "invalid null argument for 'ntSymbol'"
---   grammar.addRules start #[nullTerm] |> assertError
---     "invalid null term in 'rules' at index 0"
---   grammar.addRules nts #[fls] |> assertError
---     "invalid argument 'nts' for 'ntSymbol', \
---     expected ntSymbol to be one of the non-terminal symbols given in the predeclaration"
---   grammar.addRules start #[← tm.mkInteger 0] |> assertError
---     "Expected term with sort Bool at index 0 in rules"
+  grammar.addRules nullTerm #[fls] |> assertError
+    "invalid null argument for 'ntSymbol'"
+  grammar.addRules start #[nullTerm] |> assertError
+    "invalid null term in 'rules' at index 0"
+  grammar.addRules nts #[fls] |> assertError
+    "invalid argument 'nts' for 'ntSymbol', \
+    expected ntSymbol to be one of the non-terminal symbols given in the predeclaration"
+  grammar.addRules start #[← tm.mkInteger 0] |> assertError
+    "Expected term with sort Bool at index 0 in rules"
 
---   solver.synthFun "f" #[] bool grammar |> assertOkDiscard
+  solver.synthFun "f" #[] bool grammar |> assertOkDiscard
 
---   grammar.addRules start #[fls] |> assertError
---     "Grammar cannot be modified after passing it as an argument to synthFun"
+  grammar.addRules start #[fls] |> assertError
+    "Grammar cannot be modified after passing it as an argument to synthFun"
 
--- test![TestApiBlackGrammar, addAnyConstant] tm => do
---   let solver ← sygusSolver tm
---   let bool ← tm.getBooleanSort
---   let nullTerm := Term.null ()
---   let start ← tm.mkVar bool "start"
---   let nts ← tm.mkVar bool "nts"
---   let mut grammar ← solver.mkGrammar #[] #[start]
+test![TestApiBlackGrammar, addAnyConstant] tm => do
+  let solver ← sygusSolver tm
+  let bool ← tm.getBooleanSort
+  let nullTerm := Term.null ()
+  let start ← tm.mkVar bool "start"
+  let nts ← tm.mkVar bool "nts"
+  let mut grammar ← solver.mkGrammar #[] #[start]
 
---   grammar ← grammar.addAnyConstant start |> assertOk
---   grammar ← grammar.addAnyConstant start |> assertOk
+  grammar ← grammar.addAnyConstant start |> assertOk
+  grammar ← grammar.addAnyConstant start |> assertOk
 
---   grammar.addAnyConstant nullTerm |> assertError
---     "invalid null argument for 'ntSymbol'"
---   grammar.addAnyConstant nts |> assertError
---     "invalid argument 'nts' for 'ntSymbol', \
---     expected ntSymbol to be one of the non-terminal symbols given in the predeclaration"
+  grammar.addAnyConstant nullTerm |> assertError
+    "invalid null argument for 'ntSymbol'"
+  grammar.addAnyConstant nts |> assertError
+    "invalid argument 'nts' for 'ntSymbol', \
+    expected ntSymbol to be one of the non-terminal symbols given in the predeclaration"
 
---   solver.synthFun "f" #[] bool grammar |> assertOkDiscard
+  solver.synthFun "f" #[] bool grammar |> assertOkDiscard
 
---   grammar.addAnyConstant start |> assertError
---     "Grammar cannot be modified after passing it as an argument to synthFun"
+  grammar.addAnyConstant start |> assertError
+    "Grammar cannot be modified after passing it as an argument to synthFun"
 
--- test![TestApiBlackGrammar, addAnyVariable] tm => do
---   let solver ← sygusSolver tm
---   let bool ← tm.getBooleanSort
---   let nullTerm := Term.null ()
---   let x ← tm.mkVar bool "x"
---   let start ← tm.mkVar bool "start"
---   let nts ← tm.mkVar bool "nts"
+test![TestApiBlackGrammar, addAnyVariable] tm => do
+  let solver ← sygusSolver tm
+  let bool ← tm.getBooleanSort
+  let nullTerm := Term.null ()
+  let x ← tm.mkVar bool "x"
+  let start ← tm.mkVar bool "start"
+  let nts ← tm.mkVar bool "nts"
 
---   let mut grammar1 ← solver.mkGrammar #[ x ] #[start]
---   let mut grammar2 ← solver.mkGrammar #[] #[start]
+  let mut grammar1 ← solver.mkGrammar #[ x ] #[start]
+  let mut grammar2 ← solver.mkGrammar #[] #[start]
 
---   grammar1 ← grammar1.addAnyVariable start |> assertOk
---   grammar1 ← grammar1.addAnyVariable start |> assertOk
---   grammar2 ← grammar2.addAnyVariable start |> assertOk
---   -- silence warning that `grammar2` is unused
---   let _ := grammar2
+  grammar1 ← grammar1.addAnyVariable start |> assertOk
+  grammar1 ← grammar1.addAnyVariable start |> assertOk
+  grammar2 ← grammar2.addAnyVariable start |> assertOk
+  -- silence warning that `grammar2` is unused
+  let _ := grammar2
 
---   grammar1.addAnyVariable nullTerm |> assertError
---     "invalid null argument for 'ntSymbol'"
---   grammar1.addAnyVariable nts |> assertError
---     "invalid argument 'nts' for 'ntSymbol', \
---     expected ntSymbol to be one of the non-terminal symbols given in the predeclaration"
+  grammar1.addAnyVariable nullTerm |> assertError
+    "invalid null argument for 'ntSymbol'"
+  grammar1.addAnyVariable nts |> assertError
+    "invalid argument 'nts' for 'ntSymbol', \
+    expected ntSymbol to be one of the non-terminal symbols given in the predeclaration"
 
---   solver.synthFun "f" #[] bool grammar1 |> assertOkDiscard
+  solver.synthFun "f" #[] bool grammar1 |> assertOkDiscard
 
---   grammar1.addAnyVariable start |> assertError
---     "Grammar cannot be modified after passing it as an argument to synthFun"
+  grammar1.addAnyVariable start |> assertError
+    "Grammar cannot be modified after passing it as an argument to synthFun"
 
 test![TestApiBlackGrammar, equalHash] tm => do
   let solver ← sygusSolver tm
