@@ -1148,10 +1148,7 @@ static inline Solver* solver_unbox(b_lean_obj_arg s)
   return static_cast<Solver*>(lean_get_external_data(s));
 }
 
-static void grammar_finalize(void* obj)
-{
-  delete static_cast<Grammar*>(obj);
-}
+static void grammar_finalize(void* obj) { delete static_cast<Grammar*>(obj); }
 
 static void grammar_foreach(void*, b_lean_obj_arg)
 {
@@ -1180,10 +1177,7 @@ static inline Grammar* mut_grammar_unbox(b_lean_obj_arg grammar)
   return static_cast<Grammar*>(lean_get_external_data(grammar));
 }
 
-static void command_finalize(void* obj)
-{
-  delete static_cast<Grammar*>(obj);
-}
+static void command_finalize(void* obj) { delete static_cast<Grammar*>(obj); }
 
 static void command_foreach(void*, b_lean_obj_arg)
 {
@@ -1681,17 +1675,20 @@ LEAN_EXPORT uint8_t grammar_beq(lean_obj_arg l, lean_obj_arg r)
   return bool_box(*grammar_unbox(l) == *grammar_unbox(r));
 }
 
-/** Clones the input grammar if it has strictly more than one reference to it, otherwise returns
-the input grammar. */
-lean_obj_arg grammar_pseudo_clone(lean_obj_arg grammar){
-  if (lean_is_exclusive(grammar)) return grammar;
-  else return grammar_box(new Grammar(*grammar_unbox(grammar)));
+/** Clones the input grammar if it has strictly more than one reference to it,
+otherwise returns the input grammar. */
+lean_obj_arg grammar_pseudo_clone(lean_obj_arg grammar)
+{
+  if (lean_is_exclusive(grammar))
+    return grammar;
+  else
+    return grammar_box(new Grammar(*grammar_unbox(grammar)));
 }
 
 LEAN_EXPORT lean_obj_res grammar_addRule(lean_obj_arg grammarArg,
-                                        b_lean_obj_arg ntSymbol,
-                                        b_lean_obj_arg rule,
-                                        lean_obj_arg ioWorld)
+                                         b_lean_obj_arg ntSymbol,
+                                         b_lean_obj_arg rule,
+                                         lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   lean_obj_arg grammar = grammar_pseudo_clone(grammarArg);
@@ -1701,9 +1698,9 @@ LEAN_EXPORT lean_obj_res grammar_addRule(lean_obj_arg grammarArg,
 }
 
 LEAN_EXPORT lean_obj_res grammar_addRules(lean_obj_arg grammarArg,
-                                        b_lean_obj_arg ntSymbol,
-                                        b_lean_obj_arg rules,
-                                        lean_obj_arg ioWorld)
+                                          b_lean_obj_arg ntSymbol,
+                                          b_lean_obj_arg rules,
+                                          lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   lean_obj_arg grammar = grammar_pseudo_clone(grammarArg);
@@ -1719,8 +1716,8 @@ LEAN_EXPORT lean_obj_res grammar_addRules(lean_obj_arg grammarArg,
 }
 
 LEAN_EXPORT lean_obj_res grammar_addAnyConstant(lean_obj_arg grammarArg,
-                                        b_lean_obj_arg ntSymbol,
-                                        lean_obj_arg ioWorld)
+                                                b_lean_obj_arg ntSymbol,
+                                                lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   lean_obj_arg grammar = grammar_pseudo_clone(grammarArg);
@@ -1730,8 +1727,8 @@ LEAN_EXPORT lean_obj_res grammar_addAnyConstant(lean_obj_arg grammarArg,
 }
 
 LEAN_EXPORT lean_obj_res grammar_addAnyVariable(lean_obj_arg grammarArg,
-                                        b_lean_obj_arg ntSymbol,
-                                        lean_obj_arg ioWorld)
+                                                b_lean_obj_arg ntSymbol,
+                                                lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   lean_obj_arg grammar = grammar_pseudo_clone(grammarArg);
@@ -2172,15 +2169,17 @@ LEAN_EXPORT lean_obj_res solver_mkGrammar(lean_obj_arg solver,
     ntSymbolVec.push_back(*term_unbox(
         lean_array_get(term_box(new Term()), ntSymbols, lean_usize_to_nat(i))));
   }
-  return env_val(grammar_box(new Grammar(solver_unbox(solver)->mkGrammar(boundVarVec, ntSymbolVec))), ioWorld);
+  return env_val(grammar_box(new Grammar(solver_unbox(solver)->mkGrammar(
+                     boundVarVec, ntSymbolVec))),
+                 ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
 LEAN_EXPORT lean_obj_res solver_synthFunWithoutGrammar(lean_obj_arg solver,
-                                          lean_obj_arg symbol,
-                                          lean_obj_arg boundVars,
-                                          lean_obj_arg sort,
-                                          lean_obj_arg ioWorld)
+                                                       lean_obj_arg symbol,
+                                                       lean_obj_arg boundVars,
+                                                       lean_obj_arg sort,
+                                                       lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   std::vector<Term> boundVarVec;
@@ -2189,16 +2188,19 @@ LEAN_EXPORT lean_obj_res solver_synthFunWithoutGrammar(lean_obj_arg solver,
     boundVarVec.push_back(*term_unbox(
         lean_array_get(term_box(new Term()), boundVars, lean_usize_to_nat(i))));
   }
-  return env_val(term_box(new Term(solver_unbox(solver)->synthFun(lean_string_cstr(symbol), boundVarVec, *sort_unbox(sort)))), ioWorld);
+  return env_val(
+      term_box(new Term(solver_unbox(solver)->synthFun(
+          lean_string_cstr(symbol), boundVarVec, *sort_unbox(sort)))),
+      ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
 LEAN_EXPORT lean_obj_res solver_synthFunWithGrammar(lean_obj_arg solver,
-                                          lean_obj_arg symbol,
-                                          lean_obj_arg boundVars,
-                                          lean_obj_arg sort,
-                                          lean_obj_arg grammar,
-                                          lean_obj_arg ioWorld)
+                                                    lean_obj_arg symbol,
+                                                    lean_obj_arg boundVars,
+                                                    lean_obj_arg sort,
+                                                    lean_obj_arg grammar,
+                                                    lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   std::vector<Term> boundVarVec;
@@ -2207,7 +2209,12 @@ LEAN_EXPORT lean_obj_res solver_synthFunWithGrammar(lean_obj_arg solver,
     boundVarVec.push_back(*term_unbox(
         lean_array_get(term_box(new Term()), boundVars, lean_usize_to_nat(i))));
   }
-  return env_val(term_box(new Term(solver_unbox(solver)->synthFun(lean_string_cstr(symbol), boundVarVec, *sort_unbox(sort), *mut_grammar_unbox(grammar)))), ioWorld);
+  return env_val(term_box(new Term(solver_unbox(solver)->synthFun(
+                     lean_string_cstr(symbol),
+                     boundVarVec,
+                     *sort_unbox(sort),
+                     *mut_grammar_unbox(grammar)))),
+                 ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
