@@ -378,7 +378,9 @@ namespace Grammar
 instance : Nonempty Grammar := GrammarImpl.property
 
 /-- Get a string representation of this command. -/
-protected extern_def toString : Grammar → Env String
+protected extern_def toString : Grammar → String
+
+instance : ToString Grammar := ⟨Grammar.toString⟩
 
 end Grammar
 
@@ -1302,37 +1304,39 @@ namespace Grammar
 extern_def isNull : Grammar → Bool
 
 /-- Physical equality of two grammars. -/
-protected extern_def beq : Grammar → Grammar → Env Bool
+protected extern_def beq : Grammar → Grammar → Bool
+
+instance : BEq Grammar := ⟨Grammar.beq⟩
 
 /-- Hash function for grammar. -/
-protected extern_def hash : Grammar → Env UInt64
+protected extern_def hash : Grammar → UInt64
 
 /-- Add `rule` to the set of rules corresponding to `ntSymbol`.
 
 - `ntSymbol` The non-terminal to which the rule is added.
 - `rule` The rule to add.
 -/
-extern_def addRule : Grammar → (ntSymbol : Term) → (rule : Term) → Env Unit
+extern_def addRule : Grammar → (ntSymbol : Term) → (rule : Term) → Env Grammar
 
 /-- Add `rules` to the set of rules corresponding to `ntSymbol`.
 
 - `ntSymbol` The non-terminal to which the rules are added.
 - `rules` The rules to add.
 -/
-extern_def addRules : Grammar → (ntSymbol : Term) → (rules : Array Term) → Env Unit
+extern_def addRules : Grammar → (ntSymbol : Term) → (rules : Array Term) → Env Grammar
 
 /-- Allow `ntSymbol` to be an arbitrary constant.
 
 - `ntSymbol` The non-terminal allowed to be any constant.
 -/
-extern_def addAnyConstant : Grammar → (ntSymbol : Term) → Env Unit
+extern_def addAnyConstant : Grammar → (ntSymbol : Term) → Env Grammar
 
 /-- Allow `ntSymbol` to be any input variable to corresponding *synth-fun*/*synth-inv* with the same
   sort as `ntSymbol`.
 
 - `ntSymbol` The non-terminal allowed to be any input variable.
 -/
-extern_def addAnyVariable : Grammar → (ntSymbol : Term) → Env Unit
+extern_def addAnyVariable : Grammar → (ntSymbol : Term) → Env Grammar
 
 end Grammar
 

@@ -1666,44 +1666,47 @@ LEAN_EXPORT uint8_t grammar_isNull(lean_obj_arg gram)
   return bool_box(grammar_unbox(gram)->isNull());
 }
 
-LEAN_EXPORT lean_obj_res grammar_toString(lean_obj_arg gram, lean_obj_arg ioWorld)
+LEAN_EXPORT lean_obj_res grammar_toString(lean_obj_arg gram)
 {
-  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
-  return env_val(lean_mk_string(grammar_unbox(gram)->toString().c_str()), ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+  return lean_mk_string(grammar_unbox(gram)->toString().c_str());
 }
 
-LEAN_EXPORT lean_obj_res grammar_hash(lean_obj_arg t, lean_obj_arg ioWorld)
+LEAN_EXPORT uint64_t grammar_hash(lean_obj_arg t)
 {
-  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
-  return env_uint64(std::hash<Grammar>()(*grammar_unbox(t)), ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+  return std::hash<Grammar>()(*grammar_unbox(t));
 }
 
-LEAN_EXPORT lean_obj_res grammar_beq(lean_obj_arg l, lean_obj_arg r, lean_obj_arg ioWorld)
+LEAN_EXPORT uint8_t grammar_beq(lean_obj_arg l, lean_obj_arg r)
 {
-  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
-  return env_bool(bool_box(*grammar_unbox(l) == *grammar_unbox(r)), ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+  return bool_box(*grammar_unbox(l) == *grammar_unbox(r));
 }
 
-LEAN_EXPORT lean_obj_res grammar_addRule(lean_obj_arg grammar,
+/** Clones the input grammar if it has strictly more than one reference to it, otherwise returns
+the input grammar. */
+lean_obj_arg grammar_pseudo_clone(lean_obj_arg grammar){
+  if (lean_is_exclusive(grammar)) return grammar;
+  else return grammar_box(new Grammar(*grammar_unbox(grammar)));
+}
+
+LEAN_EXPORT lean_obj_res grammar_addRule(lean_obj_arg grammarArg,
                                         b_lean_obj_arg ntSymbol,
                                         b_lean_obj_arg rule,
                                         lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  lean_obj_arg grammar = grammar_pseudo_clone(grammarArg);
   mut_grammar_unbox(grammar)->addRule(*term_unbox(ntSymbol), *term_unbox(rule));
-  return env_val(mk_unit_unit(), ioWorld);
+  return env_val(grammar, ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res grammar_addRules(lean_obj_arg grammar,
+LEAN_EXPORT lean_obj_res grammar_addRules(lean_obj_arg grammarArg,
                                         b_lean_obj_arg ntSymbol,
                                         b_lean_obj_arg rules,
                                         lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  lean_obj_arg grammar = grammar_pseudo_clone(grammarArg);
   std::vector<Term> ruleVec;
   for (size_t i = 0, n = lean_array_size(rules); i < n; ++i)
   {
@@ -1711,27 +1714,29 @@ LEAN_EXPORT lean_obj_res grammar_addRules(lean_obj_arg grammar,
         lean_array_get(term_box(new Term()), rules, lean_usize_to_nat(i))));
   }
   mut_grammar_unbox(grammar)->addRules(*term_unbox(ntSymbol), ruleVec);
-  return env_val(mk_unit_unit(), ioWorld);
+  return env_val(grammar, ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res grammar_addAnyConstant(lean_obj_arg grammar,
+LEAN_EXPORT lean_obj_res grammar_addAnyConstant(lean_obj_arg grammarArg,
                                         b_lean_obj_arg ntSymbol,
                                         lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  lean_obj_arg grammar = grammar_pseudo_clone(grammarArg);
   mut_grammar_unbox(grammar)->addAnyConstant(*term_unbox(ntSymbol));
-  return env_val(mk_unit_unit(), ioWorld);
+  return env_val(grammar, ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
-LEAN_EXPORT lean_obj_res grammar_addAnyVariable(lean_obj_arg grammar,
+LEAN_EXPORT lean_obj_res grammar_addAnyVariable(lean_obj_arg grammarArg,
                                         b_lean_obj_arg ntSymbol,
                                         lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  lean_obj_arg grammar = grammar_pseudo_clone(grammarArg);
   mut_grammar_unbox(grammar)->addAnyVariable(*term_unbox(ntSymbol));
-  return env_val(mk_unit_unit(), ioWorld);
+  return env_val(grammar, ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
