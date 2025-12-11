@@ -231,6 +231,13 @@ def Result : Type := ResultImpl.type
 
 instance Result.instNonemptyResult : Nonempty Result := ResultImpl.property
 
+private opaque SynthResultImpl : NonemptyType.{0}
+
+/-- Encapsulation of a three-valued solver result, with explanations. -/
+def SynthResult : Type := SynthResultImpl.type
+
+instance SynthResult.instNonemptySynthResult : Nonempty SynthResult := SynthResultImpl.property
+
 private opaque SortImpl : NonemptyType.{0}
 
 end cvc5
@@ -520,6 +527,39 @@ protected extern_def toString : Result → String
 instance : ToString Result := ⟨Result.toString⟩
 
 end Result
+
+namespace SynthResult
+
+/-- A string representation of this synthesis result. -/
+protected extern_def toString : SynthResult → String
+
+instance : ToString SynthResult := ⟨SynthResult.toString⟩
+
+/-- Hash function for synthesis results. -/
+extern_def hash : SynthResult → UInt64
+
+/-- Equality of two synthesis results. -/
+protected extern_def beq : SynthResult → SynthResult → Bool
+
+instance : BEq SynthResult := ⟨SynthResult.beq⟩
+
+/-- Determine if a given synthesis result is empty (a nullary result) and not an actual result
+  returned from a synthesis query.
+-/
+extern_def isNull : SynthResult → Bool
+
+/-- True if the synthesis query has a solution. -/
+extern_def hasSolution : SynthResult → Bool
+
+/-- True if the synthesis query has no solution. In this case, it was determined that there was no
+  solution.
+-/
+extern_def hasNoSolution : SynthResult → Bool
+
+/-- True if the result of the synthesis query could not be determined. -/
+extern_def isUnknown : SynthResult → Bool
+
+end SynthResult
 
 section ffi_except_constructors
 
@@ -1658,6 +1698,191 @@ def synthFun (solver: Solver)
   if let some grammar := grammar
   then solver.synthFunWithGrammar symbol boundVars sort grammar
   else solver.synthFunWithoutGrammar symbol boundVars sort
+
+/-- Append \p symbol to the current list of universal variables.
+
+SyGuS v2:
+
+```smtlib
+(declare-var <symbol> <sort>)
+```
+
+- `sort` The sort of the universal variable.
+- `symbol` The name of the universal variable.
+-/
+extern_def declareSygusVar : Solver → (symbol : String) → (sort: cvc5.Sort) → Env Term
+
+/-- Add a forumla to the set of Sygus constraints.
+
+SyGuS v2:
+
+```smtlib
+(constraint <term>)
+```
+
+- `term` The formula to add as a constraint.
+-/
+extern_def addSygusConstraint : Solver → (term : Term) → Env Unit
+
+/-- Get the list of sygus constraints. -/
+extern_def getSygusConstraints : Solver → Env (Array Term)
+
+/-- Add a forumla to the set of Sygus assumptions.
+
+SyGuS v2:
+
+```smtlib
+(assume <term>)
+```
+
+- `term` The formula to add as an assumption.
+-/
+extern_def addSygusAssume : Solver → (term : Term) → Env Unit
+
+/-- Get the list of sygus assumptions. -/
+extern_def getSygusAssumptions : Solver → Env (Array Term)
+
+/-- Add a set of Sygus constraints to the current state that correspond to an invariant synthesis
+  problem.
+
+SyGuS v2:
+
+```smtlib
+(inv-constraint <inv> <pre> <trans> <post>)
+```
+
+- `inv` The function-to-synthesize.
+- `pre` The pre-condition.
+- `trans` The transition relation.
+- `post` The post-condition.
+-/
+extern_def addSygusInvConstraint : Solver → (inv pre trans post : Term) → Env Unit
+
+/-- Try to find a solution for the synthesis conjecture corresponding to the current list of
+  functions-to-synthesize, universal variables and constraints.
+
+SyGuS v2:
+
+```smtlib
+(check-synth)
+```
+
+Returns the result of the check, which is *"solution"* if the check found a solution in which case
+solutions are available via getSynthSolutions, *"no solution"* if it was determined there is no
+solution, or *"unknown"* otherwise.
+-/
+extern_def checkSynth : Solver → Env SynthResult
+
+/-- Try to find a next solution for the synthesis conjecture corresponding to the current list of
+  functions-to-synthesize, universal variables and constraints.
+
+Must be called immediately after a successful call to check-synth or check-synth-next. Requires
+incremental mode.
+
+SyGuS v2:
+
+```smtlib
+(check-synth-next)
+```
+
+Returns the result of the check, which is "solution" if the check found a solution in which case
+solutions are available via getSynthSolutions, "no solution" if it was determined there is no
+solution, or "unknown" otherwise.
+-/
+extern_def checkSynthNext : Solver → Env SynthResult
+
+/-- Get the synthesis solution of the given term.
+
+This function should be called immediately after the solver answers *unsat* for sygus input.
+
+- `term` The term for which the synthesis solution is queried.
+-/
+extern_def getSynthSolution : Solver → (term : Term) → Env Term
+
+/-- Get the synthesis solutions of the given terms.
+
+This function should be called immediately after the solver answers *unsat* for sygus input.
+
+- `terms` The terms for which the synthesis solutions is queried.
+-/
+extern_def getSynthSolutions : Solver → (term : Array Term) → Env (Array Term)
+
+/-- Find a target term of interest using sygus enumeration, with no provided grammar.
+
+The solver will infer which grammar to use in this call, which by default will be the grammars
+specified by the function(s)-to-synthesize in the current context.
+
+SyGuS v2:
+
+```smtlib
+(find-synth :target)
+```
+
+- `fst` The identifier specifying what kind of term to find.
+
+Returns the result of the find, which is the null term if this call failed.
+
+**Warning**: this function is experimental and may change in future versions.
+-/
+extern_def findSynthWithoutGrammar : Solver → (fst : FindSynthTarget) → Env Term
+
+/-- Find a target term of interest using sygus enumeration with a provided grammar.
+
+SyGuS v2:
+
+```smtlib
+(find-synth :target G)
+```
+
+- `fst` The identifier specifying what kind of term to find.
+- `grammar` The grammar for the term.
+
+Returns the result of the find, which is the null term if this call failed.
+
+**Warning**: this function is experimental and may change in future versions.
+-/
+extern_def findSynthWithGrammar : Solver → (fst : FindSynthTarget) → (grammar : Grammar) → Env Term
+
+/-- Find a target term of interest using sygus enumeration with an optional grammar.
+
+- `fst` The identifier specifying what kind of term to find.
+- `grammar` The optional grammar for the term. If `none`, the solver will infer which grammar to
+  use in this call, which by default will be the grammars specified by the
+  function(s)-to-synthesize in the current context.
+
+Returns the result of the find, `none` if the call failed.
+
+**Warning**: this function is experimental and may change in future versions.
+-/
+def findSynth? (solver : Solver) (fst : FindSynthTarget)
+  (grammar : Option Grammar := none)
+: Env (Option Term) := do
+  let term ←
+    if let some grammar := grammar
+    then solver.findSynthWithGrammar fst grammar
+    else solver.findSynthWithoutGrammar fst
+  return if term.isNull then none else term
+
+/-- Try to find a next target term of interest using sygus enumeration.
+
+Must be called immediately after a successful call to find-synth or find-synth-next.
+
+SyGuS v2:
+
+```smtlib
+(find-synth-next)
+```
+
+Returns the result of the find, which is the null term if this call failed.
+
+**Warning**: this function is experimental and may change in future versions.
+-/
+extern_def findSynthNext : Solver → Env Term
+with
+  /-- Same as `findSynthNext` but yields `none` if the call failed. -/
+  findSynthNext? (solver : Solver) : Env (Option Term) := do
+    let term ← solver.findSynthNext
+    return if term.isNull then none else term
 
 /-- Parse a string containing SMT-LIB commands.
 
