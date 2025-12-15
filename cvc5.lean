@@ -366,10 +366,10 @@ end Solver
 
 private opaque GrammarImpl : NonemptyType.{0}
 
-/-- Encapsulation of a command.
+/-- A Sygus Grammar.
 
-Grammars are constructed by the `InputParser` and can be invoked on the `Solver` and
-`Grammar`.
+This class can be used to define a context-free grammar of terms. Its interface coincides with the
+definition of grammars in the SyGuS IF 2.1 standard.
 -/
 def Grammar : Type := GrammarImpl.type
 
