@@ -1627,7 +1627,7 @@ SyGuS v2:
 - `boundVars` The parameters to this function.
 - `sort` The sort of the return value of this function.
 -/
-extern_def synthFunWithoutGrammar :
+private extern_def synthFunWithoutGrammar :
   Solver → (symbol : String) → (boundVars : Array Term) → (sort : cvc5.Sort) → Env Term
 
 /-- Synthesize n-ary function following specified syntactic constraints.
@@ -1643,10 +1643,15 @@ SyGuS v2:
 - `sort` The sort of the return value of this function.
 - `grammar` The syntactic constraints.
 -/
-extern_def synthFunWithGrammar : Solver →
+private extern_def synthFunWithGrammar : Solver →
   (symbol : String) → (boundVars : Array Term) → (sort : cvc5.Sort) → (grammar : Grammar) → Env Term
 
 /-- Synthesizes an n-ary function with optional syntactic constraints to verify.
+
+```smtlib
+(synth-fun <symbol> ( <boundVars>* ) <sort>)
+(synth-fun <symbol> ( <boundVars>* ) <sort> <grammar>)
+```
 
 - `symbol` The name of the function.
 - `boundVars` The parameters to this function.
