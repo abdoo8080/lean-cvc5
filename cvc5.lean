@@ -1311,6 +1311,8 @@ instance : BEq Grammar := ⟨Grammar.beq⟩
 /-- Hash function for grammar. -/
 protected extern_def hash : Grammar → UInt64
 
+instance : Hashable Grammar := ⟨Grammar.hash⟩
+
 /-- Add `rule` to the set of rules corresponding to `ntSymbol`.
 
 - `ntSymbol` The non-terminal to which the rule is added.
