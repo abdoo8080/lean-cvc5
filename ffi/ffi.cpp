@@ -314,6 +314,45 @@ LEAN_EXPORT lean_obj_res result_toString(lean_obj_arg r)
   return lean_mk_string(result_unbox(r)->toString().c_str());
 }
 
+static void synthResult_finalize(void* obj) { delete static_cast<SynthResult*>(obj); }
+
+static void synthResult_foreach(void*, b_lean_obj_arg)
+{
+  // do nothing since `SynthResult` does not contain nested Lean objects
+}
+
+static lean_external_class* g_synthResult_class = nullptr;
+
+static inline lean_obj_res synthResult_box(SynthResult* r)
+{
+  if (g_synthResult_class == nullptr)
+  {
+    g_synthResult_class =
+        lean_register_external_class(synthResult_finalize, synthResult_foreach);
+  }
+  return lean_alloc_external(g_synthResult_class, r);
+}
+
+static inline const SynthResult* synthResult_unbox(b_lean_obj_arg r)
+{
+  return static_cast<SynthResult*>(lean_get_external_data(r));
+}
+
+LEAN_EXPORT uint8_t synthResult_beq(lean_obj_arg l, lean_obj_arg r)
+{
+  return bool_box(*synthResult_unbox(l) == *synthResult_unbox(r));
+}
+
+LEAN_EXPORT uint64_t synthResult_hash(lean_obj_arg s)
+{
+  return std::hash<SynthResult>()(*synthResult_unbox(s));
+}
+
+LEAN_EXPORT lean_obj_res synthResult_toString(lean_obj_arg r)
+{
+  return lean_mk_string(synthResult_unbox(r)->toString().c_str());
+}
+
 static void sort_finalize(void* obj) { delete static_cast<Sort*>(obj); }
 
 static void sort_foreach(void*, b_lean_obj_arg)
@@ -1737,6 +1776,28 @@ LEAN_EXPORT lean_obj_res grammar_addAnyVariable(lean_obj_arg grammarArg,
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
+// # SynthResult imports
+
+LEAN_EXPORT uint8_t synthResult_isNull(lean_obj_arg cmd)
+{
+  return bool_box(synthResult_unbox(cmd)->isNull());
+}
+
+LEAN_EXPORT uint8_t synthResult_hasSolution(lean_obj_arg cmd)
+{
+  return bool_box(synthResult_unbox(cmd)->hasSolution());
+}
+
+LEAN_EXPORT uint8_t synthResult_hasNoSolution(lean_obj_arg cmd)
+{
+  return bool_box(synthResult_unbox(cmd)->hasNoSolution());
+}
+
+LEAN_EXPORT uint8_t synthResult_isUnknown(lean_obj_arg cmd)
+{
+  return bool_box(synthResult_unbox(cmd)->isUnknown());
+}
+
 // # Command imports
 
 LEAN_EXPORT uint8_t command_isNull(lean_obj_arg cmd)
@@ -2215,6 +2276,152 @@ LEAN_EXPORT lean_obj_res solver_synthFunWithGrammar(lean_obj_arg solver,
                      *sort_unbox(sort),
                      *mut_grammar_unbox(grammar)))),
                  ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+LEAN_EXPORT lean_obj_res solver_declareSygusVar(lean_obj_arg solver,
+                                          lean_obj_arg symbol,
+                                          lean_obj_arg sort,
+                                          lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  return env_val(term_box(new Term(solver_unbox(solver)->declareSygusVar(
+                     lean_string_cstr(symbol), *sort_unbox(sort)))),
+                 ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+LEAN_EXPORT lean_obj_res solver_addSygusConstraint(lean_obj_arg solver,
+                                          lean_obj_arg term,
+                                          lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  solver_unbox(solver)->addSygusConstraint(*term_unbox(term));
+  return env_val(mk_unit_unit(), ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+LEAN_EXPORT lean_obj_res solver_getSygusConstraints(lean_obj_arg solver,
+                                              lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  std::vector<Term> constraintVec = solver_unbox(solver)->getSygusConstraints();
+  lean_object* constraints = lean_mk_empty_array();
+  for (const Term& constraint : constraintVec)
+  {
+    constraints = lean_array_push(constraints, term_box(new Term(constraint)));
+  }
+  return env_val(constraints, ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+LEAN_EXPORT lean_obj_res solver_addSygusAssume(lean_obj_arg solver,
+                                          lean_obj_arg term,
+                                          lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  solver_unbox(solver)->addSygusAssume(*term_unbox(term));
+  return env_val(mk_unit_unit(), ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+LEAN_EXPORT lean_obj_res solver_getSygusAssumptions(lean_obj_arg solver,
+                                              lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  std::vector<Term> assumptionVec = solver_unbox(solver)->getSygusAssumptions();
+  lean_object* assumptions = lean_mk_empty_array();
+  for (const Term& assumption : assumptionVec)
+  {
+    assumptions = lean_array_push(assumptions, term_box(new Term(assumption)));
+  }
+  return env_val(assumptions, ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+LEAN_EXPORT lean_obj_res solver_addSygusInvConstraint(lean_obj_arg solver,
+                                          lean_obj_arg inv,
+                                          lean_obj_arg pre,
+                                          lean_obj_arg trans,
+                                          lean_obj_arg post,
+                                          lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  solver_unbox(solver)->addSygusInvConstraint(*term_unbox(inv), *term_unbox(pre), *term_unbox(trans), *term_unbox(post));
+  return env_val(mk_unit_unit(), ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+LEAN_EXPORT lean_obj_res solver_checkSynth(lean_obj_arg solver,
+                                          lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  return env_val(synthResult_box(new SynthResult(solver_unbox(solver)->checkSynth())), ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+LEAN_EXPORT lean_obj_res solver_checkSynthNext(lean_obj_arg solver,
+                                          lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  return env_val(synthResult_box(new SynthResult(solver_unbox(solver)->checkSynthNext())), ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+LEAN_EXPORT lean_obj_res solver_getSynthSolution(lean_obj_arg solver,
+                                          lean_obj_arg term,
+                                          lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  return env_val(term_box(new Term(solver_unbox(solver)->getSynthSolution(*term_unbox(term)))), ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+LEAN_EXPORT lean_obj_res solver_getSynthSolutions(lean_obj_arg solver,
+                                          lean_obj_arg terms,
+                                          lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  std::vector<Term> ts;
+  for (size_t i = 0, n = lean_array_size(terms); i < n; ++i)
+  {
+    ts.push_back(*term_unbox(
+        lean_array_get(term_box(new Term()), terms, lean_usize_to_nat(i))));
+  }
+  std::vector<Term> solutionVec = solver_unbox(solver)->getSynthSolutions(ts);
+  lean_object* solutions = lean_mk_empty_array();
+  for (const Term& value : solutionVec)
+  {
+    solutions = lean_array_push(solutions, term_box(new Term(value)));
+  }
+  return env_val(solutions, ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+LEAN_EXPORT lean_obj_res solver_findSynthWithoutGrammar(lean_obj_arg solver,
+                                          uint8_t findSynthTarget,
+                                          lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  return env_val(term_box(new Term(solver_unbox(solver)->findSynth(static_cast<cvc5::modes::FindSynthTarget>(findSynthTarget)))), ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+LEAN_EXPORT lean_obj_res solver_findSynthWithGrammar(lean_obj_arg solver,
+                                          uint8_t findSynthTarget,
+                                          lean_obj_arg grammar,
+                                          lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  return env_val(term_box(new Term(solver_unbox(solver)->findSynth(static_cast<cvc5::modes::FindSynthTarget>(findSynthTarget), *mut_grammar_unbox(grammar)))), ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+LEAN_EXPORT lean_obj_res solver_findSynthNext(lean_obj_arg solver,
+                                          lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  return env_val(term_box(new Term(solver_unbox(solver)->findSynthNext())), ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 

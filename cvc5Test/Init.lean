@@ -80,19 +80,19 @@ def assertError
         return ()
       else
         IO.eprintln s!"{Test.pref hint}expected cvc5 error `{expected}`, got cvc5 error `{err}`"
-        fail "assertion failed"
+        fail "test failed"
     | .recoverable err => do
         IO.eprintln s!"{Test.pref hint}expected error `{expected}`, got recoverable error `{err}`"
-        fail "assertion failed"
+        fail "test failed"
     | .unsupported err => do
         IO.eprintln s!"{Test.pref hint}expected error `{expected}`, got unsupported error `{err}`"
-        fail "assertion failed"
+        fail "test failed"
     | .option err => do
         IO.eprintln s!"{Test.pref hint}expected error `{expected}`, got option error `{err}`"
-        fail "assertion failed"
+        fail "test failed"
     | .missingValue => do
         IO.eprintln s!"{Test.pref hint}expected cvc5 error `{expected}`, got missing value error"
-        fail "assertion failed"
+        fail "test failed"
 
 end Test
 
