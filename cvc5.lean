@@ -304,6 +304,9 @@ private def env_pure (a : α) : Env α := return a
 @[export env_bool]
 private def env_bool (b : Bool) : Env Bool := return b
 
+@[export env_uint64]
+private def env_uint64 (u : UInt64) : Env UInt64 := return u
+
 @[export env_throw]
 private def env_throw (e : Error) : Env α := throw e
 
@@ -361,6 +364,26 @@ extern_def new : (tm : TermManager) → Env Solver
 
 end Solver
 
+private opaque GrammarImpl : NonemptyType.{0}
+
+/-- A Sygus Grammar.
+
+This class can be used to define a context-free grammar of terms. Its interface coincides with the
+definition of grammars in the SyGuS IF 2.1 standard.
+-/
+def Grammar : Type := GrammarImpl.type
+
+namespace Grammar
+
+instance : Nonempty Grammar := GrammarImpl.property
+
+/-- A string representation of this grammar. -/
+protected extern_def toString : Grammar → String
+
+instance : ToString Grammar := ⟨Grammar.toString⟩
+
+end Grammar
+
 private opaque CommandImpl : NonemptyType.{0}
 
 /-- Encapsulation of a command.
@@ -378,9 +401,6 @@ instance : Nonempty Command := CommandImpl.property
 protected extern_def toString : Command → String
 
 instance : ToString Command := ⟨Command.toString⟩
-
-/-- Get the name for this command, e.g., `"assert"`. -/
-protected extern_def getCommandName : Command → String
 
 end Command
 
@@ -1278,10 +1298,57 @@ def runIO (code : Env α) : IO α := do
 
 end Env
 
+namespace Grammar
+
+/-- Determine if this is the null grammar. -/
+extern_def isNull : Grammar → Bool
+
+/-- Physical equality of two grammars. -/
+protected extern_def beq : Grammar → Grammar → Bool
+
+instance : BEq Grammar := ⟨Grammar.beq⟩
+
+/-- Hash function for grammar. -/
+protected extern_def hash : Grammar → UInt64
+
+instance : Hashable Grammar := ⟨Grammar.hash⟩
+
+/-- Add `rule` to the set of rules corresponding to `ntSymbol`.
+
+- `ntSymbol` The non-terminal to which the rule is added.
+- `rule` The rule to add.
+-/
+extern_def addRule : Grammar → (ntSymbol : Term) → (rule : Term) → Env Grammar
+
+/-- Add `rules` to the set of rules corresponding to `ntSymbol`.
+
+- `ntSymbol` The non-terminal to which the rules are added.
+- `rules` The rules to add.
+-/
+extern_def addRules : Grammar → (ntSymbol : Term) → (rules : Array Term) → Env Grammar
+
+/-- Allow `ntSymbol` to be an arbitrary constant.
+
+- `ntSymbol` The non-terminal allowed to be any constant.
+-/
+extern_def addAnyConstant : Grammar → (ntSymbol : Term) → Env Grammar
+
+/-- Allow `ntSymbol` to be any input variable to corresponding *synth-fun*/*synth-inv* with the same
+  sort as `ntSymbol`.
+
+- `ntSymbol` The non-terminal allowed to be any input variable.
+-/
+extern_def addAnyVariable : Grammar → (ntSymbol : Term) → Env Grammar
+
+end Grammar
+
 namespace Command
 
 /-- True if the command is null. -/
 extern_def isNull : Command → Bool
+
+/-- Get the name for this command, e.g., `"assert"`. -/
+protected extern_def getCommandName : Command → String
 
 /-- Invoke the command on the solver and symbol manager sm, prints the result to a string.
 
@@ -1536,6 +1603,68 @@ Other aspects of printing are taken from the solver options.
 - `proof`: A proof, usually obtained from `getProof`.
 -/
 extern_def proofToString : (solver : Solver) → Proof → Env String
+
+/-- Create a Sygus grammar.
+
+The first non-terminal is treated as the starting non-terminal, so the order of non-terminals
+matters.
+
+- `boundVars` The parameters to corresponding *synth-fun*/*synth-inv*.
+- `ntSymbols` The pre-declaration of the non-terminal symbols.
+-/
+extern_def mkGrammar :
+  Solver → (boundVars : Array Term) → (ntSymbols : Array Term) → Env Grammar
+
+/-- Synthesize n-ary function.
+
+SyGuS v2:
+
+```smtlib
+(synth-fun <symbol> ( <boundVars>* ) <sort>)
+```
+
+- `symbol` The name of the function.
+- `boundVars` The parameters to this function.
+- `sort` The sort of the return value of this function.
+-/
+private extern_def synthFunWithoutGrammar :
+  Solver → (symbol : String) → (boundVars : Array Term) → (sort : cvc5.Sort) → Env Term
+
+/-- Synthesize n-ary function following specified syntactic constraints.
+
+SyGuS v2:
+
+```smtlib
+(synth-fun <symbol> ( <boundVars>* ) <sort> <grammar>)
+```
+
+- `symbol` The name of the function.
+- `boundVars` The parameters to this function.
+- `sort` The sort of the return value of this function.
+- `grammar` The syntactic constraints.
+-/
+private extern_def synthFunWithGrammar : Solver →
+  (symbol : String) → (boundVars : Array Term) → (sort : cvc5.Sort) → (grammar : Grammar) → Env Term
+
+/-- Synthesizes an n-ary function with optional syntactic constraints to verify.
+
+```smtlib
+(synth-fun <symbol> ( <boundVars>* ) <sort>)
+(synth-fun <symbol> ( <boundVars>* ) <sort> <grammar>)
+```
+
+- `symbol` The name of the function.
+- `boundVars` The parameters to this function.
+- `sort` The sort of the return value of this function.
+- `grammar` The optional syntactic constraints.
+-/
+def synthFun (solver: Solver)
+  (symbol : String) (boundVars : Array Term) (sort : cvc5.Sort)
+  (grammar : Option Grammar := none)
+: Env Term :=
+  if let some grammar := grammar
+  then solver.synthFunWithGrammar symbol boundVars sort grammar
+  else solver.synthFunWithoutGrammar symbol boundVars sort
 
 /-- Parse a string containing SMT-LIB commands.
 
