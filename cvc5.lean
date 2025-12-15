@@ -377,7 +377,7 @@ namespace Grammar
 
 instance : Nonempty Grammar := GrammarImpl.property
 
-/-- Get a string representation of this command. -/
+/-- A string representation of this grammar. -/
 protected extern_def toString : Grammar → String
 
 instance : ToString Grammar := ⟨Grammar.toString⟩
