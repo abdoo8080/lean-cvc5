@@ -1824,7 +1824,7 @@ Returns the result of the find, which is the null term if this call failed.
 
 **Warning**: this function is experimental and may change in future versions.
 -/
-extern_def findSynthWithoutGrammar : Solver → (fst : FindSynthTarget) → Env Term
+private extern_def findSynthWithoutGrammar : Solver → (fst : FindSynthTarget) → Env Term
 
 /-- Find a target term of interest using sygus enumeration with a provided grammar.
 
@@ -1841,19 +1841,35 @@ Returns the result of the find, which is the null term if this call failed.
 
 **Warning**: this function is experimental and may change in future versions.
 -/
-extern_def findSynthWithGrammar : Solver → (fst : FindSynthTarget) → (grammar : Grammar) → Env Term
+private extern_def findSynthWithGrammar :
+  Solver → (fst : FindSynthTarget) → (grammar : Grammar) → Env Term
 
 /-- Find a target term of interest using sygus enumeration with an optional grammar.
 
-- `fst` The identifier specifying what kind of term to find.
-- `grammar` The optional grammar for the term. If `none`, the solver will infer which grammar to
-  use in this call, which by default will be the grammars specified by the
-  function(s)-to-synthesize in the current context.
+SyGuS v2:
 
-Returns the result of the find, `none` if the call failed.
+```smtlib
+(find-synth)
+(find-synth :target G)
+```
+
+- `fst` The identifier specifying what kind of term to find.
+- `grammar` The optional grammar for the term. If `none`, the solver will infer which grammar to use
+  in this call, which by default will be the grammars specified by the function(s)-to-synthesize in
+  the current context.
+
+Returns the result of the find, which is the null term if the call failed.
 
 **Warning**: this function is experimental and may change in future versions.
 -/
+def findSynth! (solver : Solver) (fst : FindSynthTarget)
+  (grammar : Option Grammar := none)
+: Env Term :=
+  if let some grammar := grammar
+  then solver.findSynthWithGrammar fst grammar
+  else solver.findSynthWithoutGrammar fst
+
+/-- Same as `findSynth!` but returns `none` if the call failed. -/
 def findSynth? (solver : Solver) (fst : FindSynthTarget)
   (grammar : Option Grammar := none)
 : Env (Option Term) := do
@@ -1862,6 +1878,13 @@ def findSynth? (solver : Solver) (fst : FindSynthTarget)
     then solver.findSynthWithGrammar fst grammar
     else solver.findSynthWithoutGrammar fst
   return if term.isNull then none else term
+
+/-- Same as `findSynth!` but throws an error if the call failed. -/
+def findSynth (solver : Solver) (fst : FindSynthTarget)
+  (grammar : Option Grammar := none)
+: Env Term := do
+  if let some term ← solver.findSynth? fst grammar
+  then return term else throw <| Error.error "call to `findSynth` failed"
 
 /-- Try to find a next target term of interest using sygus enumeration.
 
