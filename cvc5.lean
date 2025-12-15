@@ -373,10 +373,10 @@ end Solver
 
 private opaque GrammarImpl : NonemptyType.{0}
 
-/-- Encapsulation of a command.
+/-- A Sygus Grammar.
 
-Grammars are constructed by the `InputParser` and can be invoked on the `Solver` and
-`Grammar`.
+This class can be used to define a context-free grammar of terms. Its interface coincides with the
+definition of grammars in the SyGuS IF 2.1 standard.
 -/
 def Grammar : Type := GrammarImpl.type
 
@@ -384,7 +384,7 @@ namespace Grammar
 
 instance : Nonempty Grammar := GrammarImpl.property
 
-/-- Get a string representation of this command. -/
+/-- A string representation of this grammar. -/
 protected extern_def toString : Grammar → String
 
 instance : ToString Grammar := ⟨Grammar.toString⟩
@@ -1351,6 +1351,8 @@ instance : BEq Grammar := ⟨Grammar.beq⟩
 /-- Hash function for grammar. -/
 protected extern_def hash : Grammar → UInt64
 
+instance : Hashable Grammar := ⟨Grammar.hash⟩
+
 /-- Add `rule` to the set of rules corresponding to `ntSymbol`.
 
 - `ntSymbol` The non-terminal to which the rule is added.
@@ -1665,7 +1667,7 @@ SyGuS v2:
 - `boundVars` The parameters to this function.
 - `sort` The sort of the return value of this function.
 -/
-extern_def synthFunWithoutGrammar :
+private extern_def synthFunWithoutGrammar :
   Solver → (symbol : String) → (boundVars : Array Term) → (sort : cvc5.Sort) → Env Term
 
 /-- Synthesize n-ary function following specified syntactic constraints.
@@ -1681,10 +1683,15 @@ SyGuS v2:
 - `sort` The sort of the return value of this function.
 - `grammar` The syntactic constraints.
 -/
-extern_def synthFunWithGrammar : Solver →
+private extern_def synthFunWithGrammar : Solver →
   (symbol : String) → (boundVars : Array Term) → (sort : cvc5.Sort) → (grammar : Grammar) → Env Term
 
 /-- Synthesizes an n-ary function with optional syntactic constraints to verify.
+
+```smtlib
+(synth-fun <symbol> ( <boundVars>* ) <sort>)
+(synth-fun <symbol> ( <boundVars>* ) <sort> <grammar>)
+```
 
 - `symbol` The name of the function.
 - `boundVars` The parameters to this function.
