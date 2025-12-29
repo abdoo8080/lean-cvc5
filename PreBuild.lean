@@ -422,9 +422,9 @@ def pfile : Parser Enums := do
   else fail s!"parsed {enums.size} enum(s), but there is some text left"
 
 def prettyError
-  (ι : String.Iterator) (content : String) (msg : String)
+  (content : String) (ι : content.ValidPos) (msg : String)
 : IO String := do
-  let pos := Parsec.Input.pos ι
+  let pos := Parsec.Input.pos (⟨content, ι⟩ : Sigma String.ValidPos)
   let map := content.toFileMap
   let position := map.toPosition pos
   let char := String.Pos.Raw.get? content pos
@@ -433,15 +433,15 @@ def prettyError
   | '\n' | '\r' => "'<newline>'"
   | some c => s!"'{c}'"
 
-  let getLine (n : Nat) : Substring :=
+  let getLine (n : Nat) : String :=
     let startPos := map.positions[n]!
     let endPos := map.positions[n.succ]!
-    content.toSubstring.extract startPos endPos |>.trimRight
+    String.Pos.Raw.extract content startPos endPos |>.trimRight
   let line := position.line - 1
   let padding := toString position.line.succ |>.length
   let lpad (line? : Option Nat) : String :=
     let s := line?.map toString |>.getD ""
-    List.asString <| s.data.leftpad padding ' '
+    String.ofList (List.replicate padding ' ') ++ s
   return (
     s!"error at {position.line}-{position.column} on character {charStr}"
   ) ++ "\n" ++ (
@@ -459,8 +459,8 @@ def prettyError
     s!"{msg}"
   )
 
-def presentError (ι : String.Iterator) (content : String) (msg : String) : IO Lean.Position := do
-  let pos := Parsec.Input.pos ι
+def presentError (content : String) (ι : content.ValidPos) (msg : String) : IO Lean.Position := do
+  let pos := Parsec.Input.pos (⟨content, ι⟩ : Sigma String.ValidPos)
   let map := content.toFileMap
   let position := map.toPosition pos
   let char := String.Pos.Raw.get? content pos
@@ -469,15 +469,15 @@ def presentError (ι : String.Iterator) (content : String) (msg : String) : IO L
   | '\n' | '\r' => "'<newline>'"
   | some c => s!"'{c}'"
   IO.eprintln s!"error at {position.line}-{position.column} on character {charStr}"
-  let getLine (n : Nat) : Substring :=
+  let getLine (n : Nat) : String :=
     let startPos := map.positions[n]!
     let endPos := map.positions[n.succ]!
-    content.toSubstring.extract startPos endPos |>.trimRight
+    String.Pos.Raw.extract content startPos endPos |>.trimRight
   let line := position.line - 1
   let padding := toString position.line.succ |>.length
   let lpad (line? : Option Nat) : String :=
     let s := line?.map toString |>.getD ""
-    List.asString <| s.data.leftpad padding ' '
+    String.ofList (List.replicate padding ' ') ++ s
   if 0 < line then
     IO.eprintln s!" {lpad position.line.pred} | {getLine line.pred}"
   else
@@ -497,10 +497,10 @@ def parseContentWith (p : Parser α) (content : String) (notEoiFail := true) : I
       Parsec.eof
       return res
     else p
-  match p content.iter with
+  match p ⟨content, content.startValidPos⟩ with
   | .success _ a => return a
   | .error ι msg => do
-    let pretty ← prettyError ι content (toString msg)
+    let pretty ← prettyError ι.fst ι.snd (toString msg)
     throw <| IO.Error.userError pretty
 
 def parseContent : String → IO Enums :=
