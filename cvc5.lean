@@ -536,7 +536,9 @@ protected extern_def toString : SynthResult → String
 instance : ToString SynthResult := ⟨SynthResult.toString⟩
 
 /-- Hash function for synthesis results. -/
-extern_def hash : SynthResult → UInt64
+protected extern_def hash : SynthResult → UInt64
+
+instance : Hashable SynthResult := ⟨SynthResult.hash⟩
 
 /-- Equality of two synthesis results. -/
 protected extern_def beq : SynthResult → SynthResult → Bool
