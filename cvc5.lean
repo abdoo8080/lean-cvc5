@@ -1719,7 +1719,7 @@ SyGuS v2:
 - `sort` The sort of the universal variable.
 - `symbol` The name of the universal variable.
 -/
-extern_def declareSygusVar : Solver → (symbol : String) → (sort: cvc5.Sort) → Env Term
+extern_def declareSygusVar : Solver → (symbol : String) → (sort : cvc5.Sort) → Env Term
 
 /-- Add a forumla to the set of Sygus constraints.
 
