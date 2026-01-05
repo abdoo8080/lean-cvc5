@@ -1871,29 +1871,12 @@ Returns the result of the find, which is the null term if the call failed.
 
 **Warning**: this function is experimental and may change in future versions.
 -/
-def findSynth! (solver : Solver) (fst : FindSynthTarget)
+def findSynth (solver : Solver) (fst : FindSynthTarget)
   (grammar : Option Grammar := none)
 : Env Term :=
   if let some grammar := grammar
   then solver.findSynthWithGrammar fst grammar
   else solver.findSynthWithoutGrammar fst
-
-/-- Same as `findSynth!` but returns `none` if the call failed. -/
-def findSynth? (solver : Solver) (fst : FindSynthTarget)
-  (grammar : Option Grammar := none)
-: Env (Option Term) := do
-  let term ←
-    if let some grammar := grammar
-    then solver.findSynthWithGrammar fst grammar
-    else solver.findSynthWithoutGrammar fst
-  return if term.isNull then none else term
-
-/-- Same as `findSynth!` but throws an error if the call failed. -/
-def findSynth (solver : Solver) (fst : FindSynthTarget)
-  (grammar : Option Grammar := none)
-: Env Term := do
-  if let some term ← solver.findSynth? fst grammar
-  then return term else throw <| Error.error "call to `findSynth` failed"
 
 /-- Try to find a next target term of interest using sygus enumeration.
 
@@ -1910,11 +1893,6 @@ Returns the result of the find, which is the null term if this call failed.
 **Warning**: this function is experimental and may change in future versions.
 -/
 extern_def findSynthNext : Solver → Env Term
-with
-  /-- Same as `findSynthNext` but yields `none` if the call failed. -/
-  findSynthNext? (solver : Solver) : Env (Option Term) := do
-    let term ← solver.findSynthNext
-    return if term.isNull then none else term
 
 /-- Parse a string containing SMT-LIB commands.
 
