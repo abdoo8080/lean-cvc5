@@ -356,9 +356,9 @@ test![TestApiBlackSolver, findSynth] tm => do
   let _f ← solver.synthFun "f" #[] bool grammar
 
   -- should enumerate based on the grammar of the function to synthesize above
-  if let some term ← solver.findSynth? .ENUM
-  then assertTrue term.getSort.isBoolean
-  else println! "expected `findSynth` to produce a term, got `none`"
+  let term ← solver.findSynth .ENUM
+  assertFalse term.isNull
+  assertTrue term.getSort.isBoolean
 
 test![TestApiBlackSolver, findSynth2] tm => do
   let solver ← Solver.new tm
@@ -373,9 +373,9 @@ test![TestApiBlackSolver, findSynth2] tm => do
   grammar ← grammar.addRule start fls
 
   -- should enumerate true/false
-  if let some term ← solver.findSynth? .ENUM grammar
-  then assertTrue term.getSort.isBoolean
-  else println! "expected `findSynth?` to produce a term, got `none`"
-  if let some term ← solver.findSynthNext?
-  then assertTrue term.getSort.isBoolean
-  else println! "expected `findSynthNext?` to produce a term, got `none`"
+  let term ← solver.findSynth .ENUM grammar
+  assertFalse term.isNull
+  assertTrue term.getSort.isBoolean
+  let term ← solver.findSynthNext
+  assertFalse term.isNull
+  assertTrue term.getSort.isBoolean
