@@ -47,8 +47,10 @@ inductive Kind where
   The kind of a null term (Term::Term()).
   
   \rst
-  .. note:: May not be explicitly created via API functions other than
-            :cpp:func:`Term::Term()`.
+  .. note::
+  
+      May not be explicitly created via API functions other than
+      :cpp:func:`Term::Term()`.
   \endrst
   -/
   | NULL_TERM
@@ -56,9 +58,11 @@ inductive Kind where
   The value of an uninterpreted constant.
   
   \rst
-  .. note:: May be returned as the result of an API call, but terms of this
-            kind may not be created explicitly via the API and may not
-            appear in assertions.
+  .. note::
+  
+      May be returned as the result of an API call, but terms of this kind
+      may not be created explicitly via the API and may not appear in
+      assertions.
   \endrst
   -/
   | UNINTERPRETED_SORT_VALUE
@@ -71,12 +75,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | EQUAL
   /--
@@ -88,12 +92,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | DISTINCT
   /--
@@ -101,12 +105,13 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkConst(const Sort&, const std::string&) const
-    - Solver::mkConst(const Sort&) const
+    - TermManager::mkConst(const Sort&, const std::optional<std::string>&)
   
   \rst
-  .. note:: Not permitted in bindings (e.g., :cpp:enumerator:`FORALL`,
-            :cpp:enumerator:`EXISTS`).
+  .. note::
+  
+      Not permitted in bindings (e.g., :cpp:enumerator:`FORALL`,
+      :cpp:enumerator:`EXISTS`).
   \endrst
   -/
   | CONSTANT
@@ -115,7 +120,7 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkVar(const Sort&, const std::string&) const
+    - TermManager::mkVar(const Sort&, const std::optional<std::string>&)
   
   \rst
   .. note:: Only permitted in bindings and in lambda and quantifier bodies.
@@ -126,9 +131,11 @@ inductive Kind where
   A Skolem.
   
   \rst
-  .. note:: Represents an internally generated term. Information on the
-  skolem is available via the calls `Solver::getSkolemId` and
-  `Solver::getSkolemIndices`.
+  .. note::
+  
+      Represents an internally generated term. Information on the skolem is
+      available via the calls :cpp:func:`Term::getSkolemId` and
+      :cpp:func:`Term::getSkolemIndices`.
   \endrst
   -/
   | SKOLEM
@@ -141,16 +148,18 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | SEXPR
@@ -164,12 +173,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | LAMBDA
   /--
@@ -215,12 +224,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
   .. note::
@@ -244,9 +253,9 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTrue() const
-    - Solver::mkFalse() const
-    - Solver::mkBoolean(bool) const
+    - TermManager::mkTrue()
+    - TermManager::mkFalse()
+    - TermManager::mkBoolean(bool)
   -/
   | CONST_BOOLEAN
   /--
@@ -258,12 +267,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | NOT
   /--
@@ -275,12 +284,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | AND
   /--
@@ -292,12 +301,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | IMPLIES
   /--
@@ -309,12 +318,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | OR
   /--
@@ -326,12 +335,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | XOR
   /--
@@ -345,12 +354,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | ITE
   /--
@@ -363,12 +372,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | APPLY_UF
   /--
@@ -381,11 +390,13 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkCardinalityConstraint(const Sort&, uint32_t) const
+    - TermManager::mkCardinalityConstraint(const Sort&, uint32_t)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning:
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | CARDINALITY_CONSTRAINT
@@ -400,12 +411,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | HO_APPLY
   /--
@@ -417,12 +428,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | ADD
   /--
@@ -434,12 +445,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | MULT
   /--
@@ -457,8 +468,7 @@ inductive Kind where
   
   .. code:: smtlib
   
-      ((_ iand k) i_1 i_2)
-      (bv2int (bvand ((_ int2bv k) i_1) ((_ int2bv k) i_2)))
+      (ubv_to_int (bvand ((_ int_to_bv k) i_1) ((_ int_to_bv k) i_2)))
   
   for all integers ``i_1``, ``i_2``.
   
@@ -473,13 +483,61 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | IAND
+  /--
+  parametric Integer and.
+  
+  \rst
+  Operator for parametric bit-wise ``AND`` over integers, parameterized by a
+  bit-width :math:`k`.
+  This is similar to the iand indexed operator but allows the bit-width be symbolic.
+  If k > 0:
+  
+  .. code:: smtlib
+  
+      (piand k i_1 i_2)
+  
+  is equivalent to
+  
+  .. code:: smtlib
+  
+      ((_ ubv_to_int k) x)
+  
+  such that x is the bitwise and of bit-vectors b1 and b2, such that 
+  b1 is the bit-vector of width k representing (mod i_1 2^k) and
+  b2 is the bit-vector of width k representing (mod i_2 2^k),
+  for all integers ``k``, ``i_1``, ``i_2``.
+  
+  If k <= 0 then
+  
+  .. code:: smtlib
+  
+      (piand k i_1 i_2)
+  
+  is equivalent to
+  
+  .. code:: smtlib
+     
+        0
+  
+  - Arity: ``3``
+  
+    - ``1..3:`` Terms of Sort Int
+  
+  \endrst
+  
+  - Create Term of this Kind with:
+  
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
+  
+  -/
+  | PIAND
   /--
   Power of two.
   
@@ -491,14 +549,30 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | POW2
+  /--
+  Log of base two.
+  
+  Operator for the inverse of raising ``2`` to a non-negative integer power.
+  
+  - Arity: ``1``
+  
+    - ``1:`` Term of Sort Int
+  
+  - Create Term of this Kind with:
+  
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
+  
+  -/
+  | LOG2
   /--
   Arithmetic subtraction, left associative.
   
@@ -508,12 +582,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | SUB
   /--
@@ -525,12 +599,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | NEG
   /--
@@ -542,12 +616,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | DIVISION
   /--
@@ -559,16 +633,18 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | DIVISION_TOTAL
@@ -581,12 +657,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | INTS_DIVISION
   /--
@@ -598,16 +674,18 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | INTS_DIVISION_TOTAL
@@ -621,12 +699,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | INTS_MODULUS
   /--
@@ -639,16 +717,18 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | INTS_MODULUS_TOTAL
@@ -661,12 +741,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | ABS
   /--
@@ -678,12 +758,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | POW
   /--
@@ -695,12 +775,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | EXPONENTIAL
   /--
@@ -712,12 +792,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | SINE
   /--
@@ -729,12 +809,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | COSINE
   /--
@@ -746,12 +826,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | TANGENT
   /--
@@ -763,12 +843,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | COSECANT
   /--
@@ -780,12 +860,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | SECANT
   /--
@@ -797,12 +877,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | COTANGENT
   /--
@@ -814,12 +894,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | ARCSINE
   /--
@@ -831,12 +911,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | ARCCOSINE
   /--
@@ -848,12 +928,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | ARCTANGENT
   /--
@@ -865,12 +945,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | ARCCOSECANT
   /--
@@ -882,12 +962,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | ARCSECANT
   /--
@@ -899,12 +979,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | ARCCOTANGENT
   /--
@@ -919,12 +999,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | SQRT
   /--
@@ -942,11 +1022,11 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | DIVISIBLE
   /--
@@ -954,9 +1034,9 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkReal(const std::string&) const
-    - Solver::mkReal(int64_t) const
-    - Solver::mkReal(int64_t, int64_t) const
+    - TermManager::mkReal(const std::string&)
+    - TermManager::mkReal(int64_t)
+    - TermManager::mkReal(int64_t, int64_t)
   -/
   | CONST_RATIONAL
   /--
@@ -964,8 +1044,8 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkInteger(const std::string&) const
-    - Solver::mkInteger(int64_t) const
+    - TermManager::mkInteger(const std::string&)
+    - TermManager::mkInteger(int64_t)
   -/
   | CONST_INTEGER
   /--
@@ -977,12 +1057,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | LT
   /--
@@ -994,12 +1074,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | LEQ
   /--
@@ -1011,12 +1091,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | GT
   /--
@@ -1028,12 +1108,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | GEQ
   /--
@@ -1045,12 +1125,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | IS_INTEGER
   /--
@@ -1062,12 +1142,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | TO_INTEGER
   /--
@@ -1079,12 +1159,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | TO_REAL
   /--
@@ -1092,12 +1172,14 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkPi() const
+    - TermManager::mkPi()
   
   \rst
-  .. note:: :cpp:enumerator:`PI` is considered a special symbol of Sort
-             Real, but is not a Real value, i.e.,
-             :cpp:func:`Term::isRealValue()` will return ``false``.
+  .. note::
+  
+      :cpp:enumerator:`PI` is considered a special symbol of Sort Real, but
+      is not a Real value, i.e., :cpp:func:`Term::isRealValue()` will return
+      ``false``.
   \endrst
   -/
   | PI
@@ -1106,8 +1188,8 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkBitVector(uint32_t, uint64_t) const
-    - Solver::mkBitVector(uint32_t, const std::string&, uint32_t) const
+    - TermManager::mkBitVector(uint32_t, uint64_t)
+    - TermManager::mkBitVector(uint32_t, const std::string&, uint32_t)
   -/
   | CONST_BITVECTOR
   /--
@@ -1119,12 +1201,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_CONCAT
   /--
@@ -1136,12 +1218,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_AND
   /--
@@ -1153,12 +1235,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_OR
   /--
@@ -1170,12 +1252,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_XOR
   /--
@@ -1187,12 +1269,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_NOT
   /--
@@ -1204,12 +1286,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_NAND
   /--
@@ -1221,12 +1303,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_NOR
   /--
@@ -1238,12 +1320,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_XNOR
   /--
@@ -1255,12 +1337,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_COMP
   /--
@@ -1272,12 +1354,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_MULT
   /--
@@ -1289,12 +1371,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_ADD
   /--
@@ -1306,12 +1388,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_SUB
   /--
@@ -1323,12 +1405,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_NEG
   /--
@@ -1342,12 +1424,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_UDIV
   /--
@@ -1362,12 +1444,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_UREM
   /--
@@ -1383,12 +1465,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_SDIV
   /--
@@ -1403,12 +1485,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_SREM
   /--
@@ -1423,12 +1505,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_SMOD
   /--
@@ -1440,12 +1522,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_SHL
   /--
@@ -1457,12 +1539,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_LSHR
   /--
@@ -1474,12 +1556,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_ASHR
   /--
@@ -1491,12 +1573,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_ULT
   /--
@@ -1508,12 +1590,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_ULE
   /--
@@ -1525,12 +1607,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_UGT
   /--
@@ -1542,12 +1624,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_UGE
   /--
@@ -1559,12 +1641,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_SLT
   /--
@@ -1576,12 +1658,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_SLE
   /--
@@ -1593,12 +1675,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_SGT
   /--
@@ -1610,12 +1692,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_SGE
   /--
@@ -1627,12 +1709,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_ULTBV
   /--
@@ -1644,12 +1726,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_SLTBV
   /--
@@ -1664,12 +1746,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_ITE
   /--
@@ -1681,12 +1763,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_REDOR
   /--
@@ -1698,12 +1780,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_REDAND
   /--
@@ -1715,12 +1797,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_NEGO
   /--
@@ -1732,12 +1814,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_UADDO
   /--
@@ -1749,12 +1831,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_SADDO
   /--
@@ -1766,12 +1848,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_UMULO
   /--
@@ -1783,12 +1865,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_SMULO
   /--
@@ -1800,12 +1882,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_USUBO
   /--
@@ -1817,12 +1899,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_SSUBO
   /--
@@ -1834,12 +1916,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_SDIVO
   /--
@@ -1856,11 +1938,11 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_EXTRACT
   /--
@@ -1876,11 +1958,11 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_REPEAT
   /--
@@ -1896,11 +1978,11 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_ZERO_EXTEND
   /--
@@ -1916,11 +1998,11 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_SIGN_EXTEND
   /--
@@ -1936,11 +2018,11 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_ROTATE_LEFT
   /--
@@ -1956,11 +2038,11 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_ROTATE_RIGHT
   /--
@@ -1976,11 +2058,11 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | INT_TO_BITVECTOR
   /--
@@ -1992,12 +2074,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
   .. note::  This kind is deprecated and replaced by
@@ -2015,12 +2097,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_UBV_TO_INT
   /--
@@ -2032,12 +2114,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BITVECTOR_SBV_TO_INT
   /--
@@ -2048,9 +2130,11 @@ inductive Kind where
     - ``1..n:`` Terms of Sort Bool
   
   \rst
-  .. note:: May be returned as the result of an API call, but terms of this
-            kind may not be created explicitly via the API and may not
-            appear in assertions.
+  .. note::
+  
+      May be returned as the result of an API call, but terms of this kind
+      may not be created explicitly via the API and may not appear in
+      assertions.
   \endrst
   -/
   | BITVECTOR_FROM_BOOLS
@@ -2066,9 +2150,11 @@ inductive Kind where
     - ``1:`` The bit index
   
   \rst
-  .. note:: May be returned as the result of an API call, but terms of this
-            kind may not be created explicitly via the API and may not
-            appear in assertions.
+  .. note::
+  
+      May be returned as the result of an API call, but terms of this kind
+      may not be created explicitly via the API and may not appear in
+      assertions.
   \endrst
   -/
   | BITVECTOR_BIT
@@ -2077,7 +2163,7 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkFiniteFieldElem(const std::string&, const Sort&, uint32_t base) const
+    - TermManager::mkFiniteFieldElem(const std::string&, const Sort&, uint32_t base)
   -/
   | CONST_FINITE_FIELD
   /--
@@ -2089,12 +2175,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FINITE_FIELD_NEG
   /--
@@ -2106,12 +2192,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FINITE_FIELD_ADD
   /--
@@ -2123,8 +2209,8 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   -/
   | FINITE_FIELD_BITSUM
   /--
@@ -2136,12 +2222,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FINITE_FIELD_MULT
   /--
@@ -2150,7 +2236,7 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkFloatingPoint(uint32_t, uint32_t, Term) const
+    - TermManager::mkFloatingPoint(uint32_t, uint32_t, Term)
   -/
   | CONST_FLOATINGPOINT
   /--
@@ -2158,7 +2244,7 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkRoundingMode(RoundingMode) const
+    - TermManager::mkRoundingMode(RoundingMode)
   -/
   | CONST_ROUNDINGMODE
   /--
@@ -2173,12 +2259,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_FP
   /--
@@ -2190,12 +2276,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_EQ
   /--
@@ -2207,12 +2293,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_ABS
   /--
@@ -2224,12 +2310,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_NEG
   /--
@@ -2242,12 +2328,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_ADD
   /--
@@ -2260,12 +2346,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_SUB
   /--
@@ -2278,12 +2364,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_MULT
   /--
@@ -2296,12 +2382,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_DIV
   /--
@@ -2314,12 +2400,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_FMA
   /--
@@ -2332,12 +2418,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_SQRT
   /--
@@ -2349,12 +2435,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_REM
   /--
@@ -2366,12 +2452,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_RTI
   /--
@@ -2384,12 +2470,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_MIN
   /--
@@ -2401,12 +2487,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_MAX
   /--
@@ -2418,12 +2504,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_LEQ
   /--
@@ -2435,12 +2521,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_LT
   /--
@@ -2452,12 +2538,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_GEQ
   /--
@@ -2469,12 +2555,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_GT
   /--
@@ -2486,12 +2572,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_IS_NORMAL
   /--
@@ -2503,12 +2589,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_IS_SUBNORMAL
   /--
@@ -2520,12 +2606,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_IS_ZERO
   /--
@@ -2537,12 +2623,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_IS_INF
   /--
@@ -2554,12 +2640,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_IS_NAN
   /--
@@ -2571,12 +2657,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_IS_NEG
   /--
@@ -2588,12 +2674,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_IS_POS
   /--
@@ -2610,11 +2696,11 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_TO_FP_FROM_IEEE_BV
   /--
@@ -2632,11 +2718,11 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_TO_FP_FROM_FP
   /--
@@ -2654,11 +2740,11 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_TO_FP_FROM_REAL
   /--
@@ -2676,11 +2762,11 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_TO_FP_FROM_SBV
   /--
@@ -2698,11 +2784,11 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_TO_FP_FROM_UBV
   /--
@@ -2719,11 +2805,11 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_TO_UBV
   /--
@@ -2740,11 +2826,11 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_TO_SBV
   /--
@@ -2756,12 +2842,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FLOATINGPOINT_TO_REAL
   /--
@@ -2774,12 +2860,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | SELECT
   /--
@@ -2793,12 +2879,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | STORE
   /--
@@ -2811,12 +2897,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | CONST_ARRAY
   /--
@@ -2839,21 +2925,24 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
   
-  .. note:: We currently support the creation of array equalities over index
-            Sorts bit-vector, floating-point, Int and Real.
-            Requires to enable option
-            :ref:`arrays-exp<lbl-option-arrays-exp>`.
+      This kind is experimental and may be changed or removed in future
+      versions.
+  
+  .. note::
+  
+      We currently support the creation of array equalities over index Sorts
+      bit-vector, floating-point, Int and Real. Requires to enable option
+      :ref:`arrays-exp<lbl-option-arrays-exp>`.
   \endrst
   -/
   | EQ_RANGE
@@ -2867,12 +2956,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | APPLY_CONSTRUCTOR
   /--
@@ -2885,12 +2974,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
   .. note:: Undefined if misapplied.
@@ -2907,12 +2996,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | APPLY_TESTER
   /--
@@ -2926,12 +3015,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
   .. note:: Does not change the datatype argument if misapplied.
@@ -2971,12 +3060,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | MATCH
   /--
@@ -2994,12 +3083,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | MATCH_CASE
   /--
@@ -3026,12 +3115,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | MATCH_BIND_CASE
   /--
@@ -3063,11 +3152,11 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | TUPLE_PROJECT
   /--
@@ -3082,8 +3171,8 @@ inductive Kind where
   - ``1..n:`` Terms of nullable sort
   
   - Create Term of this Kind with:
-    - Solver::mkNullableLift(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
+    - TermManager::mkNullableLift(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
   -/
   | NULLABLE_LIFT
   /--
@@ -3091,11 +3180,13 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkSepNil(const Sort&) const
+    - TermManager::mkSepNil(const Sort&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | SEP_NIL
@@ -3104,11 +3195,13 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkSepEmp() const
+    - TermManager::mkSepEmp()
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | SEP_EMP
@@ -3122,16 +3215,18 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | SEP_PTO
@@ -3145,16 +3240,18 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | SEP_STAR
@@ -3170,16 +3267,18 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | SEP_WAND
@@ -3188,7 +3287,7 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkEmptySet(const Sort&) const
+    - TermManager::mkEmptySet(const Sort&)
   -/
   | SET_EMPTY
   /--
@@ -3200,12 +3299,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | SET_UNION
   /--
@@ -3217,12 +3316,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | SET_INTER
   /--
@@ -3234,12 +3333,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | SET_MINUS
   /--
@@ -3253,12 +3352,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | SET_SUBSET
   /--
@@ -3273,12 +3372,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | SET_MEMBER
   /--
@@ -3293,12 +3392,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | SET_SINGLETON
   /--
@@ -3311,12 +3410,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | SET_INSERT
   /--
@@ -3328,12 +3427,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | SET_CARD
   /--
@@ -3345,12 +3444,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | SET_COMPLEMENT
   /--
@@ -3360,12 +3459,14 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkUniverseSet(const Sort&) const
+    - TermManager::mkUniverseSet(const Sort&)
   
   \rst
-  .. note:: :cpp:enumerator:`SET_UNIVERSE` is considered a special symbol of
-            the theory of sets and is not considered as a set value, i.e.,
-            Term::isSetValue() will return ``false``.
+  .. note::
+  
+      :cpp:enumerator:`SET_UNIVERSE` is considered a special symbol of the
+      theory of sets and is not considered as a set value, i.e.,
+      Term::isSetValue() will return ``false``.
   \endrst
   -/
   | SET_UNIVERSE
@@ -3396,16 +3497,18 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | SET_COMPREHENSION
@@ -3425,16 +3528,18 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | SET_CHOOSE
@@ -3447,16 +3552,18 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | SET_IS_EMPTY
@@ -3469,16 +3576,18 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | SET_IS_SINGLETON
@@ -3499,16 +3608,18 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | SET_MAP
@@ -3531,12 +3642,14 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | SET_FILTER
@@ -3558,8 +3671,8 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   \rst
   .. warning:: This kind is experimental and may be changed or removed in
@@ -3585,8 +3698,8 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   \rst
   .. warning:: This kind is experimental and may be changed or removed in
@@ -3611,12 +3724,14 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | SET_FOLD
@@ -3629,12 +3744,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | RELATION_JOIN
   /--
@@ -3658,14 +3773,16 @@ inductive Kind where
   
   \endrst
   - Create Term of this Kind with:
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning:
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | RELATION_TABLE_JOIN
@@ -3678,12 +3795,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | RELATION_PRODUCT
   /--
@@ -3695,12 +3812,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | RELATION_TRANSPOSE
   /--
@@ -3712,12 +3829,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | RELATION_TCLOSURE
   /--
@@ -3729,16 +3846,18 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | RELATION_JOIN_IMAGE
@@ -3751,16 +3870,18 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | RELATION_IDEN
@@ -3786,12 +3907,14 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | RELATION_GROUP
@@ -3821,14 +3944,16 @@ inductive Kind where
     - ``1..n:`` Indices of the projection
   \endrst
   - Create Term of this Kind with:
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | RELATION_AGGREGATE
@@ -3842,13 +3967,15 @@ inductive Kind where
     - ``1..n:`` Indices of the projection
   
   - Create Term of this Kind with:
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | RELATION_PROJECT
@@ -3857,7 +3984,7 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkEmptyBag(const Sort&) const
+    - TermManager::mkEmptyBag(const Sort&)
   -/
   | BAG_EMPTY
   /--
@@ -3869,12 +3996,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BAG_UNION_MAX
   /--
@@ -3886,12 +4013,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BAG_UNION_DISJOINT
   /--
@@ -3903,12 +4030,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BAG_INTER_MIN
   /--
@@ -3922,12 +4049,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BAG_DIFFERENCE_SUBTRACT
   /--
@@ -3941,12 +4068,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BAG_DIFFERENCE_REMOVE
   /--
@@ -3961,12 +4088,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BAG_SUBBAG
   /--
@@ -3974,8 +4101,8 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const Term&, const Term&) const
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const Term&, const Term&)
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
   -/
   | BAG_COUNT
   /--
@@ -3988,12 +4115,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BAG_MEMBER
   /--
@@ -4008,16 +4135,18 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | BAG_SETOF
@@ -4033,12 +4162,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | BAG_MAKE
   /--
@@ -4050,16 +4179,18 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | BAG_CARD
@@ -4081,16 +4212,18 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | BAG_CHOOSE
@@ -4111,16 +4244,18 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | BAG_MAP
@@ -4143,12 +4278,14 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | BAG_FILTER
@@ -4170,8 +4307,8 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   \rst
   .. warning:: This kind is experimental and may be changed or removed in
@@ -4197,8 +4334,8 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   \rst
   .. warning:: This kind is experimental and may be changed or removed in
@@ -4223,12 +4360,14 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | BAG_FOLD
@@ -4250,12 +4389,14 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | BAG_PARTITION
@@ -4268,16 +4409,18 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | TABLE_PRODUCT
@@ -4291,13 +4434,15 @@ inductive Kind where
     - ``1..n:`` Indices of the projection
   
   - Create Term of this Kind with:
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | TABLE_PROJECT
@@ -4327,14 +4472,16 @@ inductive Kind where
     - ``1..n:`` Indices of the projection
   \endrst
   - Create Term of this Kind with:
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | TABLE_AGGREGATE
@@ -4359,14 +4506,16 @@ inductive Kind where
   
   \endrst
   - Create Term of this Kind with:
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | TABLE_JOIN
@@ -4392,12 +4541,14 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
+  
+      This kind is experimental and may be changed or removed in future
+      versions.
   \endrst
   -/
   | TABLE_GROUP
@@ -4410,12 +4561,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | STRING_CONCAT
   /--
@@ -4428,12 +4579,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | STRING_IN_REGEXP
   /--
@@ -4445,12 +4596,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | STRING_LENGTH
   /--
@@ -4471,12 +4622,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | STRING_SUBSTR
   /--
@@ -4497,12 +4648,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | STRING_UPDATE
   /--
@@ -4522,12 +4673,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | STRING_CHARAT
   /--
@@ -4545,12 +4696,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | STRING_CONTAINS
   /--
@@ -4571,12 +4722,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | STRING_INDEXOF
   /--
@@ -4597,12 +4748,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | STRING_INDEXOF_RE
   /--
@@ -4622,12 +4773,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | STRING_REPLACE
   /--
@@ -4647,12 +4798,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | STRING_REPLACE_ALL
   /--
@@ -4672,12 +4823,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | STRING_REPLACE_RE
   /--
@@ -4697,12 +4848,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | STRING_REPLACE_RE_ALL
   /--
@@ -4714,12 +4865,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | STRING_TO_LOWER
   /--
@@ -4731,12 +4882,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | STRING_TO_UPPER
   /--
@@ -4748,12 +4899,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | STRING_REV
   /--
@@ -4768,12 +4919,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | STRING_TO_CODE
   /--
@@ -4789,12 +4940,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | STRING_FROM_CODE
   /--
@@ -4812,12 +4963,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | STRING_LT
   /--
@@ -4835,12 +4986,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | STRING_LEQ
   /--
@@ -4858,12 +5009,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | STRING_PREFIX
   /--
@@ -4881,12 +5032,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | STRING_SUFFIX
   /--
@@ -4901,12 +5052,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | STRING_IS_DIGIT
   /--
@@ -4920,12 +5071,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | STRING_FROM_INT
   /--
@@ -4940,12 +5091,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | STRING_TO_INT
   /--
@@ -4953,8 +5104,8 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkString(const std::string&, bool) const
-    - Solver::mkString(const std::wstring&) const
+    - TermManager::mkString(const std::string&, bool)
+    - TermManager::mkString(const std::u32string&)
   -/
   | CONST_STRING
   /--
@@ -4966,12 +5117,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | STRING_TO_REGEXP
   /--
@@ -4983,12 +5134,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | REGEXP_CONCAT
   /--
@@ -5000,12 +5151,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | REGEXP_UNION
   /--
@@ -5017,12 +5168,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | REGEXP_INTER
   /--
@@ -5034,12 +5185,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | REGEXP_DIFF
   /--
@@ -5051,12 +5202,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | REGEXP_STAR
   /--
@@ -5068,12 +5219,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | REGEXP_PLUS
   /--
@@ -5085,12 +5236,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | REGEXP_OPT
   /--
@@ -5103,12 +5254,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | REGEXP_RANGE
   /--
@@ -5124,11 +5275,11 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | REGEXP_REPEAT
   /--
@@ -5148,12 +5299,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | REGEXP_LOOP
   /--
@@ -5161,7 +5312,7 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkRegexpNone() const
+    - TermManager::mkRegexpNone()
   -/
   | REGEXP_NONE
   /--
@@ -5169,7 +5320,7 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkRegexpAll() const
+    - TermManager::mkRegexpAll()
   -/
   | REGEXP_ALL
   /--
@@ -5177,7 +5328,7 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkRegexpAllchar() const
+    - TermManager::mkRegexpAllchar()
   -/
   | REGEXP_ALLCHAR
   /--
@@ -5189,12 +5340,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | REGEXP_COMPLEMENT
   /--
@@ -5206,12 +5357,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | SEQ_CONCAT
   /--
@@ -5223,12 +5374,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | SEQ_LENGTH
   /--
@@ -5249,12 +5400,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | SEQ_EXTRACT
   /--
@@ -5275,12 +5426,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | SEQ_UPDATE
   /--
@@ -5300,12 +5451,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | SEQ_AT
   /--
@@ -5323,12 +5474,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | SEQ_CONTAINS
   /--
@@ -5349,12 +5500,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | SEQ_INDEXOF
   /--
@@ -5374,12 +5525,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | SEQ_REPLACE
   /--
@@ -5399,12 +5550,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | SEQ_REPLACE_ALL
   /--
@@ -5416,12 +5567,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | SEQ_REV
   /--
@@ -5439,12 +5590,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | SEQ_PREFIX
   /--
@@ -5462,12 +5613,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | SEQ_SUFFIX
   /--
@@ -5485,7 +5636,7 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkEmptySequence(const Sort&) const
+    - TermManager::mkEmptySequence(const Sort&)
   -/
   | CONST_SEQUENCE
   /--
@@ -5499,12 +5650,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | SEQ_UNIT
   /--
@@ -5521,12 +5672,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | SEQ_NTH
   /--
@@ -5542,12 +5693,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | FORALL
   /--
@@ -5563,12 +5714,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | EXISTS
   /--
@@ -5584,12 +5735,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | VARIABLE_LIST
   /--
@@ -5604,16 +5755,17 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
-  .. note:: Should only be used as a child of
-            :cpp:enumerator:`INST_PATTERN_LIST`.
+  .. note::
+  
+      Should only be used as a child of :cpp:enumerator:`INST_PATTERN_LIST`.
   \endrst
   -/
   | INST_PATTERN
@@ -5629,16 +5781,17 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
-  .. note:: Should only be used as a child of
-            :cpp:enumerator:`INST_PATTERN_LIST`.
+  .. note::
+  
+      Should only be used as a child of :cpp:enumerator:`INST_PATTERN_LIST`.
   \endrst
   -/
   | INST_NO_PATTERN
@@ -5687,18 +5840,21 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
   
-  .. note:: Should only be used as a child of
-            :cpp:enumerator:`INST_PATTERN_LIST`.
+      This kind is experimental and may be changed or removed in future
+      versions.
+  
+  .. note::
+  
+      Should only be used as a child of :cpp:enumerator:`INST_PATTERN_LIST`.
   \endrst
   -/
   | INST_POOL
@@ -5729,19 +5885,22 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
   
-  .. note:: Should only be used as a child of
-            :cpp:enumerator:`INST_PATTERN_LIST`.
+      This kind is experimental and may be changed or removed in future
+      versions.
+  
+  .. note::
+  
+      Should only be used as a child of :cpp:enumerator:`INST_PATTERN_LIST`.
   \endrst
   -/
   | INST_ADD_TO_POOL
@@ -5772,19 +5931,22 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
-  .. warning:: This kind is experimental and may be changed or removed in
-               future versions.
+  .. warning::
   
-  .. note:: Should only be used as a child of
-            :cpp:enumerator:`INST_PATTERN_LIST`.
+      This kind is experimental and may be changed or removed in future
+      versions.
+  
+  .. note::
+  
+      Should only be used as a child of :cpp:enumerator:`INST_PATTERN_LIST`.
   \endrst
   -/
   | SKOLEM_ADD_TO_POOL
@@ -5801,16 +5963,17 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   
   \rst
-  .. note:: Should only be used as a child of
-            :cpp:enumerator:`INST_PATTERN_LIST`.
+  .. note::
+  
+      Should only be used as a child of :cpp:enumerator:`INST_PATTERN_LIST`.
   \endrst
   -/
   | INST_ATTRIBUTE
@@ -5825,12 +5988,12 @@ inductive Kind where
   
   - Create Term of this Kind with:
   
-    - Solver::mkTerm(Kind, const std::vector<Term>&) const
-    - Solver::mkTerm(const Op&, const std::vector<Term>&) const
+    - TermManager::mkTerm(Kind, const std::vector<Term>&)
+    - TermManager::mkTerm(const Op&, const std::vector<Term>&)
   
   - Create Op of this kind with:
   
-    - Solver::mkOp(Kind, const std::vector<uint32_t>&) const
+    - TermManager::mkOp(Kind, const std::vector<uint32_t>&)
   -/
   | INST_PATTERN_LIST
   /--
@@ -5879,8 +6042,10 @@ inductive SortKind where
   The kind of a null sort (Sort::Sort()).
   
   \rst
-  .. note:: May not be explicitly created via API functions other than
-            :cpp:func:`Sort::Sort()`.
+  .. note::
+  
+      May not be explicitly created via API functions other than
+      :cpp:func:`Sort::Sort()`.
   \endrst
   -/
   | NULL_SORT
@@ -5894,7 +6059,7 @@ inductive SortKind where
   
   - Create Sort of this Kind with:
   
-    - Solver::mkAbstractSort(SortKind) const
+    - TermManager::mkAbstractSort(SortKind)
   -/
   | ABSTRACT_SORT
   /--
@@ -5903,7 +6068,7 @@ inductive SortKind where
   
   - Create Sort of this Kind with:
   
-    - Solver::mkArraySort(Sort, Sort) const
+    - TermManager::mkArraySort(Sort, Sort)
   -/
   | ARRAY_SORT
   /--
@@ -5911,7 +6076,7 @@ inductive SortKind where
   
   - Create Sort of this Kind with:
   
-    - Solver::mkBagSort(Sort) const
+    - TermManager::mkBagSort(Sort)
   -/
   | BAG_SORT
   /--
@@ -5919,7 +6084,7 @@ inductive SortKind where
   
   - Create Sort of this Kind with:
   
-    - Solver::getBooleanSort() const
+    - TermManager::getBooleanSort()
   -/
   | BOOLEAN_SORT
   /--
@@ -5927,7 +6092,7 @@ inductive SortKind where
   
   - Create Sort of this Kind with:
   
-    - Solver::mkBitVectorSort(uint32_t) const
+    - TermManager::mkBitVectorSort(uint32_t)
   -/
   | BITVECTOR_SORT
   /--
@@ -5935,8 +6100,8 @@ inductive SortKind where
   
   - Create Sort of this Kind with:
   
-    - Solver::mkDatatypeSort(DatatypeDecl)
-    - Solver::mkDatatypeSorts(const std::vector<DatatypeDecl>&)
+    - TermManager::mkDatatypeSort(DatatypeDecl)
+    - TermManager::mkDatatypeSorts(const std::vector<DatatypeDecl>&)
   -/
   | DATATYPE_SORT
   /--
@@ -5944,7 +6109,7 @@ inductive SortKind where
   
   - Create Sort of this Kind with:
   
-    - Solver::mkFiniteFieldSort(const std::string&, uint32_t base) const
+    - TermManager::mkFiniteFieldSort(const std::string&, uint32_t base)
   -/
   | FINITE_FIELD_SORT
   /--
@@ -5953,7 +6118,7 @@ inductive SortKind where
   
   - Create Sort of this Kind with:
   
-    - Solver::mkFloatingPointSort(uint32_t, uint32_t) const
+    - TermManager::mkFloatingPointSort(uint32_t, uint32_t)
   -/
   | FLOATINGPOINT_SORT
   /--
@@ -5961,7 +6126,7 @@ inductive SortKind where
   
   - Create Sort of this Kind with:
   
-    - Solver::mkFunctionSort(const std::vector<Sort>&, Sort) const
+    - TermManager::mkFunctionSort(const std::vector<Sort>&, Sort)
   -/
   | FUNCTION_SORT
   /--
@@ -5969,7 +6134,7 @@ inductive SortKind where
   
   - Create Sort of this Kind with:
   
-    - Solver::getIntegerSort() const
+    - TermManager::getIntegerSort()
   -/
   | INTEGER_SORT
   /--
@@ -5977,7 +6142,7 @@ inductive SortKind where
   
   - Create Sort of this Kind with:
   
-    - Solver::getRealSort() const
+    - TermManager::getRealSort()
   -/
   | REAL_SORT
   /--
@@ -5985,7 +6150,7 @@ inductive SortKind where
   
   - Create Sort of this Kind with:
   
-    - Solver::getRegExpSort() const
+    - TermManager::getRegExpSort()
   -/
   | REGLAN_SORT
   /--
@@ -5993,7 +6158,7 @@ inductive SortKind where
   
   - Create Sort of this Kind with:
   
-    - Solver::getRoundingModeSort() const
+    - TermManager::getRoundingModeSort()
   -/
   | ROUNDINGMODE_SORT
   /--
@@ -6001,7 +6166,7 @@ inductive SortKind where
   
   - Create Sort of this Kind with:
   
-    - Solver::mkSequenceSort(Sort) const
+    - TermManager::mkSequenceSort(Sort)
   -/
   | SEQUENCE_SORT
   /--
@@ -6009,7 +6174,7 @@ inductive SortKind where
   
   - Create Sort of this Kind with:
   
-    - Solver::mkSetSort(Sort) const
+    - TermManager::mkSetSort(Sort)
   -/
   | SET_SORT
   /--
@@ -6017,7 +6182,7 @@ inductive SortKind where
   
   - Create Sort of this Kind with:
   
-    - Solver::getStringSort() const
+    - TermManager::getStringSort()
   -/
   | STRING_SORT
   /--
@@ -6026,7 +6191,7 @@ inductive SortKind where
   
   - Create Sort of this Kind with:
   
-    - Solver::mkTupleSort(const std::vector<Sort>&) const
+    - TermManager::mkTupleSort(const std::vector<Sort>&)
   -/
   | TUPLE_SORT
   /--
@@ -6035,7 +6200,7 @@ inductive SortKind where
   
   - Create Sort of this Kind with:
   
-    - Solver::mkNullableSort(const Sort&) const
+    - TermManager::mkNullableSort(const Sort&)
   -/
   | NULLABLE_SORT
   /--
@@ -6043,7 +6208,7 @@ inductive SortKind where
   
   - Create Sort of this Kind with:
   
-    - Solver::mkUninterpretedSort(const std::optional<std::string>&) const
+    - TermManager::mkUninterpretedSort(const std::optional<std::string>&)
   -/
   | UNINTERPRETED_SORT
   /--
