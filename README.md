@@ -13,23 +13,30 @@ with cvc5 by calling its functions and accessing its API.
 
 ## Getting Started
 
-To use the cvc5 FFI in your project, add the following line to your list of dependencies in
-`lakefile.lean`:
+To use `lean-smt` in your project, add the following lines to your list of
+dependencies in `lakefile.toml`:
+```toml
+[[require]]
+name = "smt"
+scope = "abdoo8080"
+rev = "573fd67"
+```
 
+If your build configuration is in `lakefile.lean`, add the following line to
+your dependencies:
 ```lean
-require smt from git "https://github.com/abdoo8080/lean-cvc5.git" @ "39a646d"
+require cvc5 from git "https://github.com/abdoo8080/lean-cvc5.git" @ "573fd67"
 ```
 
 ## Building
 
-Build this library by running the `init` script before `lake`-building:
-
-```text
-lake run init
-[...]
-lake build
-[...]
-```
+Build artifacts are available for all platforms supported by Lean 4 and
+recent versions of Lean 4's toolchain. Choose the appropriate build for your
+platform from the [releases page](https://github.com/abdoo8080/lean-cvc5/releases).
+To build from source, you need to have `clang` and `libc++` (version 19) installed on
+your system. If you are using Windows, you need to have `clang` and `libc++`
+(version 19) installed on your `MSYS2` environment. Build this library by running
+`lake build` in the root directory of the project.
 
 ## Contributing
 
