@@ -371,6 +371,84 @@ extern_def new : (tm : TermManager) → Env Solver
 
 end Solver
 
+private opaque DatatypeConstructorDeclImpl : NonemptyType.{0}
+
+/-- A cvc5 datatype constructor declaration.
+
+A datatype constructor declaration is a specification used for creating a datatype constructor.
+-/
+def DatatypeConstructorDecl : Type := DatatypeConstructorDeclImpl.type
+
+namespace DatatypeConstructorDecl
+
+instance : Nonempty DatatypeConstructorDecl := DatatypeConstructorDeclImpl.property
+
+/-- A string representation of this datatype constructor declaration. -/
+protected extern_def toString : DatatypeConstructorDecl → String
+
+instance : ToString DatatypeConstructorDecl := ⟨DatatypeConstructorDecl.toString⟩
+
+end DatatypeConstructorDecl
+
+private opaque DatatypeDeclImpl : NonemptyType.{0}
+
+/-- A cvc5 datatype declaration.
+
+A datatype declaration is not itself a datatype (see `Datatype`), but a specification for creating a
+datatype sort.
+
+The interface for a datatype declaration coincides with the syntax for the SMT-LIB 2.6 command
+`declare-datatype`, or a single datatype within the `declare-datatypes` command.
+
+`Datatype` sorts can be constructed from a `DatatypeDecl` using:
+- `Solver.mkDatatypeSort`
+- `Solver.mkDatatypeSorts`
+-/
+def DatatypeDecl : Type := DatatypeDeclImpl.type
+
+namespace DatatypeDecl
+
+instance : Nonempty DatatypeDecl := DatatypeDeclImpl.property
+
+/-- Get a string representation of this datatype declaration. -/
+protected extern_def toString : DatatypeDecl → String
+
+instance : ToString DatatypeDecl := ⟨DatatypeDecl.toString⟩
+
+end DatatypeDecl
+
+private opaque DatatypeImpl : NonemptyType.{0}
+
+/-- A cvc5 datatype. -/
+def Datatype : Type := DatatypeImpl.type
+
+namespace Datatype
+
+instance : Nonempty Datatype := DatatypeImpl.property
+
+/-- A string representation of this datatype. -/
+protected extern_def toString : Datatype → String
+
+instance : ToString Datatype := ⟨Datatype.toString⟩
+
+end Datatype
+
+private opaque DatatypeConstructorImpl : NonemptyType.{0}
+
+/-- A cvc5 datatype. -/
+def DatatypeConstructor : Type := DatatypeConstructorImpl.type
+
+namespace DatatypeConstructor
+
+instance : Nonempty DatatypeConstructor := DatatypeConstructorImpl.property
+
+/-- A string representation of this datatype. -/
+protected extern_def toString : DatatypeConstructor → String
+
+instance : ToString DatatypeConstructor := ⟨DatatypeConstructor.toString⟩
+
+end DatatypeConstructor
+
 private opaque GrammarImpl : NonemptyType.{0}
 
 /-- A Sygus Grammar.
@@ -596,6 +674,182 @@ private def mkExceptErr {α : Type} : String → Except Error α :=
   .error ∘ Error.error
 
 end ffi_except_constructors
+
+namespace DatatypeConstructorDecl
+
+/-- True if this `DatatypeConstructorDecl` is a null declaration. -/
+extern_def isNull : DatatypeConstructorDecl → Bool
+
+/-- Equality operator. -/
+protected extern_def beq : DatatypeConstructorDecl → DatatypeConstructorDecl → Bool
+
+instance : BEq DatatypeConstructorDecl := ⟨DatatypeConstructorDecl.beq⟩
+
+/-- Hash function for datatype declarations. -/
+protected extern_def hash : DatatypeConstructorDecl → UInt64
+
+instance : Hashable DatatypeConstructorDecl := ⟨DatatypeConstructorDecl.hash⟩
+
+/-- Add datatype selector declaration.
+
+- `name` The name of the datatype selector declaration to add.
+- `sort` The codomain sort of the datatype selector declaration to add.
+-/
+extern_def addSelector :
+  (dtCons : DatatypeConstructorDecl) → (name : String) → (sort : cvc5.Sort) →
+  Env DatatypeConstructorDecl
+
+/-- Add datatype selector declaration whose codomain type is the datatype itself.
+
+- `name` The name of the datatype selector declaration to add.
+-/
+extern_def addSelectorSelf :
+  (dtCons : DatatypeConstructorDecl) → (name : String) → Env DatatypeConstructorDecl
+
+/-- Add datatype selector declaration whose codomain sort is an unresolved datatype with the given
+  name.
+
+- `name` The name of the datatype selector declaration to add.
+- `unresDatatypeName` The name of the unresolved datatype. The codomain of the selector will be the
+  resolved datatype with the given name
+-/
+extern_def addSelectorUnresolved :
+  (dtCons : DatatypeConstructorDecl) → (name : String) → (unresDatatypeName : String) →
+  Env DatatypeConstructorDecl
+
+end DatatypeConstructorDecl
+
+namespace DatatypeDecl
+
+/-- Determine if this datatype declaration is nullary. -/
+extern_def isNull : DatatypeDecl → Bool
+
+/-- Equality operator. -/
+protected extern_def beq : DatatypeDecl → DatatypeDecl → Bool
+
+instance : BEq DatatypeDecl := ⟨DatatypeDecl.beq⟩
+
+/-- Hash function for datatype declarations. -/
+protected extern_def hash : DatatypeDecl → UInt64
+
+instance : Hashable DatatypeDecl := ⟨DatatypeDecl.hash⟩
+
+/-- Get the number of constructors for this datatype declaration. -/
+extern_def getNumConstructors : (dtDecl : DatatypeDecl) → Nat
+
+/-- Determine if this datatype declaration is parametric.
+
+**Warning**: this function is experimental and may change in future versions.
+-/
+extern_def isParametric : (dtDecl : DatatypeDecl) → Bool
+
+/-- Get the name of this datatype declaration. -/
+extern_def getName : (dtDecl : DatatypeDecl) → String
+
+/-- Determine if this datatype declaration is resolved (has already been used to declare a
+datatype).
+-/
+extern_def isResolved : (dtDecl : DatatypeDecl) → Env Bool
+
+/-- Add datatype constructor declaration.
+
+- `ctor` The datatype constructor declaration to add.
+-/
+extern_def addConstructor :
+  (dtDecl : DatatypeDecl) → (ctor : DatatypeConstructorDecl) → Env DatatypeDecl
+
+end DatatypeDecl
+
+namespace DatatypeConstructor
+
+/-- The null datatype. -/
+extern_def null : Unit → DatatypeConstructor
+
+instance : Inhabited DatatypeConstructor := ⟨null ()⟩
+
+/-- True if this datatype is a null object. -/
+extern_def isNull : DatatypeConstructor → Bool
+
+/-- Equality operator. -/
+protected extern_def beq : DatatypeConstructor → DatatypeConstructor → Bool
+
+instance : BEq DatatypeConstructor := ⟨DatatypeConstructor.beq⟩
+
+/-- Hash function for datatypes. -/
+protected extern_def hash : DatatypeConstructor → UInt64
+
+instance : Hashable DatatypeConstructor := ⟨DatatypeConstructor.hash⟩
+
+/-- Get the constructor term of this datatype constructor.
+
+Datatype constructors are a special class of function-like terms whose sort is datatype constructor
+(`Sort.isDatatypeConstructor`). All datatype constructors, including nullary ones, should be used as
+the first argument to terms whose kind is `Kind.APPLY_CONSTRUCTOR`. For example, the nil list can
+be constructor by `tm.mkTerm Kind.APPLY_CONSTRUCTOR #[t]`, where `tm` is a `TermManager` and `t` is
+the term returned by this function.
+
+This function should not be used for parametric datatypes. Instead, use the function
+`DatatypeConstructor.getInstantiatedTerm`.
+-/
+extern_def getTerm : DatatypeConstructor → Term
+
+end DatatypeConstructor
+
+namespace Datatype
+
+/-- The null datatype. -/
+extern_def null : Unit → Datatype
+
+instance : Inhabited Datatype := ⟨null ()⟩
+
+/-- True if this datatype is a null object. -/
+extern_def isNull : Datatype → Bool
+
+/-- Equality operator. -/
+protected extern_def beq : Datatype → Datatype → Bool
+
+instance : BEq Datatype := ⟨Datatype.beq⟩
+
+/-- Hash function for datatypes. -/
+protected extern_def hash : Datatype → UInt64
+
+instance : Hashable Datatype := ⟨Datatype.hash⟩
+
+/-- Determine if this datatype is parametric.
+
+**Warning**: this function is experimental and may change in future versions.
+-/
+extern_def isParametric : Datatype → Bool
+
+/-- Determine if this datatype corresponds to a co-datatype. -/
+extern_def isCodatatype : Datatype → Bool
+
+/-- Get the name of this datatype. -/
+extern_def getName : Datatype → String
+
+/-- Get the number of constructors of this datatype. -/
+extern_def getNumConstructors : Datatype → Nat
+
+/-- Get the datatype constructor with the given name.
+
+This is a linear search through the constructors, so in case of multiple, similarly-named
+constructors, the first is returned.
+
+- `name` The name of the datatype constructor.
+-/
+extern_def!? getConstructor : Datatype → (name : String) → Except Error DatatypeConstructor
+
+/-- Get the datatype constructor at a given index.
+
+- `idx` The index of the datatype constructor to return.
+-/
+extern_def getConstructorAt :
+  (dt : Datatype) → (idx : Fin dt.getNumConstructors) → DatatypeConstructor
+
+instance : GetElem Datatype Nat DatatypeConstructor fun dt idx => idx < dt.getNumConstructors where
+  getElem dt idx h := dt.getConstructorAt ⟨idx, h⟩
+
+end Datatype
 
 end cvc5
 
@@ -823,6 +1077,9 @@ extern_def!? getNullableElementSort : cvc5.Sort → Except Error cvc5.Sort
 
 /-- Get the associated uninterpreted sort constructor of an instantiated uninterpreted sort. -/
 extern_def!? getUninterpretedSortConstructor : cvc5.Sort → Except Error cvc5.Sort
+
+/-- Get the underlying datatype of a datatype sort. -/
+extern_def!? getDatatype : cvc5.Sort → Except Error Datatype
 
 /-- Get the sorts used to instantiate the sort parameters of a parametric sort.
 
@@ -1302,6 +1559,27 @@ If `args` is empty, the `Op` simply wraps the `cvc5.Kind`. The `Kind` can be use
 -/
 extern_def mkOpOfIndices : TermManager → (kind : Kind) → (args : Array Nat := #[]) → Env Op
 with mkOp := @mkOpOfIndices
+
+/-- Create a datatype constructor declaration.
+
+- `name` The name of the datatype constructor.
+-/
+extern_def mkDatatypeConstructorDecl : TermManager → (name : String) → Env DatatypeConstructorDecl
+
+/-- Create a datatype declaration.
+
+- `name` The name of the datatype.
+- `params` A list of sort parameters.
+- `isCoDatatype` True if a codatatype is to be constructed.
+-/
+extern_def mkDatatypeDecl : TermManager → (name : String) →
+  (params : Array cvc5.Sort := #[]) → (isCoDatatype : Bool := false) → Env DatatypeDecl
+
+/-- Create a datatype sort.
+
+- `dtypeDecl` The datatype declaration from which the sort is created.
+-/
+extern_def mkDatatypeSort : TermManager → (dtypeDecl : DatatypeDecl) → Env cvc5.Sort
 
 end TermManager
 

@@ -1190,11 +1190,147 @@ static inline Solver* solver_unbox(b_lean_obj_arg s)
   return static_cast<Solver*>(lean_get_external_data(s));
 }
 
+static void datatypeConstructorDecl_finalize(void* obj)
+{
+  delete static_cast<DatatypeConstructorDecl*>(obj);
+}
+
+static void datatypeConstructorDecl_foreach(void*, b_lean_obj_arg)
+{
+  // do nothing since `DatatypeConstructorDecl` does not contain nested Lean
+  // objects
+}
+
+static lean_external_class* g_datatypeConstructorDecl_class = nullptr;
+
+static inline lean_obj_res datatypeConstructorDecl_box(
+    DatatypeConstructorDecl* datatypeConstructorDecl)
+{
+  if (g_datatypeConstructorDecl_class == nullptr)
+  {
+    g_datatypeConstructorDecl_class = lean_register_external_class(
+        datatypeConstructorDecl_finalize, datatypeConstructorDecl_foreach);
+  }
+  return lean_alloc_external(g_datatypeConstructorDecl_class,
+                             datatypeConstructorDecl);
+}
+
+static inline const DatatypeConstructorDecl* datatypeConstructorDecl_unbox(
+    b_lean_obj_arg datatypeConstructorDecl)
+{
+  return static_cast<DatatypeConstructorDecl*>(
+      lean_get_external_data(datatypeConstructorDecl));
+}
+
+static inline DatatypeConstructorDecl* mut_datatypeConstructorDecl_unbox(
+    b_lean_obj_arg datatypeConstructorDecl)
+{
+  return static_cast<DatatypeConstructorDecl*>(
+      lean_get_external_data(datatypeConstructorDecl));
+}
+
+static void datatypeDecl_finalize(void* obj)
+{
+  delete static_cast<DatatypeDecl*>(obj);
+}
+
+static void datatypeDecl_foreach(void*, b_lean_obj_arg)
+{
+  // do nothing since `DatatypeDecl` does not contain nested Lean objects
+}
+
+static lean_external_class* g_datatypeDecl_class = nullptr;
+
+static inline lean_obj_res datatypeDecl_box(DatatypeDecl* datatypeDecl)
+{
+  if (g_datatypeDecl_class == nullptr)
+  {
+    g_datatypeDecl_class = lean_register_external_class(datatypeDecl_finalize,
+                                                        datatypeDecl_foreach);
+  }
+  return lean_alloc_external(g_datatypeDecl_class, datatypeDecl);
+}
+
+static inline const DatatypeDecl* datatypeDecl_unbox(
+    b_lean_obj_arg datatypeDecl)
+{
+  return static_cast<DatatypeDecl*>(lean_get_external_data(datatypeDecl));
+}
+
+static inline DatatypeDecl* mut_datatypeDecl_unbox(b_lean_obj_arg datatypeDecl)
+{
+  return static_cast<DatatypeDecl*>(lean_get_external_data(datatypeDecl));
+}
+
+static void datatype_finalize(void* obj) { delete static_cast<Datatype*>(obj); }
+
+static void datatype_foreach(void*, b_lean_obj_arg)
+{
+  // do nothing since `Datatype` does not contain nested Lean objects
+}
+
+static lean_external_class* g_datatype_class = nullptr;
+
+static inline lean_obj_res datatype_box(Datatype* datatype)
+{
+  if (g_datatype_class == nullptr)
+  {
+    g_datatype_class =
+        lean_register_external_class(datatype_finalize, datatype_foreach);
+  }
+  return lean_alloc_external(g_datatype_class, datatype);
+}
+
+static inline const Datatype* datatype_unbox(b_lean_obj_arg datatype)
+{
+  return static_cast<Datatype*>(lean_get_external_data(datatype));
+}
+
+static inline Datatype* mut_datatype_unbox(b_lean_obj_arg datatype)
+{
+  return static_cast<Datatype*>(lean_get_external_data(datatype));
+}
+
+static void datatypeConstructor_finalize(void* obj)
+{
+  delete static_cast<DatatypeConstructor*>(obj);
+}
+
+static void datatypeConstructor_foreach(void*, b_lean_obj_arg)
+{
+  // do nothing since `DatatypeConstructor` does not contain nested Lean objects
+}
+
+static lean_external_class* g_datatypeConstructor_class = nullptr;
+
+static inline lean_obj_res datatypeConstructor_box(
+    DatatypeConstructor* datatype)
+{
+  if (g_datatypeConstructor_class == nullptr)
+  {
+    g_datatypeConstructor_class = lean_register_external_class(
+        datatypeConstructor_finalize, datatypeConstructor_foreach);
+  }
+  return lean_alloc_external(g_datatypeConstructor_class, datatype);
+}
+
+static inline const DatatypeConstructor* datatypeConstructor_unbox(
+    b_lean_obj_arg datatype)
+{
+  return static_cast<DatatypeConstructor*>(lean_get_external_data(datatype));
+}
+
+static inline DatatypeConstructor* mut_datatypeConstructor_unbox(
+    b_lean_obj_arg datatype)
+{
+  return static_cast<DatatypeConstructor*>(lean_get_external_data(datatype));
+}
+
 static void grammar_finalize(void* obj) { delete static_cast<Grammar*>(obj); }
 
 static void grammar_foreach(void*, b_lean_obj_arg)
 {
-  // do nothing since `Command` does not contain nested Lean objects
+  // do nothing since `Grammar` does not contain nested Lean objects
 }
 
 static lean_external_class* g_grammar_class = nullptr;
@@ -1695,6 +1831,326 @@ LEAN_EXPORT lean_obj_res termManager_mkOpOfIndices(lean_obj_arg tm,
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
 
+LEAN_EXPORT lean_obj_res termManager_mkDatatypeDecl(lean_obj_arg tm,
+                                                    lean_obj_arg name,
+                                                    lean_obj_arg sorts,
+                                                    lean_obj_arg isCoDatatype,
+                                                    lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  std::vector<Sort> ss;
+  for (size_t i = 0, n = lean_array_size(sorts); i < n; ++i)
+  {
+    ss.push_back(*sort_unbox(
+        lean_array_get(sort_box(new Sort()), sorts, lean_usize_to_nat(i))));
+  }
+  return env_val(
+      datatypeDecl_box(new DatatypeDecl(mut_tm_unbox(tm)->mkDatatypeDecl(
+          lean_string_cstr(name), ss, bool_unbox(lean_unbox(isCoDatatype))))),
+      ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+LEAN_EXPORT lean_obj_res termManager_mkDatatypeConstructorDecl(
+    lean_obj_arg tm, lean_obj_arg name, lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  return env_val(
+      datatypeConstructorDecl_box(new DatatypeConstructorDecl(
+          mut_tm_unbox(tm)->mkDatatypeConstructorDecl(lean_string_cstr(name)))),
+      ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+LEAN_EXPORT lean_obj_res termManager_mkDatatypeSort(lean_obj_arg tm,
+                                                    lean_obj_arg dtDecl,
+                                                    lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  return env_val(sort_box(new Sort(mut_tm_unbox(tm)->mkDatatypeSort(
+                     *datatypeDecl_unbox(dtDecl)))),
+                 ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+// # DatatypeConstructorDecl imports
+
+LEAN_EXPORT uint8_t datatypeConstructorDecl_isNull(lean_obj_arg dtConsDecl)
+{
+  return bool_box(datatypeConstructorDecl_unbox(dtConsDecl)->isNull());
+}
+
+LEAN_EXPORT lean_obj_res
+datatypeConstructorDecl_toString(lean_obj_arg dtConsDecl)
+{
+  return lean_mk_string(
+      datatypeConstructorDecl_unbox(dtConsDecl)->toString().c_str());
+}
+
+LEAN_EXPORT uint64_t datatypeConstructorDecl_hash(lean_obj_arg dtConsDecl)
+{
+  return std::hash<DatatypeConstructorDecl>()(
+      *datatypeConstructorDecl_unbox(dtConsDecl));
+}
+
+LEAN_EXPORT uint8_t datatypeConstructorDecl_beq(lean_obj_arg l, lean_obj_arg r)
+{
+  return bool_box(*datatypeConstructorDecl_unbox(l)
+                  == *datatypeConstructorDecl_unbox(r));
+}
+
+/** Clones the input datatype constructor declaration if it has strictly more
+than one reference to it, otherwise returns the input datatype constructor
+declaration. */
+lean_obj_arg datatypeConstructorDecl_pseudo_clone(lean_obj_arg dtConsDecl)
+{
+  if (lean_is_exclusive(dtConsDecl))
+    return dtConsDecl;
+  else
+    return datatypeConstructorDecl_box(new DatatypeConstructorDecl(
+        *datatypeConstructorDecl_unbox(dtConsDecl)));
+}
+
+LEAN_EXPORT lean_obj_res
+datatypeConstructorDecl_addSelector(lean_obj_arg dtConsDeclArg,
+                                    lean_obj_arg name,
+                                    lean_obj_arg sort,
+                                    lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  lean_obj_arg dtConsDecl = datatypeConstructorDecl_pseudo_clone(dtConsDeclArg);
+  mut_datatypeConstructorDecl_unbox(dtConsDecl)
+      ->addSelector(lean_string_cstr(name), *sort_unbox(sort));
+  return env_val(dtConsDecl, ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+LEAN_EXPORT lean_obj_res datatypeConstructorDecl_addSelectorSelf(
+    lean_obj_arg dtConsDeclArg, lean_obj_arg name, lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  lean_obj_arg dtConsDecl = datatypeConstructorDecl_pseudo_clone(dtConsDeclArg);
+  mut_datatypeConstructorDecl_unbox(dtConsDecl)
+      ->addSelectorSelf(lean_string_cstr(name));
+  return env_val(dtConsDecl, ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+LEAN_EXPORT lean_obj_res
+datatypeConstructorDecl_addSelectorUnresolved(lean_obj_arg dtConsDeclArg,
+                                              lean_obj_arg name,
+                                              lean_obj_arg sortName,
+                                              lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  lean_obj_arg dtConsDecl = datatypeConstructorDecl_pseudo_clone(dtConsDeclArg);
+  mut_datatypeConstructorDecl_unbox(dtConsDecl)
+      ->addSelectorUnresolved(lean_string_cstr(name),
+                              lean_string_cstr(sortName));
+  return env_val(dtConsDecl, ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+// # DatatypeDecl imports
+
+LEAN_EXPORT uint8_t datatypeDecl_isNull(lean_obj_arg dtDecl)
+{
+  return bool_box(datatypeDecl_unbox(dtDecl)->isNull());
+}
+
+LEAN_EXPORT lean_obj_res datatypeDecl_toString(lean_obj_arg dtDecl)
+{
+  return lean_mk_string(datatypeDecl_unbox(dtDecl)->toString().c_str());
+}
+
+LEAN_EXPORT uint64_t datatypeDecl_hash(lean_obj_arg dtDecl)
+{
+  return std::hash<DatatypeDecl>()(*datatypeDecl_unbox(dtDecl));
+}
+
+LEAN_EXPORT uint8_t datatypeDecl_beq(lean_obj_arg l, lean_obj_arg r)
+{
+  return bool_box(*datatypeDecl_unbox(l) == *datatypeDecl_unbox(r));
+}
+
+LEAN_EXPORT uint8_t datatypeDecl_isParametric(lean_obj_arg dtDecl)
+{
+  return bool_box(datatypeDecl_unbox(dtDecl)->isParametric());
+}
+
+LEAN_EXPORT lean_obj_res datatypeDecl_getName(lean_obj_arg dtDecl)
+{
+  return lean_mk_string(datatypeDecl_unbox(dtDecl)->getName().c_str());
+}
+
+/** Clones the input datatype declaration if it has strictly more than one
+reference to it, otherwise returns the input datatype declaration. */
+lean_obj_arg datatypeDecl_pseudo_clone(lean_obj_arg datatypeDecl)
+{
+  if (lean_is_exclusive(datatypeDecl))
+    return datatypeDecl;
+  else
+    return datatypeDecl_box(
+        new DatatypeDecl(*datatypeDecl_unbox(datatypeDecl)));
+}
+
+LEAN_EXPORT lean_obj_res datatypeDecl_addConstructor(lean_obj_arg dtDeclArg,
+                                                     lean_obj_arg dtCons,
+                                                     lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  lean_obj_arg dtDecl = datatypeDecl_pseudo_clone(dtDeclArg);
+  mut_datatypeDecl_unbox(dtDecl)->addConstructor(
+      *datatypeConstructorDecl_unbox(dtCons));
+  return env_val(dtDecl, ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+LEAN_EXPORT lean_obj_res datatypeDecl_getNumConstructors(lean_obj_arg dtDecl)
+{
+  return lean_usize_to_nat(datatypeDecl_unbox(dtDecl)->getNumConstructors());
+}
+
+LEAN_EXPORT lean_obj_res datatypeDecl_isResolved(lean_obj_arg dtDecl,
+                                                 lean_obj_arg ioWorld)
+{
+  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+  return env_bool(datatypeDecl_unbox(dtDecl)->isResolved(), ioWorld);
+  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+}
+
+// # Datatype imports
+
+LEAN_EXPORT lean_obj_res sort_getDatatype(lean_obj_arg s)
+{
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  return except_ok(datatype_box(new Datatype((sort_unbox(s)->getDatatype()))));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
+}
+
+LEAN_EXPORT lean_obj_res datatype_null(lean_obj_arg unit)
+{
+  return datatype_box(new Datatype());
+}
+
+LEAN_EXPORT uint8_t datatype_isNull(lean_obj_arg datatype)
+{
+  return bool_box(datatype_unbox(datatype)->isNull());
+}
+
+LEAN_EXPORT lean_obj_res datatype_toString(lean_obj_arg datatype)
+{
+  return lean_mk_string(datatype_unbox(datatype)->toString().c_str());
+}
+
+LEAN_EXPORT uint64_t datatype_hash(lean_obj_arg datatype)
+{
+  return std::hash<Datatype>()(*datatype_unbox(datatype));
+}
+
+LEAN_EXPORT uint8_t datatype_beq(lean_obj_arg l, lean_obj_arg r)
+{
+  return bool_box(*datatype_unbox(l) == *datatype_unbox(r));
+}
+
+LEAN_EXPORT uint8_t datatype_isParametric(lean_obj_arg datatype)
+{
+  return bool_box(datatype_unbox(datatype)->isParametric());
+}
+
+LEAN_EXPORT uint8_t datatype_isCodatatype(lean_obj_arg datatype)
+{
+  return bool_box(datatype_unbox(datatype)->isCodatatype());
+}
+
+LEAN_EXPORT lean_obj_res datatype_getName(lean_obj_arg datatype)
+{
+  return lean_mk_string(datatype_unbox(datatype)->getName().c_str());
+}
+
+LEAN_EXPORT lean_obj_res datatype_getNumConstructors(lean_obj_arg datatype)
+{
+  return lean_usize_to_nat(datatype_unbox(datatype)->getNumConstructors());
+}
+
+LEAN_EXPORT lean_obj_res datatype_getConstructor(lean_obj_arg datatype,
+                                                 lean_obj_arg name)
+{
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  return except_ok(datatypeConstructor_box(new DatatypeConstructor(
+      datatype_unbox(datatype)->getConstructor(lean_string_cstr(name)))));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
+}
+
+LEAN_EXPORT lean_obj_res datatype_getConstructorAt(lean_obj_arg datatype,
+                                                   lean_obj_arg idx)
+{
+  return datatypeConstructor_box(new DatatypeConstructor(
+      (*datatype_unbox(datatype))[lean_usize_of_nat(idx)]));
+}
+
+// /** Clones the input datatype declaration if it has strictly more than one
+// reference to it, otherwise returns the input datatype declaration. */
+// lean_obj_arg datatype_pseudo_clone(lean_obj_arg datatypeDecl)
+// {
+//   if (lean_is_exclusive(datatypeDecl))
+//     return datatypeDecl;
+//   else
+//     return datatype_box(new Datatype(*datatype_unbox(datatypeDecl)));
+// }
+
+// LEAN_EXPORT lean_obj_res datatype_addConstructor(lean_obj_arg datatypeArg,
+//                                                   lean_obj_arg dtCons,
+//                                                   lean_obj_arg ioWorld)
+// {
+//   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+//   lean_obj_arg datatype = datatype_pseudo_clone(datatypeArg);
+//   mut_datatype_unbox(datatype)->addConstructor(*datatypeConstructorDecl_unbox(dtCons));
+//   return env_val(datatype, ioWorld);
+//   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+// }
+
+// LEAN_EXPORT lean_obj_res datatype_isResolved(lean_obj_arg datatype,
+//                                                   lean_obj_arg ioWorld)
+// {
+//   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
+//   return env_bool(datatype_unbox(datatype)->isResolved(), ioWorld);
+//   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
+// }
+
+// # DatatypeConstructor imports
+
+LEAN_EXPORT lean_obj_res datatypeConstructor_null(lean_obj_arg unit)
+{
+  return datatypeConstructor_box(new DatatypeConstructor());
+}
+
+LEAN_EXPORT uint8_t datatypeConstructor_isNull(lean_obj_arg dtCons)
+{
+  return bool_box(datatypeConstructor_unbox(dtCons)->isNull());
+}
+
+LEAN_EXPORT lean_obj_res datatypeConstructor_toString(lean_obj_arg dtCons)
+{
+  return lean_mk_string(datatypeConstructor_unbox(dtCons)->toString().c_str());
+}
+
+LEAN_EXPORT uint64_t datatypeConstructor_hash(lean_obj_arg dtCons)
+{
+  return std::hash<DatatypeConstructor>()(*datatypeConstructor_unbox(dtCons));
+}
+
+LEAN_EXPORT uint8_t datatypeConstructor_beq(lean_obj_arg l, lean_obj_arg r)
+{
+  return bool_box(*datatypeConstructor_unbox(l)
+                  == *datatypeConstructor_unbox(r));
+}
+
+LEAN_EXPORT lean_obj_res datatypeConstructor_getTerm(lean_obj_arg dtCons)
+{
+  return term_box(new Term(datatypeConstructor_unbox(dtCons)->getTerm()));
+}
+
 // # Grammar imports
 
 LEAN_EXPORT uint8_t grammar_isNull(lean_obj_arg gram)
@@ -2055,7 +2511,6 @@ LEAN_EXPORT lean_obj_res solver_getLogic(b_lean_obj_arg solver,
 LEAN_EXPORT lean_obj_res solver_simplify(lean_obj_arg solver,
                                          lean_obj_arg term,
                                          lean_obj_arg applySubs,
-
                                          lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
@@ -2070,7 +2525,6 @@ LEAN_EXPORT lean_obj_res solver_declareFun(lean_obj_arg solver,
                                            lean_obj_arg sorts,
                                            lean_obj_arg sort,
                                            uint8_t fresh,
-
                                            lean_obj_arg ioWorld)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
