@@ -17,18 +17,18 @@ namespace cvc5.Test
 test![TestApiBlackDatatype, mkDatatypeSort] tm => do
   let int ← tm.getIntegerSort
   let mut dtSpec ← tm.mkDatatypeDecl "list"
-  let mut cons ← tm.mkDatatypeConstructorDecl "cons"
-  cons ← cons.addSelector "head" int
-  dtSpec ← dtSpec.addConstructor cons
-  let nil ← tm.mkDatatypeConstructorDecl "nil"
-  dtSpec ← dtSpec.addConstructor nil
+  let mut consSpec ← tm.mkDatatypeConstructorDecl "cons"
+  consSpec ← consSpec.addSelector "head" int
+  dtSpec ← dtSpec.addConstructor consSpec
+  let nilSpec ← tm.mkDatatypeConstructorDecl "nil"
+  dtSpec ← dtSpec.addConstructor nilSpec
   let listSort ← tm.mkDatatypeSort dtSpec
   let d ← listSort.getDatatype
   let consLen := d.getNumConstructors
   if h : consLen = 2 then
-    let consConstr := d[0]
+    let consCtor := d[0]
     let nilConstr := d[1]
-    assertOkDiscard consConstr.getTerm
+    assertOkDiscard consCtor.getTerm
     assertOkDiscard nilConstr.getTerm
   else println! "unexpected number of constructors: {d.getNumConstructors}"
 
@@ -90,55 +90,55 @@ test![TestApiBlackDatatype, isNull] tm => do
 test![TestApiBlackDatatype, equalHash] tm => do
   let int ← tm.getIntegerSort
 
-  let mut dtSpec1 ← tm.mkDatatypeDecl "list"
-  let mut cons1 ← tm.mkDatatypeConstructorDecl "cons"
-  cons1 ← cons1.addSelector "head" int
-  dtSpec1 ← dtSpec1.addConstructor cons1
-  let nil1 ← tm.mkDatatypeConstructorDecl "nil"
-  dtSpec1 ← dtSpec1.addConstructor nil1
-  let listSort1 ← tm.mkDatatypeSort dtSpec1
-  let list1 ← listSort1.getDatatype
-  let consConstr1 := list1[0]!
-  let nilConstr1 := list1[1]!
-  let head1 ← consConstr1.getSelector "head"
+  let mut dt1Spec ← tm.mkDatatypeDecl "list"
+  let mut cons1Spec ← tm.mkDatatypeConstructorDecl "cons"
+  cons1Spec ← cons1Spec.addSelector "head" int
+  dt1Spec ← dt1Spec.addConstructor cons1Spec
+  let nil1Spec ← tm.mkDatatypeConstructorDecl "nil"
+  dt1Spec ← dt1Spec.addConstructor nil1Spec
+  let list1Sort ← tm.mkDatatypeSort dt1Spec
+  let list1 ← list1Sort.getDatatype
+  let cons1Ctor := list1[0]!
+  let nil1Ctor := list1[1]!
+  let head1 ← cons1Ctor.getSelector "head"
 
-  let mut dtSpec2 ← tm.mkDatatypeDecl "list"
-  let mut cons2 ← tm.mkDatatypeConstructorDecl "cons"
-  cons2 ← cons2.addSelector "head" int
-  dtSpec2 ← dtSpec2.addConstructor cons2
-  let nil2 ← tm.mkDatatypeConstructorDecl "nil"
-  dtSpec2 ← dtSpec2.addConstructor nil2
-  let listSort2 ← tm.mkDatatypeSort dtSpec2
-  let list2 ← listSort2.getDatatype
-  let consConstr2 := list2[0]!
-  let nilConstr2 := list2[1]!
-  let head2 ← consConstr2.getSelector "head"
+  let mut dt2Spec ← tm.mkDatatypeDecl "list"
+  let mut cons2Spec ← tm.mkDatatypeConstructorDecl "cons"
+  cons2Spec ← cons2Spec.addSelector "head" int
+  dt2Spec ← dt2Spec.addConstructor cons2Spec
+  let nil2Spec ← tm.mkDatatypeConstructorDecl "nil"
+  dt2Spec ← dt2Spec.addConstructor nil2Spec
+  let list2Sort ← tm.mkDatatypeSort dt2Spec
+  let list2 ← list2Sort.getDatatype
+  let cons2Ctor := list2[0]!
+  let nil2Ctor := list2[1]!
+  let head2 ← cons2Ctor.getSelector "head"
 
-  assertEq dtSpec1 dtSpec1
-  assertNe dtSpec1 dtSpec2
-  assertEq cons1 cons1
-  assertNe cons1 cons2
-  assertEq nil1 nil1
-  assertNe nil1 nil2
-  assertEq consConstr1 consConstr1
-  assertNe consConstr1 consConstr2
-  assertEq nilConstr1 nilConstr1
-  assertNe nilConstr1 nilConstr2
+  assertEq dt1Spec dt1Spec
+  assertNe dt1Spec dt2Spec
+  assertEq cons1Spec cons1Spec
+  assertNe cons1Spec cons2Spec
+  assertEq nil1Spec nil1Spec
+  assertNe nil1Spec nil2Spec
+  assertEq cons1Ctor cons1Ctor
+  assertNe cons1Ctor cons2Ctor
+  assertEq nil1Ctor nil1Ctor
+  assertNe nil1Ctor nil2Ctor
   assertEq head1 head1
   assertNe head1 head2
   assertEq list1 list1
   assertNe list1 list2
 
-  assertEq dtSpec1.hash dtSpec1.hash
-  assertEq dtSpec1.hash dtSpec2.hash
-  assertEq cons1.hash cons1.hash
-  assertEq cons1.hash cons2.hash
-  assertEq nil1.hash nil1.hash
-  assertEq nil1.hash nil2.hash
-  assertEq consConstr1.hash consConstr1.hash
-  assertEq consConstr1.hash consConstr2.hash
-  assertEq nilConstr1.hash nilConstr1.hash
-  assertEq nilConstr1.hash nilConstr2.hash
+  assertEq dt1Spec.hash dt1Spec.hash
+  assertEq dt1Spec.hash dt2Spec.hash
+  assertEq cons1Spec.hash cons1Spec.hash
+  assertEq cons1Spec.hash cons2Spec.hash
+  assertEq nil1Spec.hash nil1Spec.hash
+  assertEq nil1Spec.hash nil2Spec.hash
+  assertEq cons1Ctor.hash cons1Ctor.hash
+  assertEq cons1Ctor.hash cons2Ctor.hash
+  assertEq nil1Ctor.hash nil1Ctor.hash
+  assertEq nil1Ctor.hash nil2Ctor.hash
   assertEq head1.hash head1.hash
   assertEq head1.hash head2.hash
   assertEq list1.hash list1.hash
@@ -193,7 +193,7 @@ test![TestApiBlackDatatype, mkDatatypeSorts] tm => do
   for h : idx in [:dtSorts.size] do
     let sort := dtSorts[idx]
     assertTrue sort.isDatatype
-    assertFalse sort.getDatatype!.isFinite
+    assertFalse <| ← assertOk sort.getDatatype!.isFinite
     assertEq sort.getDatatype!.getName! dtSpecs[idx]!.getName!
 
   -- verify the resolution was correct
@@ -244,7 +244,7 @@ test![TestApiBlackDatatype, mkDatatypeSortsSelUnres] tm => do
   for h : idx in [:dtSorts.size] do
     let sort := dtSorts[idx]
     assertTrue sort.isDatatype
-    assertFalse sort.getDatatype!.isFinite
+    assertFalse <| ← assertOk sort.getDatatype!.isFinite
     assertEq sort.getDatatype!.getName! dtSpecs[idx]!.getName!
 
   -- verify the resolution was correct
@@ -277,7 +277,7 @@ test![TestApiBlackDatatype, mkDatatypeSortsSelUnres] tm => do
   assertFalse dt.isCodatatype
   assertFalse dt.isTuple
   assertFalse dt.isRecord
-  assertFalse dt.isFinite
+  assertFalse <| ← assertOk dt.isFinite
   assertTrue dt.isWellFounded
   -- get constructor
   let dcons := dt[0]!
@@ -295,7 +295,7 @@ test![TestApiBlackDatatype, mkDatatypeSortsSelUnres] tm => do
   let dtSortEnum ← tm.mkDatatypeSort dtSpecEnum
   let dtEnum := dtSortEnum.getDatatype!
   assertFalse dtEnum.isTuple
-  assertTrue dtEnum.isFinite
+  assertTrue <| ← assertOk dtEnum.isFinite
 
   -- create codatatype
   let mut dtSpecStream ← tm.mkDatatypeDecl "stream" (isCoDatatype := true)
@@ -306,7 +306,7 @@ test![TestApiBlackDatatype, mkDatatypeSortsSelUnres] tm => do
   let dtSortStream ← tm.mkDatatypeSort dtSpecStream
   let dtStream := dtSortStream.getDatatype!
   assertTrue dtStream.isCodatatype
-  assertFalse dtStream.isFinite
+  assertFalse <| ← assertOk dtStream.isFinite
   -- codatatypes may be well-founded
   assertTrue dtStream.isWellFounded
 
@@ -315,7 +315,7 @@ test![TestApiBlackDatatype, mkDatatypeSortsSelUnres] tm => do
   let dtTuple := tupSort.getDatatype!
   assertTrue dtTuple.isTuple
   assertFalse dtTuple.isRecord
-  assertTrue dtTuple.isFinite
+  assertTrue <| ← assertOk dtTuple.isFinite
   assertTrue dtTuple.isWellFounded
 
   -- create record
@@ -325,7 +325,7 @@ test![TestApiBlackDatatype, mkDatatypeSortsSelUnres] tm => do
   let dtRecord := recSort.getDatatype!
   assertFalse dtRecord.isTuple
   assertTrue dtRecord.isRecord
-  assertFalse dtRecord.isFinite
+  assertFalse <| ← assertOk dtRecord.isFinite
   assertTrue dtRecord.isWellFounded
 
 test![TestApiBlackDatatype, datatypeNames] tm => do
@@ -370,3 +370,259 @@ test![TestApiBlackDatatype, datatypeNames] tm => do
   -- possible to construct null datatype declarations if not using solver
   DatatypeDecl.null () |>.getName |> assertError
     "invalid call to 'std::string cvc5::DatatypeDecl::getName() const', expected non-null object"
+
+test![TestApiBlackDatatype, parametricDatatype] tm => do
+  let int ← tm.getIntegerSort
+  let real ← tm.getRealSort
+
+  let t1 ← tm.mkParamSort "T1"
+  let t2 ← tm.mkParamSort "T2"
+  let types := #[t1, t2]
+  let mut pairSpec ← tm.mkDatatypeDecl "pair" types
+
+  let mut mkPairSpec ← tm.mkDatatypeConstructorDecl "mk-pair"
+  mkPairSpec ← mkPairSpec.addSelector "first" t1
+  mkPairSpec ← mkPairSpec.addSelector "second" t2
+  pairSpec ← pairSpec.addConstructor mkPairSpec
+
+  let pairSort ← tm.mkDatatypeSort pairSpec
+
+  assertTrue pairSort.getDatatype!.isParametric
+  let dParams ← pairSort.getDatatype!.getParameters
+  assertTrue (dParams[0]! == t1)
+  assertTrue (dParams[1]! == t2)
+
+  let pairIntInt ← pairSort.instantiate #[int, int]
+  let pairRealReal ← pairSort.instantiate #[real, real]
+  let pairRealInt ← pairSort.instantiate #[real, int]
+  let pairIntReal ← pairSort.instantiate #[int, real]
+
+  assertNe pairIntInt pairRealReal
+  assertNe pairIntReal pairRealReal
+  assertNe pairRealInt pairRealReal
+  assertNe pairIntInt pairIntReal
+  assertNe pairIntInt pairRealInt
+  assertNe pairIntReal pairRealInt
+
+test![TestApiBlackDatatype, isFinite] tm => do
+  let bool ← tm.getBooleanSort
+  let mut dtDecl ← tm.mkDatatypeDecl "dt" #[]
+  let mut ctorDecl ← tm.mkDatatypeConstructorDecl "cons"
+  ctorDecl ← ctorDecl.addSelector "sel" bool
+  dtDecl ← dtDecl.addConstructor ctorDecl
+  let dt ← tm.mkDatatypeSort dtDecl
+  assertTrue <| ← assertOk dt.getDatatype!.isFinite
+
+  let p ← tm.mkParamSort "p1"
+  let mut pDtDecl ← tm.mkDatatypeDecl "dt" #[p]
+  let mut pCtorDecl ← tm.mkDatatypeConstructorDecl "cons"
+  pCtorDecl ← pCtorDecl.addSelector "sel" p
+  pDtDecl ← pDtDecl.addConstructor pCtorDecl
+  let pDt ← tm.mkDatatypeSort pDtDecl
+  pDt.getDatatype!.isFinite |> assertError
+    "invalid call to 'isFinite()', expected non-parametric datatype"
+
+test![TestApiBlackDatatype, datatypeSimplyRec] tm => do
+  /- Create mutual datatypes corresponding to this definition block:
+
+  ```
+  DATATYPE
+    wList = leaf(data: list),
+    list = cons(car: wList, cdr: list) | nil,
+    ns = elem(ndata: set(wList)) | elemArray(ndata2: array(list, list))
+  END;
+  ```
+  -/
+
+  -- make unresolved types as placeholders
+  let unresWList ← tm.mkUnresolvedDatatypeSort "wList"
+  let unresList ← tm.mkUnresolvedDatatypeSort "list"
+
+  let mut wListSpec ← tm.mkDatatypeDecl "wList"
+  let mut leafSpec ← tm.mkDatatypeConstructorDecl "leaf"
+  leafSpec ← leafSpec.addSelector "data" unresList
+  wListSpec ← wListSpec.addConstructor leafSpec
+
+  let mut listSpec ← tm.mkDatatypeDecl "list"
+  let mut consSpec ← tm.mkDatatypeConstructorDecl "cons"
+  consSpec ← consSpec.addSelector "car" unresWList
+  consSpec ← consSpec.addSelector "cdr" unresList
+  listSpec ← listSpec.addConstructor consSpec
+  let nilSpec ← tm.mkDatatypeConstructorDecl "nil"
+  listSpec ← listSpec.addConstructor nilSpec
+
+  let mut nsSpec ← tm.mkDatatypeDecl "ns"
+  let mut elemSpec ← tm.mkDatatypeConstructorDecl "elem"
+  elemSpec ← elemSpec.addSelector "nData" (← tm.mkSetSort unresWList)
+  nsSpec ← nsSpec.addConstructor elemSpec
+  let mut elemArraySpec ← tm.mkDatatypeConstructorDecl "elemArray"
+  elemArraySpec ← elemArraySpec.addSelector "nData" (← tm.mkArraySort unresList unresList)
+  nsSpec ← nsSpec.addConstructor elemArraySpec
+
+  let dtDecls := #[wListSpec, listSpec, nsSpec]
+  let dtSorts ← assertOk <| tm.mkDatatypeSorts dtDecls
+  assertEq 3 dtSorts.size
+  assertTrue dtSorts[0]!.getDatatype!.isWellFounded
+  assertTrue dtSorts[1]!.getDatatype!.isWellFounded
+  assertTrue dtSorts[2]!.getDatatype!.isWellFounded
+
+  /- Create mutual datatypes corresponding to this definition block:
+
+  ```
+  DATATYPE
+    ns2 = elem2(nData: array(int, ns2)) | nil2
+  END;
+  ```
+  -/
+  let unresNs2 ← tm.mkUnresolvedDatatypeSort "ns2"
+
+  let mut ns2Spec ← tm.mkDatatypeDecl "ns2"
+  let mut elem2Spec ← tm.mkDatatypeConstructorDecl "elem2"
+  let int ← tm.getIntegerSort
+  elem2Spec ← elem2Spec.addSelector "nData" (← tm.mkArraySort int unresNs2)
+  ns2Spec ← ns2Spec.addConstructor elem2Spec
+  let nil2Spec ← tm.mkDatatypeConstructorDecl "nil2"
+  ns2Spec ← ns2Spec.addConstructor nil2Spec
+
+  let dtDecls := #[ns2Spec]
+  -- this is not well-founded due to non-simple recursion
+  let dtSorts ← tm.mkDatatypeSorts dtDecls
+  assertEq 1 dtSorts.size
+  let codom ← dtSorts[0]!.getDatatype![0]![0]!.getCodomainSort
+  assertTrue codom.isArray
+  assertEq codom.getArrayElementSort! dtSorts[0]!
+  assertTrue dtSorts[0]!.getDatatype!.isWellFounded
+
+  /- Create mutual datatypes corresponding to this definition block:
+
+  ```
+  DATATYPE
+    list3 = cons3(car: ns3, cdr: list3) | nil3,
+    ns3 = elem3(nData: set(list3))
+  END;
+  ```
+  -/
+  let unresNs3 ← tm.mkUnresolvedDatatypeSort "ns3"
+  let unresList3 ← tm.mkUnresolvedDatatypeSort "list3"
+
+  let mut list3Spec ← tm.mkDatatypeDecl "list3"
+  let mut cons3Spec ← tm.mkDatatypeConstructorDecl "cons3"
+  cons3Spec ← cons3Spec.addSelector "car" unresNs3
+  cons3Spec ← cons3Spec.addSelector "cdr" unresList3
+  list3Spec ← list3Spec.addConstructor cons3Spec
+  let nil3Spec ← tm.mkDatatypeConstructorDecl "nil3"
+  list3Spec ← list3Spec.addConstructor nil3Spec
+
+  let mut ns3Spec ← tm.mkDatatypeDecl "ns3"
+  let mut elem3Spec ← tm.mkDatatypeConstructorDecl "elem3"
+  elem3Spec ← elem3Spec.addSelector "nData" (← tm.mkSetSort unresList3)
+  ns3Spec ← ns3Spec.addConstructor elem3Spec
+
+  let dtDecls := #[list3Spec, ns3Spec]
+
+  -- both are well-founded and have nested recursion
+  let dtSorts ← tm.mkDatatypeSorts dtDecls
+  assertEq 2 dtSorts.size
+  assertTrue dtSorts[0]!.getDatatype!.isWellFounded
+  assertTrue dtSorts[1]!.getDatatype!.isWellFounded
+
+  /- Create mutual datatypes corresponding to this definition block:
+
+  ```
+  DATATYPE
+    list4 = cons(car: set(ns4), cdr: list4) | nil,
+    ns4 = elem(nData: list4)
+  END;
+  ```
+  -/
+  let unresNs4 ← tm.mkUnresolvedDatatypeSort "ns4"
+  let unresList4 ← tm.mkUnresolvedDatatypeSort "list4"
+
+  let mut list4Spec ← tm.mkDatatypeDecl "list4"
+  let mut cons4Spec ← tm.mkDatatypeConstructorDecl "cons4"
+  cons4Spec ← cons4Spec.addSelector "car" (← tm.mkSetSort unresNs4)
+  cons4Spec ← cons4Spec.addSelector "cdr" unresList4
+  list4Spec ← list4Spec.addConstructor cons4Spec
+  let nil4Spec ← tm.mkDatatypeConstructorDecl "nil4"
+  list4Spec ← list4Spec.addConstructor nil4Spec
+
+  let mut ns4Spec ← tm.mkDatatypeDecl "ns4"
+  let mut elem4Spec ← tm.mkDatatypeConstructorDecl "elem4"
+  elem4Spec ← elem4Spec.addSelector "nData" unresList4
+  ns4Spec ← ns4Spec.addConstructor elem4Spec
+
+  let dtDecls := #[list4Spec, ns4Spec]
+  let dtSorts ← tm.mkDatatypeSorts dtDecls
+  assertEq 2 dtSorts.size
+  assertTrue dtSorts[0]!.getDatatype!.isWellFounded
+  assertTrue dtSorts[1]!.getDatatype!.isWellFounded
+
+  /- Create mutual datatypes corresponding to this definition block:
+
+  ```
+  DATATYPE
+    list5[X] = cons(car: X, cdr: list5[list5[X]]) | nil
+  END;
+  ```
+  -/
+  let unresList5 ← tm.mkUninterpretedSortConstructorSort 1 "list5"
+
+  let xSort ← tm.mkParamSort "X"
+
+  let mut list5Spec ← tm.mkDatatypeDecl "list5 sortParams" #[xSort]
+  let urListX ← unresList5.instantiate #[xSort]
+  let urListListX ← unresList5.instantiate #[urListX]
+
+  let mut cons5Spec ← tm.mkDatatypeConstructorDecl "cons5"
+  cons5Spec ← cons5Spec.addSelector "car" xSort
+  cons5Spec ← cons5Spec.addSelector "cdr" urListListX
+  list5Spec ← list5Spec.addConstructor cons5Spec
+  let nil5Spec ← tm.mkDatatypeConstructorDecl "nil5"
+  list5Spec ← list5Spec.addConstructor nil5Spec
+
+  -- well-founded and has nested recursion
+  let dtSorts ← tm.mkDatatypeSorts #[list5Spec]
+  assertEq 1 dtSorts.size
+  assertTrue dtSorts[0]!.getDatatype!.isWellFounded
+
+test![TestApiBlackDatatype, datatypeSpecializedCons] tm => do
+  /- Create mutual datatypes corresponding to this definition block:
+
+  ```
+  DATATYPE
+    pList[X] = pCons(car: X, cdr: pList[X]) | pNil
+  END;
+  ```
+  -/
+  -- make unresolved types as placeholders
+  let unresList ← tm.mkUninterpretedSortConstructorSort 1 "pList"
+
+  let xSort ← tm.mkParamSort "X"
+  let mut pListSpec ← tm.mkDatatypeDecl "pList" #[xSort]
+
+  let urListX ← unresList.instantiate #[xSort]
+  let mut pConsSpec ← tm.mkDatatypeConstructorDecl "pCons"
+  pConsSpec ← pConsSpec.addSelector "car" xSort
+  pConsSpec ← pConsSpec.addSelector "cdr" urListX
+  pListSpec ← pListSpec.addConstructor pConsSpec
+  let nil5Spec ← tm.mkDatatypeConstructorDecl "pNil"
+  pListSpec ← pListSpec.addConstructor nil5Spec
+
+  let dtSorts ← tm.mkDatatypeSorts #[pListSpec]
+  assertEq 1 dtSorts.size
+  let dt ← dtSorts[0]!.getDatatype
+  let nilCtor := dt[0]!
+
+  let int ← tm.getIntegerSort
+  let listInt ← dtSorts[0]!.instantiate #[int]
+
+  let liParams ← listInt.getDatatype!.getParameters
+  -- the parameter of the datatype is not instantiated
+  assertEq 1 liParams.size
+  assertEq xSort liParams[0]!
+
+  let testConsTerm ← nilCtor.getInstantiatedTerm listInt
+  assertNe testConsTerm (← nilCtor.getTerm)
+  -- error to get the specialized constructor term for `Int`
+  nilCtor.getInstantiatedTerm int |> assertError
+    "cannot get specialized constructor type for non-datatype type Int"
