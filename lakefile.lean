@@ -20,7 +20,7 @@ def uncompress (file : FilePath) (dir : FilePath) : LogIO PUnit := do
 
 def cvc5.url := "https://github.com/abdoo8080/cvc5/releases/download"
 
-def cvc5.version := "test"
+def cvc5.version := "cvc5-1.3.2"
 
 def cvc5.os :=
   if Platform.isWindows then "Win64"
@@ -116,9 +116,6 @@ input_file libpicpoly where
 
 input_file libpicpolyxx where
   path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "picpolyxx" true
-
-input_file libucrt where
-  path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "ucrt" true
 
 def libs : Array (Target FilePath) :=
   if Platform.isWindows then
