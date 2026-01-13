@@ -2325,9 +2325,11 @@ LEAN_EXPORT uint8_t datatype_isRecord(lean_obj_arg datatype)
   return bool_box(datatype_unbox(datatype)->isRecord());
 }
 
-LEAN_EXPORT uint8_t datatype_isFinite(lean_obj_arg datatype)
+LEAN_EXPORT lean_obj_res datatype_isFinite(lean_obj_arg datatype)
 {
-  return bool_box(datatype_unbox(datatype)->isFinite());
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  return except_ok_bool(bool_box(datatype_unbox(datatype)->isFinite()));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
 LEAN_EXPORT uint8_t datatype_isWellFounded(lean_obj_arg datatype)

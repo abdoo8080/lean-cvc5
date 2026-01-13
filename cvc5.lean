@@ -869,6 +869,37 @@ This function should not be used for parametric datatypes. Instead, use the func
 -/
 extern_def getTerm : DatatypeConstructor → Env Term
 
+/-- Get the constructor term of this datatype constructor whose return type is `retSort`.
+
+This function is intended to be used on constructors of parametric datatypes and can be seen as
+returning the constructor term that has been explicitly cast to the given sort.
+
+This function is required for constructors of parametric datatypes whose return type cannot be
+determined by type inference. For example, given:
+
+```smtlib
+(declare-datatype List (par (T) ((nil) (cons (head T) (tail (List T))))))
+```
+
+The type of nil terms must be provided by the user. In SMT version 2.6, this is done via the syntax
+for qualified identifiers:
+
+```smtlib
+(as nil (List Int))
+```
+
+This function is equivalent of applying the above, where this DatatypeConstructor is the one
+corresponding to `nil`, and `retSort` is `(List Int)`.
+
+The returned constructor term `t` is used to construct the above (nullary) application of `nil` with
+`TermManager::mkTerm(Kind::APPLY_CONSTRUCTOR, {t})`.
+
+**Warning**: this function is experimental and may change in future versions.
+
+- `retSort` The desired return sort of the constructor.
+-/
+extern_def getInstantiatedTerm : DatatypeConstructor → (retSort : cvc5.Sort) → Env Term
+
 /-- Get the tester term of this datatype constructor.
 
 Similar to constructors, testers are a class of function-like terms of tester sort
@@ -952,7 +983,7 @@ extern_def isTuple : Datatype → Bool
 extern_def isRecord : Datatype → Bool
 
 /-- Determine if this datatype is finite. -/
-extern_def isFinite : Datatype → Bool
+extern_def isFinite : Datatype → Except Error Bool
 
 /-- Determine if this datatype is well-founded.
 
