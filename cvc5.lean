@@ -441,7 +441,7 @@ end DatatypeSelector
 
 private opaque DatatypeConstructorImpl : NonemptyType.{0}
 
-/-- A cvc5 datatype. -/
+/-- A cvc5 datatype constructor. -/
 def DatatypeConstructor : Type := DatatypeConstructorImpl.type
 
 namespace DatatypeConstructor
@@ -764,6 +764,13 @@ protected extern_def hash : DatatypeDecl → UInt64
 
 instance : Hashable DatatypeDecl := ⟨DatatypeDecl.hash⟩
 
+/-- Add datatype constructor declaration.
+
+- `ctor` The datatype constructor declaration to add.
+-/
+extern_def addConstructor :
+  DatatypeDecl → (ctor : DatatypeConstructorDecl) → Env DatatypeDecl
+
 /-- Get the number of constructors for this datatype declaration. -/
 extern_def getNumConstructors : DatatypeDecl → Nat
 
@@ -780,13 +787,6 @@ extern_def!? getName : DatatypeDecl → Except Error String
 datatype).
 -/
 extern_def isResolved : DatatypeDecl → Env Bool
-
-/-- Add datatype constructor declaration.
-
-- `ctor` The datatype constructor declaration to add.
--/
-extern_def addConstructor :
-  DatatypeDecl → (ctor : DatatypeConstructorDecl) → Env DatatypeDecl
 
 end DatatypeDecl
 
@@ -956,6 +956,47 @@ protected extern_def hash : Datatype → UInt64
 
 instance : Hashable Datatype := ⟨Datatype.hash⟩
 
+/-- Get the datatype constructor with the given name.
+
+This is a linear search through the constructors, so in case of multiple, similarly-named
+constructors, the first is returned.
+
+- `name` The name of the datatype constructor.
+-/
+extern_def getConstructor : Datatype → (name : String) → Env DatatypeConstructor
+
+/-- Get the number of constructors of this datatype. -/
+extern_def getNumConstructors : Datatype → Nat
+
+/-- Get the datatype constructor at a given index.
+
+- `idx` The index of the datatype constructor to return.
+-/
+extern_def getConstructorAt :
+  (dt : Datatype) → (idx : Fin dt.getNumConstructors) → DatatypeConstructor
+
+instance : GetElem Datatype Nat DatatypeConstructor
+  fun dt idx => idx < dt.getNumConstructors
+where
+  getElem dt idx h := dt.getConstructorAt ⟨idx, h⟩
+
+instance : ForIn m Datatype DatatypeConstructor where
+  forIn dt init fold := forIn' [:dt.getNumConstructors] init fun idx h_member acc =>
+    let constructor := dt.getConstructorAt ⟨idx, h_member.upper⟩
+    fold constructor acc
+
+/-- Get the datatype selector with the given name.
+
+This is a linear search through the constructors and their selectors, so in case of multiple,
+similarly-named selectors, the first is returned.
+
+- `name` The name of the datatype selector.
+-/
+extern_def getSelector : Datatype → (name : String) → Env DatatypeSelector
+
+/-- Get the name of this datatype. -/
+extern_def!? getName : Datatype → Except Error String
+
 /-- Get the parameters of this datatype, if it is parametric.
 
 Asserts that this datatype is parametric.
@@ -991,47 +1032,6 @@ If this datatype is not a codatatype, this returns false if thre are no values o
 that are of finite size.
 -/
 extern_def isWellFounded : Datatype → Bool
-
-/-- Get the name of this datatype. -/
-extern_def!? getName : Datatype → Except Error String
-
-/-- Get the number of constructors of this datatype. -/
-extern_def getNumConstructors : Datatype → Nat
-
-/-- Get the datatype constructor with the given name.
-
-This is a linear search through the constructors, so in case of multiple, similarly-named
-constructors, the first is returned.
-
-- `name` The name of the datatype constructor.
--/
-extern_def getConstructor : Datatype → (name : String) → Env DatatypeConstructor
-
-/-- Get the datatype constructor at a given index.
-
-- `idx` The index of the datatype constructor to return.
--/
-extern_def getConstructorAt :
-  (dt : Datatype) → (idx : Fin dt.getNumConstructors) → DatatypeConstructor
-
-instance : GetElem Datatype Nat DatatypeConstructor
-  fun dt idx => idx < dt.getNumConstructors
-where
-  getElem dt idx h := dt.getConstructorAt ⟨idx, h⟩
-
-instance : ForIn m Datatype DatatypeConstructor where
-  forIn dt init fold := forIn' [:dt.getNumConstructors] init fun idx h_member acc =>
-    let constructor := dt.getConstructorAt ⟨idx, h_member.upper⟩
-    fold constructor acc
-
-/-- Get the datatype selector with the given name.
-
-This is a linear search through the constructors and their selectors, so in case of multiple,
-similarly-named selectors, the first is returned.
-
-- `name` The name of the datatype selector.
--/
-extern_def getSelector : Datatype → (name : String) → Env DatatypeSelector
 
 end Datatype
 
