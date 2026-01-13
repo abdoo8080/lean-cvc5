@@ -20,7 +20,7 @@ def uncompress (file : FilePath) (dir : FilePath) : LogIO PUnit := do
 
 def cvc5.url := "https://github.com/abdoo8080/cvc5/releases/download"
 
-def cvc5.version := "8aeaa19"
+def cvc5.version := "cvc5-1.3.2"
 
 def cvc5.os :=
   if Platform.isWindows then "Win64"
@@ -97,32 +97,29 @@ target ffi.o pkg : FilePath := do
     buildO (compiler := compiler) oFile srcJob flags
 
 input_file libcadical where
-  path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "cadical"
+  path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "cadical" true
 
 input_file libcvc5 where
-  path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "cvc5"
+  path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "cvc5" true
 
 input_file libcvc5parser where
-  path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "cvc5parser"
+  path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "cvc5parser" true
 
 input_file libgmp where
-  path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "gmp"
+  path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "gmp" true
 
 input_file libgmpxx where
-  path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "gmpxx"
+  path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "gmpxx" true
 
 input_file libpicpoly where
-  path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "picpoly"
+  path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "picpoly" true
 
 input_file libpicpolyxx where
-  path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "picpolyxx"
-
-input_file libucrt where
-  path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "ucrt"
+  path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "picpolyxx" true
 
 def libs : Array (Target FilePath) :=
   if Platform.isWindows then
-    #[ffi.o, libcadical, libcvc5, libcvc5parser, libgmp, libgmpxx, libpicpoly, libpicpolyxx, libucrt]
+    #[ffi.o, libcadical, libcvc5, libcvc5parser, libgmp, libpicpoly, libpicpolyxx]
   else
     #[ffi.o, libcadical, libcvc5, libcvc5parser, libgmp, libgmpxx, libpicpoly, libpicpolyxx]
 

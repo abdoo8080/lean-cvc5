@@ -321,6 +321,29 @@ inductive FindSynthTarget where
 deriving Inhabited, Repr, BEq, DecidableEq
 
 /--
+Option category enumeration.
+Specifies the category of an option for user interface purposes.
+-/
+inductive OptionCategory where
+  /--
+  Option available to regular users 
+  -/
+  | REGULAR
+  /--
+  Option available to expert users 
+  -/
+  | EXPERT
+  /--
+  Common options 
+  -/
+  | COMMON
+  /--
+  Undocumented options 
+  -/
+  | UNDOCUMENTED
+deriving Inhabited, Repr, BEq, DecidableEq
+
+/--
 The different reasons for returning an "unknown" result.
 -/
 inductive InputLanguage where

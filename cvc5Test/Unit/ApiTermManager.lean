@@ -137,11 +137,6 @@ test! tm => do
   tm.mkFunctionSort #[funSort] int
   |> assertOkDiscard
   -- non-first-class arguments are not allowed
-  let reSort ← tm.getRegExpSort
-  tm.mkFunctionSort #[reSort] int
-  |> assertError
-    "invalid domain sort in 'sorts' at index 0, expected first-class sort as domain sort"
-  --
   tm.mkFunctionSort #[int] funSort
   |> assertError
     "invalid argument '(-> u Int)' for 'codomain', expected non-function sort as codomain sort"
