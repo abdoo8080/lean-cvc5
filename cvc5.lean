@@ -2382,13 +2382,6 @@ Returns the result of the find, which is the null term if this call failed.
 -/
 extern_def findSynthNext : Solver → Env Term
 
-/-- Parse a string containing SMT-LIB commands.
-
-Commands that produce a result such as `(check-sat)`, `(get-model)`, ... are executed but the
-results are ignored.
--/
-extern_def parseCommands : (solver : Solver) → (query : String) → Env (Array cvc5.Sort × Array Term)
-
 end Solver
 
 end cvc5

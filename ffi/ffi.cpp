@@ -3151,47 +3151,4 @@ LEAN_EXPORT lean_obj_res solver_findSynthNext(lean_obj_arg solver,
                  ioWorld);
   CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
 }
-
-LEAN_EXPORT lean_obj_res solver_parseCommands(lean_obj_arg solver,
-                                              lean_obj_arg query,
-
-                                              lean_obj_arg ioWorld)
-{
-  CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
-  Solver* slv = solver_unbox(solver);
-  // construct an input parser associated the solver above
-  parser::InputParser parser(slv);
-  // get the symbol manager of the parser, used when invoking commands below
-  parser::SymbolManager* sm = parser.getSymbolManager();
-  parser.setStringInput(
-      modes::InputLanguage::SMT_LIB_2_6, lean_string_cstr(query), "lean-cvc5");
-  // parse commands until finished
-  std::stringstream out;
-  parser::Command cmd;
-  while (true)
-  {
-    cmd = parser.nextCommand();
-    if (cmd.isNull())
-    {
-      break;
-    }
-    // invoke the command on the solver and the symbol manager, print the result
-    // to out
-    cmd.invoke(slv, sm, out);
-  }
-  std::vector<Sort> sortVars = sm->getDeclaredSorts();
-  lean_object* svs = lean_mk_empty_array();
-  for (const Sort& sortVar : sortVars)
-  {
-    svs = lean_array_push(svs, sort_box(new Sort(sortVar)));
-  }
-  std::vector<Term> termVars = sm->getDeclaredTerms();
-  lean_object* tvs = lean_mk_empty_array();
-  for (const Term& termVar : termVars)
-  {
-    tvs = lean_array_push(tvs, term_box(new Term(termVar)));
-  }
-  return env_val(prod_mk(lean_box(0), lean_box(0), svs, tvs), ioWorld);
-  CVC5_LEAN_API_TRY_CATCH_ENV_END(ioWorld);
-}
 }

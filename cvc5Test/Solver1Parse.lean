@@ -1,5 +1,26 @@
 import cvc5Test.Init
 
+namespace cvc5.Solver
+
+/-- Parse a string containing SMT-LIB commands.
+
+Commands that produce a result such as `(check-sat)`, `(get-model)`, ... are executed but the
+results are ignored.
+-/
+def parseCommands (solver : cvc5.Solver) (query : String) : cvc5.Env (Array cvc5.Sort × Array cvc5.Term) := do
+  let parser ← cvc5.InputParser.new solver
+  let sm ← parser.getSymbolManager
+  parser.setStringInput query .SMT_LIB_2_6
+  while true do
+    let cmd ← parser.nextCommand
+    if cmd.isNull then break
+    _ ← cmd.invoke solver sm
+  let svs ← sm.getDeclaredSorts
+  let tvs ← sm.getDeclaredTerms
+  return (svs, tvs)
+
+end Solver
+
 namespace cvc5.Test
 
 def solver1Parse : IO Unit := Env.runIO do
