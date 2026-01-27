@@ -982,6 +982,14 @@ LEAN_EXPORT lean_obj_res term_getBitVectorValue(lean_obj_arg t, uint32_t base)
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
 }
 
+LEAN_EXPORT lean_obj_res term_getFiniteFieldValue(lean_obj_arg t)
+{
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;
+  return except_ok(
+      lean_mk_string(term_unbox(t)->getFiniteFieldValue().c_str()));
+  CVC5_LEAN_API_TRY_CATCH_EXCEPT_END;
+}
+
 LEAN_EXPORT lean_obj_res term_getIntegerValue(lean_obj_arg t)
 {
   CVC5_LEAN_API_TRY_CATCH_EXCEPT_BEGIN;

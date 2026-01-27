@@ -1402,6 +1402,14 @@ Requires `term` to have a bit-vector sort.
 -/
 extern_def!? getBitVectorValue : Term → UInt32 → Except Error String
 
+/-- Get the string representation of a finite field value.
+
+Requires `term` to have a finite-field sort.
+
+-/
+extern_def!? getFiniteFieldValue : Term → Except Error String
+
+
 /-- Get the native integral value of an integral value. -/
 extern_def!? getIntegerValue : Term → Except Error Int
 
