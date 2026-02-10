@@ -14,12 +14,6 @@ import cvc5.Types
 @[export prod_mk]
 private def mkProd := @Prod.mk
 
-@[export prod_fst]
-private def prodFst := @Prod.fst
-
-@[export prod_snd]
-private def prodSnd := @Prod.snd
-
 namespace cvc5
 
 namespace Kind

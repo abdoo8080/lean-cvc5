@@ -181,10 +181,10 @@ test![TestApiBlackSort, isNullable] tm => do
   let n := cvc5.Sort.null ()
   assertFalse n.isNullable
 
--- test![TestApiBlackSort, isRecord] tm => do
---   assertEq (← mkRecordSort #[("asdf", ← getRealSort)]).isRecord true
---   let n := cvc5.Sort.null ()
---   assertFalse n.isRecord
+test![TestApiBlackSort, isRecord] tm => do
+  assertEq (← tm.mkRecordSort #[("asdf", ← tm.getRealSort)]).isRecord true
+  let n := cvc5.Sort.null ()
+  assertFalse n.isRecord
 
 test![TestApiBlackSort, isArray] tm => do
   assertTrue (← tm.mkArraySort (← tm.getRealSort) (← tm.getIntegerSort)).isArray
