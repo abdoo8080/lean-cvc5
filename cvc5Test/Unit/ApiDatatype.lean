@@ -75,8 +75,8 @@ test![TestApiBlackDatatype, isNull] tm => do
   dtCons.toString |> assertEq "cons(head: Int)"
   dtSel.toString |> assertEq "head: Int"
   dtConsSpec.toString |> assertEq "cons(head: Int)"
-  dtSpec.toString.trim |> assertEq "DATATYPE list = \ncons(head: Int) END;"
-  dt.toString.trim |> assertEq "list"
+  dtSpec.toString.trimAscii.toString |> assertEq "DATATYPE list = \ncons(head: Int) END;"
+  dt.toString.trimAscii.toString |> assertEq "list"
 
   -- at this point, the original tests checks the constructor iterator over datatypes; the lean API
   -- is quite different, so there's not much to check besides that it works

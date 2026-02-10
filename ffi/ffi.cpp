@@ -11,8 +11,17 @@ lean_obj_res prod_mk(lean_obj_arg T,
                      lean_obj_arg t,
                      lean_obj_arg u);
 
-lean_obj_res prod_fst(lean_obj_arg T, lean_obj_arg U, lean_obj_arg pair);
-lean_obj_res prod_snd(lean_obj_arg T, lean_obj_arg U, lean_obj_arg pair);
+/** Borrows the first element of a product/pair, does not change any ref-count. */
+lean_obj_res prod_fst(b_lean_obj_arg prod) {
+  lean_obj_res res = lean_ctor_get(prod, 0);
+  return res;
+}
+
+/** Borrows the second element of a product/pair, does not change any ref-count. */
+lean_obj_res prod_snd(b_lean_obj_arg prod) {
+  lean_obj_res res = lean_ctor_get(prod, 1);
+  return res;
+}
 
 // # `Except Error α` constructors
 
@@ -1681,8 +1690,8 @@ LEAN_EXPORT lean_obj_res termManager_mkRecordSort(lean_obj_arg tm,
         fields,
         lean_usize_to_nat(i));
     fieldsVec.push_back(std::make_pair(
-        lean_string_cstr(prod_fst(lean_box(0), lean_box(0), prod)),
-        *sort_unbox(prod_snd(lean_box(0), lean_box(0), prod))));
+        lean_string_cstr(prod_fst(prod)),
+        *sort_unbox(prod_snd(prod))));
   }
   return env_val(sort_box(new Sort(mut_tm_unbox(tm)->mkRecordSort(fieldsVec))),
                  ioWorld);
