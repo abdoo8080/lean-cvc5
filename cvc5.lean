@@ -923,7 +923,7 @@ instance : GetElem DatatypeConstructor Nat DatatypeSelector
 where
   getElem dt idx h := dt.getSelectorAt ⟨idx, h⟩
 
-instance : ForIn m DatatypeConstructor DatatypeSelector where
+instance [Monad m] : ForIn m DatatypeConstructor DatatypeSelector where
   forIn dtCons init fold := forIn' [:dtCons.getNumSelectors] init fun idx h_member acc =>
     let selector := dtCons.getSelectorAt ⟨idx, h_member.upper⟩
     fold selector acc
@@ -974,7 +974,7 @@ instance : GetElem Datatype Nat DatatypeConstructor
 where
   getElem dt idx h := dt.getConstructorAt ⟨idx, h⟩
 
-instance : ForIn m Datatype DatatypeConstructor where
+instance [Monad m] : ForIn m Datatype DatatypeConstructor where
   forIn dt init fold := forIn' [:dt.getNumConstructors] init fun idx h_member acc =>
     let constructor := dt.getConstructorAt ⟨idx, h_member.upper⟩
     fold constructor acc
@@ -1442,7 +1442,7 @@ protected def forIn {β : Type u} [Monad m] (t : Term) (b : β) (f : Term → β
       | ForInStep.yield b => loop i (Nat.le_of_lt h') b
   loop t.getNumChildren (Nat.le_refl _) b
 
-instance : ForIn m Term Term where
+instance [Monad m] : ForIn m Term Term where
   forIn := Term.forIn
 
 /-- Get the children of a term. -/

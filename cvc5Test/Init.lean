@@ -76,7 +76,7 @@ def assertError
     (hint := hint)
     fun
     | .error err => do
-      if err.trim = expected.trim then
+      if err.trimAscii == expected.trimAscii then
         return ()
       else
         IO.eprintln s!"{Test.pref hint}expected cvc5 error `{expected}`, got cvc5 error `{err}`"
