@@ -1584,7 +1584,8 @@ An uninterpreted sort constructor is an uninterpreted sort with arity > 0.
 - `arity` The arity of the sort (must be > 0).
 - `symbol` The symbol of the sort.
 -/
-extern_def mkUninterpretedSortConstructorSort : TermManager → (arity : Nat) → (symbol : String) → Env cvc5.Sort
+extern_def mkUninterpretedSortConstructorSort :
+  TermManager → (arity : Nat) → (symbol : String := "") → Env cvc5.Sort
 
 /-- Create a set parameter.
 
@@ -1659,6 +1660,12 @@ extern_def mkParamSort : TermManager → (symbol : String) → Env cvc5.Sort
 -/
 extern_def mkBoolean : TermManager → (b : Bool) → Env Term
 
+/-- Create a Boolean true constant. -/
+extern_def mkTrue : TermManager → Env Term
+
+/-- Create a Boolean false constant. -/
+extern_def mkFalse : TermManager → Env Term
+
 /-- Create an integer-value term.
 
 - `s`: the string representation of the constant, may represent an integer such as (`"123"`).
@@ -1688,6 +1695,215 @@ with
       | .ofNat den => (num, den)
       | .negSucc denMinus1 => (-num, denMinus1.succ)
     mkRealOfRat tm <| mkRat num den
+
+/-- Create a regular expression all (re.all) term. -/
+extern_def mkRegexpAll : TermManager → Env Term
+
+/-- Create a regular expression allchar (re.allchar) term. -/
+extern_def mkRegexpAllchar : TermManager → Env Term
+
+/-- Create a regular expression none (re.none) term. -/
+extern_def mkRegexpNone : TermManager → Env Term
+
+/-- Create a constant representing an empty set of the given sort.
+
+- `sort` The sort of the set elements.
+-/
+extern_def mkEmptySet : TermManager → (sort : cvc5.Sort) → Env Term
+
+/-- Create a constant representing an empty bag of the given sort.
+
+- `sort` The sort of the bag elements.
+-/
+extern_def mkEmptyBag : TermManager → (sort : cvc5.Sort) → Env Term
+
+/-- Create a separation logic empty term. -/
+extern_def mkSepEmp : TermManager → Env Term
+
+/-- Create a separation logic nil term.
+
+- `sort` The sort of the nil term.
+
+**Warning**: this function is experimental and may change in future versions.
+-/
+extern_def mkSepNil : TermManager → (sort : cvc5.Sort) → Env Term
+
+/-- Create a string constant from a `String`.
+
+The string may contain SMT-LIB-compatible escape sequences like `\u1234` to encode unicode
+characters.
+
+- `s` The string this constant represents.
+- `useEscSequences` Determines whether escape sequences in `s` should be converted to the
+  corresponding unicode characters, default `false`.
+-/
+extern_def mkString : TermManager → (s : String) → (useEscSequences : Bool := false) → Env Term
+
+/-- Create an empty sequence of the given element sort.
+
+- `sort` The element sort of the sequence.
+-/
+extern_def mkEmptySequence : TermManager → (sort : cvc5.Sort) → Env Term
+
+/-- Create a universe set of the given sort.
+
+- `sort` The sort of the set elements.
+-/
+extern_def mkUniverseSet : TermManager → (sort : cvc5.Sort) → Env Term
+
+/-- Create a bit-vector constant of given size and value.
+
+The given value must fit into a bit-vector of the given size.
+
+- `size` The bit-width of the bit-vector sort.
+- `val` The value of the constant.
+-/
+extern_def mkBitVector : TermManager → (size : UInt32) → (val : UInt64 := 0) → Env Term
+
+/-- Create a bit-vector constant of a given bit-width from a given string of base 2, 10, or 16.
+
+The given value must fit into a bit-vector of the given size.
+
+- `size` The bit-width of the bit-vector sort.
+- `s` The string representation of the constant.
+- `val` The base of the string representation: `2` for binary, `10` for decimal, and `16` for
+  hexadecimal.
+-/
+extern_def mkBitVectorOfString :
+  TermManager → (size : UInt32) → (s : String) → (base : UInt32) → Env Term
+
+/-- Create a finite field constant in a given field from a given string of base n.
+
+If `size` is the field size, the constant needs not be in range `[0,size)`. If it is outside this
+range, it will be reduced modulo size before being constructed.
+
+- `value` The string representation of the constant.
+- `sort` The field sort.
+- `base` The base of the string representation of `value`, default `10`.
+-/
+extern_def mkFiniteFieldElem :
+  TermManager → (value : String) → (sort : cvc5.Sort) → (base : UInt32 := 10) → Env Term
+
+/-- Create a constant array with the provided constant value stored at every index.
+
+- `sort` The sort of the constant array (must be an array sort).
+- `val` The constant value to store (must match the sort's element sort).
+-/
+extern_def mkConstArray : TermManager → (sort : cvc5.Sort) → (val : Term) → Env Term
+
+/-- Create a positive infinity floating-point constant (SMT-LIB: `+oo`).
+
+- `exp` Number of bits in the exponent.
+- `sig` Number of bits in the significand.
+-/
+extern_def mkFloatingPointPosInf : TermManager → (exp sig : UInt32) → Env Term
+
+/-- Create a negative infinity floating-point constant (SMT-LIB: `-oo`).
+
+- `exp` Number of bits in the exponent.
+- `sig` Number of bits in the significand.
+-/
+extern_def mkFloatingPointNegInf : TermManager → (exp sig : UInt32) → Env Term
+
+/-- Create a not-a-number floating-point constant (SMT-LIB: `NaN`).
+
+- `exp` Number of bits in the exponent.
+- `sig` Number of bits in the significand.
+-/
+extern_def mkFloatingPointNaN : TermManager → (exp sig : UInt32) → Env Term
+
+/-- Create a positive zero floating-point constant (SMT-LIB: `+zero`).
+
+- `exp` Number of bits in the exponent.
+- `sig` Number of bits in the significand.
+-/
+extern_def mkFloatingPointPosZero : TermManager → (exp sig : UInt32) → Env Term
+
+/-- Create a negative zero floating-point constant (SMT-LIB: `-zero`).
+
+- `exp` Number of bits in the exponent.
+- `sig` Number of bits in the significand.
+-/
+extern_def mkFloatingPointNegZero : TermManager → (exp sig : UInt32) → Env Term
+
+/-- Create a rounding mode value.
+
+- `rm` The floating point rounding mode this constant represents.
+-/
+extern_def mkRoundingMode : TermManager → (rm : RoundingMode) → Env Term
+
+/-- Create a floating-point value from a bit-vector given in IEEE-754 format.
+
+- `exp` Size of the exponent.
+- `sig` Size of the significand.
+- `val` Value of the floating-point constant as a bit-vector term.
+-/
+extern_def mkFloatingPoint : TermManager → (exp sig : UInt32) → (val : Term) → Env Term
+
+/-- Create a floating-point value from its three IEEE-754 bit-vector value components.
+
+- `sign` The sign bit.
+- `exp` The bit-vector representing the exponent.
+- `sig` The bit-vector representing the significand.
+-/
+extern_def mkFloatingPointOfComponents : TermManager → (sign exp sig : Term) → Env Term
+
+/-- Create a cardinality constraint for an uninterpreted sort.
+
+**Warning**: this function is experimental and may change in future versions.
+
+- `sort` The sort the cardinality constraint is for.
+- `upperBound` The upper bound on the cardinality of the sort.
+-/
+extern_def mkCardinalityConstraint :
+  TermManager → (sort : cvc5.Sort) → (upperBound : UInt32) → Env Term
+
+/-- Create a tuple term.
+
+- `terms` The elements in the tuple.
+-/
+extern_def mkTuple : TermManager → (terms : Array Term) → Env Term
+
+/-- Create a nullable some term.
+
+- `term` The element value.
+-/
+extern_def mkNullableSome : TermManager → (term : Term) → Env Term
+
+/-- Create a selector for nullable term.
+
+- `term` A nullable term.
+-/
+extern_def mkNullableVal : TermManager → (term : Term) → Env Term
+
+/-- Create a null tester for a nullable term.
+
+- `term` A nullable term.
+-/
+extern_def mkNullableIsNull : TermManager → (term : Term) → Env Term
+
+/-- Create a some tester for a nullable term.
+
+- `term` A nullable term.
+-/
+extern_def mkNullableIsSome : TermManager → (term : Term) → Env Term
+
+/-- Create a constant representing a null of the given sort.
+
+- `sort` The sort of the nullable element.
+-/
+extern_def mkNullableNull : TermManager → (sort : cvc5.Sort) → Env Term
+
+/-- Create a term that lifts kind to nullable terms.
+
+- `kind` The lifted operator.
+- `args` The arguments of the lifted operator.
+
+Example: if we have the term `((_ nullable.lift +) x y)`, with `x` and `y` of type `(Nullable Int)`,
+then `kind` would be `Kind.ADD`, and `args` would be `#[x, y]`. This function would return
+`(nullable.lift (lambda ((a Int) (b Int)) (+ a b)) x y)`
+-/
+extern_def mkNullableLift : TermManager → (kind : Kind) → (args : Array Term) → Env Term
 
 /-- Create n-ary term of given kind.
 
