@@ -166,7 +166,10 @@ inline lean_bool mk_bool_false() { return 0; }
 
 inline lean_bool mk_bool_true() { return 1; }
 
-inline lean_bool bool_box(bool b) { return b ? mk_bool_true() : mk_bool_false(); }
+inline lean_bool bool_box(bool b)
+{
+  return b ? mk_bool_true() : mk_bool_false();
+}
 
 inline bool bool_unbox(lean_bool b) { return static_cast<bool>(b); }
 
@@ -2414,8 +2417,8 @@ LEAN_EXPORT lean_obj_res termManager_mkString(lean_obj_arg tm,
                                               lean_bool useEscSequences)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
-  return env_val(term_box(new Term(
-      mut_tm_unbox(tm)->mkString(lean_string_cstr(s), bool_unbox(useEscSequences)))));
+  return env_val(term_box(new Term(mut_tm_unbox(tm)->mkString(
+      lean_string_cstr(s), bool_unbox(useEscSequences)))));
   CVC5_LEAN_API_TRY_CATCH_ENV_END;
 }
 
@@ -2798,7 +2801,8 @@ LEAN_EXPORT uint64_t datatypeConstructorDecl_hash(lean_obj_arg dtConsDecl)
       *datatypeConstructorDecl_unbox(dtConsDecl));
 }
 
-LEAN_EXPORT lean_bool datatypeConstructorDecl_beq(lean_obj_arg l, lean_obj_arg r)
+LEAN_EXPORT lean_bool datatypeConstructorDecl_beq(lean_obj_arg l,
+                                                  lean_obj_arg r)
 {
   return bool_box(*datatypeConstructorDecl_unbox(l)
                   == *datatypeConstructorDecl_unbox(r));
@@ -3892,7 +3896,8 @@ LEAN_EXPORT lean_obj_res solver_isModelCoreSymbol(lean_obj_arg solver,
                                                   lean_obj_arg v)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
-  return env_bool(bool_box(solver_unbox(solver)->isModelCoreSymbol(*term_unbox(v))));
+  return env_bool(
+      bool_box(solver_unbox(solver)->isModelCoreSymbol(*term_unbox(v))));
   CVC5_LEAN_API_TRY_CATCH_ENV_END;
 }
 
