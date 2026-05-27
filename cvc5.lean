@@ -1419,6 +1419,7 @@ instance : LE Term := ⟨(Term.ble · ·)⟩
 instance : DecidableLE Term :=
   fun t1 t2 => if h : t1.ble t2 then .isTrue h else .isFalse h
 
+/-- Hash function for terms. -/
 protected extern_def hash : Term → UInt64
 
 instance : Hashable Term := ⟨Term.hash⟩
