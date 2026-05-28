@@ -3923,7 +3923,7 @@ LEAN_EXPORT lean_obj_res solver_getModel(lean_obj_arg solver,
   CVC5_LEAN_API_TRY_CATCH_ENV_END;
 }
 
-LEAN_EXPORT lean_obj_res solver_getQuantifierElimination(lean_obj_arg solver,
+LEAN_EXPORT lean_obj_res solver_getQuantifierEliminationOrNull(lean_obj_arg solver,
                                                          lean_obj_arg term)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
@@ -3933,7 +3933,7 @@ LEAN_EXPORT lean_obj_res solver_getQuantifierElimination(lean_obj_arg solver,
 }
 
 LEAN_EXPORT lean_obj_res
-solver_getQuantifierEliminationDisjunct(lean_obj_arg solver, lean_obj_arg term)
+solver_getQuantifierEliminationDisjunctOrNull(lean_obj_arg solver, lean_obj_arg term)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(
@@ -4049,7 +4049,7 @@ LEAN_EXPORT lean_obj_res solver_pop(lean_obj_arg solver, uint32_t nscopes)
   CVC5_LEAN_API_TRY_CATCH_ENV_END;
 }
 
-LEAN_EXPORT lean_obj_res solver_getInterpolantSimple(lean_obj_arg solver,
+LEAN_EXPORT lean_obj_res solver_getInterpolantSimpleOrNull(lean_obj_arg solver,
                                                      lean_obj_arg conj)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
@@ -4058,7 +4058,7 @@ LEAN_EXPORT lean_obj_res solver_getInterpolantSimple(lean_obj_arg solver,
   CVC5_LEAN_API_TRY_CATCH_ENV_END;
 }
 
-LEAN_EXPORT lean_obj_res solver_getInterpolantOfGrammar(lean_obj_arg solver,
+LEAN_EXPORT lean_obj_res solver_getInterpolantOfGrammarOrNull(lean_obj_arg solver,
                                                         lean_obj_arg conj,
                                                         lean_obj_arg grammar)
 {
@@ -4068,7 +4068,7 @@ LEAN_EXPORT lean_obj_res solver_getInterpolantOfGrammar(lean_obj_arg solver,
   CVC5_LEAN_API_TRY_CATCH_ENV_END;
 }
 
-LEAN_EXPORT lean_obj_res solver_getInterpolantNext(lean_obj_arg solver)
+LEAN_EXPORT lean_obj_res solver_getInterpolantNextOrNull(lean_obj_arg solver)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(
@@ -4076,7 +4076,7 @@ LEAN_EXPORT lean_obj_res solver_getInterpolantNext(lean_obj_arg solver)
   CVC5_LEAN_API_TRY_CATCH_ENV_END;
 }
 
-LEAN_EXPORT lean_obj_res solver_getAbductSimple(lean_obj_arg solver,
+LEAN_EXPORT lean_obj_res solver_getAbductSimpleOrNull(lean_obj_arg solver,
                                                 lean_obj_arg conj)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
@@ -4085,7 +4085,7 @@ LEAN_EXPORT lean_obj_res solver_getAbductSimple(lean_obj_arg solver,
   CVC5_LEAN_API_TRY_CATCH_ENV_END;
 }
 
-LEAN_EXPORT lean_obj_res solver_getAbductOfGrammar(lean_obj_arg solver,
+LEAN_EXPORT lean_obj_res solver_getAbductOfGrammarOrNull(lean_obj_arg solver,
                                                    lean_obj_arg conj,
                                                    lean_obj_arg grammar)
 {
@@ -4095,7 +4095,7 @@ LEAN_EXPORT lean_obj_res solver_getAbductOfGrammar(lean_obj_arg solver,
   CVC5_LEAN_API_TRY_CATCH_ENV_END;
 }
 
-LEAN_EXPORT lean_obj_res solver_getAbductNext(lean_obj_arg solver)
+LEAN_EXPORT lean_obj_res solver_getAbductNextOrNull(lean_obj_arg solver)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(term_box(new Term(solver_unbox(solver)->getAbductNext())));
