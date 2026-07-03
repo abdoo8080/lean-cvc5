@@ -3058,7 +3058,10 @@ Returns a formula `Φ` such that, given the current set of formulas `A` asserted
 - `(a ∧ Q)` and (A ∧ Φ) are equivalent, and
 - `Φ` is a quantifier-free formula containing only free variables in `y_1...y_n`.
 -/
-extern_def getQuantifierElimination : (solver : Solver) → (q : Term) → Env Term
+private extern_def getQuantifierEliminationOrNull : (solver : Solver) → (q : Term) → Env Term
+with getQuantifierElimination (solver : Solver) (q : Term) : Env (Option Term) := do
+  let term? ← solver.getQuantifierEliminationOrNull q
+  if term?.isNull then return none else return term?
 
 /-- Do partial quantifier elimination, which can be used for incrementally computing the result of a
   quantifier elimination.
@@ -3066,7 +3069,6 @@ extern_def getQuantifierElimination : (solver : Solver) → (q : Term) → Env T
 ```smtlib
 (get-qe-disjunct <q>)
 ```
-
 
 **NB:** Quantifier elimination is only complete for logics such as LRA, LIA, and BV.
 
@@ -3088,7 +3090,10 @@ Returns a formula `Φ` such that, given the current set of formulas `A` asserted
 
   In either case, we have that `Φ ∧ Q_j` will eventually be true or false, for some finite `j`.
 -/
-extern_def getQuantifierEliminationDisjunct : (solver : Solver) → (q : Term) → Env Term
+extern_def getQuantifierEliminationDisjunctOrNull : (solver : Solver) → (q : Term) → Env Term
+with getQuantifierEliminationDisjunct (solver : Solver) (q : Term) : Env (Option Term) := do
+  let term? ← solver.getQuantifierEliminationOrNull q
+  if term?.isNull then return none else return term?
 
 /-- When using separation logic, sets the location sort and the datatype sort to the given ones.
 
@@ -3174,7 +3179,7 @@ extern_def declareOracleFun :
 -/
 extern_def pop : (solver : Solver) → (nscopes : UInt32 := 1) → Env Unit
 
-/-- Get an interpolant if one exists, the null term otherwise.
+/-- Get an interpolant if one exists.
 
 Given that `A → B` is valid, this function determines a term `I` over the shared variables of `A` and `B`, such that `A → I` and `I → B` are valid. `A` is the current set of assertions and `B` is the conjecture, given as `conj`.
 
@@ -3190,9 +3195,12 @@ Given that `A → B` is valid, this function determines a term `I` over the shar
 
 - `conj`: The conjecture term.
 -/
-extern_def getInterpolantSimple : (solver : Solver) → (conj : Term) → Env Term
+private extern_def getInterpolantSimpleOrNull : (solver : Solver) → (conj : Term) → Env Term
+with getInterpolantSimple (solver : Solver) (conj : Term) : Env (Option Term) := do
+  let term? ← solver.getInterpolantSimpleOrNull conj
+  if term?.isNull then return none else return term?
 
-/-- Get an interpolant if one exists, the null term otherwise.
+/-- Get an interpolant if one exists.
 
 Given that `A → B` is valid, this function determines a term `I` over the shared variables of `A`
 and `B`, such that `A → I` and `I → B` are valid. `I` is constructed from the given grammar. `A` is
@@ -3211,10 +3219,15 @@ the current set of assertions and `B` is the conjecture, given as `conj`.
 - `conj`: The conjecture term.
 - `grammar`: The grammar for the interpolant `I`.
 -/
-extern_def getInterpolantOfGrammar :
+private extern_def getInterpolantOfGrammarOrNull :
   (solver : Solver) → (conj : Term) → (grammar : Grammar) → Env Term
+with
+  getInterpolantOfGrammar (solver : Solver) (conj : Term) (grammar : Grammar)
+  : Env (Option Term) := do
+    let term? ← solver.getInterpolantOfGrammarOrNull conj grammar
+    if term?.isNull then return none else return term?
 
-/-- Get an interpolant if one exists, the null term otherwise.
+/-- Get an interpolant if one exists.
 
 Given that `A → B` is valid, this function determines a term `I` over the shared variables of `A`
 and `B`, such that `A → I` and `I → B` are valid. If a grammar `G` is provided, `I` is constructed
@@ -3236,12 +3249,12 @@ from `G`. `A` is the current set of assertions and `B` is the conjecture, given 
 -/
 def getInterpolant
   (solver : Solver) (conj : Term) (grammar : Option Grammar := none)
-: Env Term :=
+: Env (Option Term) :=
   if let some grammar := grammar
   then solver.getInterpolantOfGrammar conj grammar
   else solver.getInterpolantSimple conj
 
-/-- Get the next interpolant if any, the null term otherwise.
+/-- Get the next interpolant if any.
 
 Can only be called immediately after a successful call to `getInterpolant`,
 `getInterpolantOfGrammar`, `getInterpolant?`, `getInterpolantNext`, or `getInterpolantNext`. It is
@@ -3260,7 +3273,10 @@ from `none`.
 Returns a term `I` such that `A → I` and `I → B` and valid, where `A` is the current set of
 assertions and `B` is given in the input by `conj`, or the null term if such a term cannot be found.
 -/
-extern_def getInterpolantNext : (solver : Solver) → Env Term
+private extern_def getInterpolantNextOrNull : (solver : Solver) → Env Term
+with getInterpolantNext (solver : Solver) : Env (Option Term) := do
+  let term? ← solver.getInterpolantNextOrNull
+  if term?.isNull then return none else return term?
 
 /-- Get an abduct if one exists, the null term otherwise.
 
@@ -3278,9 +3294,12 @@ Returns a term `C` such that `A ∧ C` is satisfiable, and `A ∧ ¬B ∧ C` is 
 the current set of assertions and `B` is given in the input by `conj`, or the null term if such a
 term cannot be found.
 -/
-private extern_def getAbductSimple : (solver : Solver) → (conj : Term) → Env Term
+private extern_def getAbductSimpleOrNull : (solver : Solver) → (conj : Term) → Env Term
+with getAbductSimple (solver : Solver) (conj : Term) : Env (Option Term) := do
+  let term? ← solver.getAbductSimpleOrNull conj
+  if term?.isNull then return none else return term?
 
-/-- Get an abduct if one exists, the null term otherwise.
+/-- Get an abduct if one exists.
 
 ```smtlib
 (get-abduct <conj> <grammar>)
@@ -3297,8 +3316,12 @@ Returns a term `C` such that `A ∧ C` is satisfiable, and `A ∧ ¬B ∧ C` is 
 the current set of assertions and `B` is given in the input by `conj`, or the null term if such a
 term cannot be found.
 -/
-extern_def getAbductOfGrammar :
+private extern_def getAbductOfGrammarOrNull :
   (solver : Solver) → (conj : Term) → (grammar : Grammar) → Env Term
+with
+  getAbductOfGrammar (solver : Solver) (conj : Term) (grammar : Grammar) : Env (Option Term) := do
+    let term? ← solver.getAbductOfGrammarOrNull conj grammar
+    if term?.isNull then return none else return term?
 
 /-- Get an abduct if one exists.
 
@@ -3320,12 +3343,12 @@ term cannot be found.
 -/
 def getAbduct
   (solver : Solver) (conj : Term) (grammar : Option Grammar := none)
-: Env Term :=
+: Env (Option Term) :=
   if let some grammar := grammar
   then solver.getAbductOfGrammar conj grammar
   else solver.getAbductSimple conj
 
-/-- Get the next interpolant if any, the null term otherwise.
+/-- Get the next interpolant if any.
 
 Can only be called immediately after a successful call to `getAbduct`, `getAbductOfGrammar`,
 `getAbduct?`, `getAbductNext`, or `getAbductNext?`. It is guaranteed to produce a syntactically
@@ -3343,7 +3366,10 @@ Returns a term `C` such that `A ∧ C` is satisfiable, and `A ∧ ¬B ∧ C` is 
 the current set of assertions and `B` is given in the input by the last call to a `getAbduct`-like
 function, or the null term if such a term cannot be found.
 -/
-extern_def getAbductNext : (solver : Solver) → Env Term
+private extern_def getAbductNextOrNull : (solver : Solver) → Env Term
+with getAbductNext (solver : Solver) : Env (Option Term) := do
+  let term? ← solver.getAbductNextOrNull
+  if term?.isNull then return none else return term?
 
 /-- Block the current model. Can be called only if immediately preceded by a SAT or INVALID query.
 

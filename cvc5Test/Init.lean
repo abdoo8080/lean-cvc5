@@ -34,6 +34,20 @@ def assertTrue (b : Bool) (hint := "") : IO Unit :=
 def assertFalse (b : Bool) (hint := "") : IO Unit :=
   assertEq false b hint
 
+def assertNone [ToString α] (a? : Option α) (hint := "") : IO Unit := do
+  if let some a := a? then
+    IO.eprintln s!"{Test.pref hint}expected none, got {a}"
+    fail "assertion failed"
+
+def assertSome (a? : Option α) (hint := "") : IO α := do
+  let some a := a?
+    | IO.eprintln s!"{Test.pref hint}expected non-none value, got none"
+      fail "assertion failed"
+  return a
+
+def assertSomeDiscard (a? : Option α) (hint := "") : IO Unit := do
+  let _ ← assertSome a? (hint := hint)
+
 def assertNe [ToString α] [BEq α] (lft rgt : α) (hint := "") : IO Unit := do
   if lft == rgt then
     IO.eprintln s!"{Test.pref hint}comparison failed: `{lft}` is the same as `{rgt}`"
