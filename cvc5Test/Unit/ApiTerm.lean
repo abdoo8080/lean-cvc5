@@ -703,13 +703,12 @@ test![TestApiBlackTerm, iteTerm] tm => do
     "Branches of the ITE must have comparable type.\n\
     then branch: x\nits type   : (_ BitVec 8)\nelse branch: true\nits type   : Bool\n"
 
+set_option linter.unusedVariables false in -- censoring the *unused variable* warning for `t2`
 test![TestApiBlackTerm, termAssignment] tm => do
   let t1 ← tm.mkInteger 1
   let mut t2 := t1
   t2 ← tm.mkInteger 2
   assertEq t1 (← tm.mkInteger 1)
-  -- censoring *unused* warning
-  let _ := t2
 
 test![TestApiBlackTerm, termCompare] tm => do
   let t1 ← tm.mkInteger 1
