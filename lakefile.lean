@@ -18,9 +18,9 @@ def uncompress (file : FilePath) (dir : FilePath) : LogIO PUnit := do
   else
     unzip file dir
 
-def cvc5.url := "https://github.com/abdoo8080/cvc5/releases/download"
+def cvc5.url := "https://github.com/psaccomani15/cvc5/releases/download"
 
-def cvc5.version := "cvc5-1.3.2"
+def cvc5.version := "clean-wip"
 
 def cvc5.os :=
   if Platform.isWindows then "Win64"
@@ -99,6 +99,9 @@ target ffi.o pkg : FilePath := do
 input_file libcadical where
   path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "cadical" true
 
+input_file libcocoa where
+  path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "cocoa" true
+
 input_file libcvc5 where
   path := s!"cvc5-{cvc5.target}" / "lib" / nameToStaticLib "cvc5" true
 
@@ -119,9 +122,9 @@ input_file libpicpolyxx where
 
 def libs : Array (Target FilePath) :=
   if Platform.isWindows then
-    #[ffi.o, libcadical, libcvc5, libcvc5parser, libgmp, libpicpoly, libpicpolyxx]
+    #[ffi.o, libcadical, libcocoa, libcvc5, libcvc5parser, libgmp, libpicpoly, libpicpolyxx]
   else
-    #[ffi.o, libcadical, libcvc5, libcvc5parser, libgmp, libgmpxx, libpicpoly, libpicpolyxx]
+    #[ffi.o, libcadical, libcocoa, libcvc5, libcvc5parser, libgmp, libgmpxx, libpicpoly, libpicpolyxx]
 
 @[default_target]
 lean_lib cvc5 where

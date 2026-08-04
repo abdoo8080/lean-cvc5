@@ -745,6 +745,14 @@ inductive SkolemId where
   -/
   | BV_TO_INT_UF
   /--
+  A skolem variable introduced to represent finite field disequalities as
+  polynomials.
+  - Number of skolem indices: ``1``
+    - ``1:`` the disequality that originated this variable.
+  - Sort: ``(_ FiniteField p)``
+  -/
+  | FF_DISEQ
+  /--
   Indicates this is not a skolem.
   -/
   | NONE
