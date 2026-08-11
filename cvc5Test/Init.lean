@@ -18,7 +18,7 @@ def IO.run : IO Unit → IO Unit :=
   id
 
 def fail {α : outParam Type} (msg : String) : IO α :=
-  IO.throwServerError msg
+  Lean.IO.throwServerError msg
 
 protected def pref (hint : String) : String :=
   if hint.isEmpty then "" else "[" ++ hint ++ "] "
