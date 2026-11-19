@@ -1675,9 +1675,11 @@ LEAN_EXPORT uint64_t proof_hash(lean_obj_arg p)
   return std::hash<Proof>()(*proof_unbox(p));
 }
 
-static void termManager_finalize(void* obj)
+static void termManager_finalize(void*)
 {
-  delete static_cast<TermManager*>(obj);
+  // Deliberately not freed: `Term`, `Sort`, `Op`, `Proof` and `Solver` objects
+  // keep raw pointers into their term manager and may outlive its Lean object.
+  // (Freeing it needs those objects to hold a reference to it.)
 }
 
 static void termManager_foreach(void*, b_lean_obj_arg)
@@ -1937,7 +1939,10 @@ static inline Grammar* mut_grammar_unbox(b_lean_obj_arg grammar)
   return static_cast<Grammar*>(lean_get_external_data(grammar));
 }
 
-static void command_finalize(void* obj) { delete static_cast<Grammar*>(obj); }
+static void command_finalize(void* obj)
+{
+  delete static_cast<cvc5::parser::Command*>(obj);
+}
 
 static void command_foreach(void*, b_lean_obj_arg)
 {
@@ -2005,9 +2010,22 @@ LEAN_EXPORT lean_obj_res symbolManager_new(lean_obj_arg tm)
   CVC5_LEAN_API_TRY_CATCH_ENV_END;
 }
 
+/** An input parser, with the Lean objects it points into: it keeps its solver
+ * (and symbol manager) alive. */
+struct InputParserBox
+{
+  cvc5::parser::InputParser* d_parser;
+  lean_object* d_solver;
+  lean_object* d_sm;  // may be null
+};
+
 static void inputParser_finalize(void* obj)
 {
-  delete static_cast<cvc5::parser::InputParser*>(obj);
+  InputParserBox* box = static_cast<InputParserBox*>(obj);
+  delete box->d_parser;
+  lean_dec(box->d_solver);
+  if (box->d_sm != nullptr) lean_dec(box->d_sm);
+  delete box;
 }
 
 static void inputParser_foreach(void*, b_lean_obj_arg)
@@ -2017,34 +2035,37 @@ static void inputParser_foreach(void*, b_lean_obj_arg)
 
 static lean_external_class* g_inputParser_class = nullptr;
 
-static inline lean_obj_res parser_box(cvc5::parser::InputParser* parser)
+static inline lean_obj_res parser_box(cvc5::parser::InputParser* parser,
+                                      b_lean_obj_arg solver,
+                                      b_lean_obj_arg sm)
 {
   if (g_inputParser_class == nullptr)
   {
     g_inputParser_class =
         lean_register_external_class(inputParser_finalize, inputParser_foreach);
   }
-  return lean_alloc_external(g_inputParser_class, parser);
+  lean_inc(solver);
+  if (sm != nullptr) lean_inc(sm);
+  return lean_alloc_external(g_inputParser_class,
+                             new InputParserBox{parser, solver, sm});
 }
 
 static inline const cvc5::parser::InputParser* parser_unbox(
     b_lean_obj_arg parser)
 {
-  return static_cast<cvc5::parser::InputParser*>(
-      lean_get_external_data(parser));
+  return static_cast<InputParserBox*>(lean_get_external_data(parser))->d_parser;
 }
 
 static inline cvc5::parser::InputParser* mut_parser_unbox(b_lean_obj_arg parser)
 {
-  return static_cast<cvc5::parser::InputParser*>(
-      lean_get_external_data(parser));
+  return static_cast<InputParserBox*>(lean_get_external_data(parser))->d_parser;
 }
 
 LEAN_EXPORT lean_obj_res inputParser_ofSolver(lean_obj_arg solver)
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
-  return env_val(
-      parser_box(new cvc5::parser::InputParser(solver_unbox(solver))));
+  return env_val(parser_box(
+      new cvc5::parser::InputParser(solver_unbox(solver)), solver, nullptr));
   CVC5_LEAN_API_TRY_CATCH_ENV_END;
 }
 
@@ -2053,7 +2074,9 @@ LEAN_EXPORT lean_obj_res inputParser_ofSolverAndSM(lean_obj_arg solver,
 {
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   return env_val(parser_box(
-      new cvc5::parser::InputParser(solver_unbox(solver), mut_sm_unbox(sm))));
+      new cvc5::parser::InputParser(solver_unbox(solver), mut_sm_unbox(sm)),
+      solver,
+      sm));
   CVC5_LEAN_API_TRY_CATCH_ENV_END;
 }
 
@@ -2816,8 +2839,12 @@ lean_obj_arg datatypeConstructorDecl_pseudo_clone(lean_obj_arg dtConsDecl)
   if (lean_is_exclusive(dtConsDecl))
     return dtConsDecl;
   else
-    return datatypeConstructorDecl_box(new DatatypeConstructorDecl(
+  {
+    lean_obj_res copy = datatypeConstructorDecl_box(new DatatypeConstructorDecl(
         *datatypeConstructorDecl_unbox(dtConsDecl)));
+    lean_dec(dtConsDecl);
+    return copy;
+  }
 }
 
 LEAN_EXPORT lean_obj_res datatypeConstructorDecl_addSelector(
@@ -2913,8 +2940,12 @@ lean_obj_arg datatypeDecl_pseudo_clone(lean_obj_arg datatypeDecl)
   if (lean_is_exclusive(datatypeDecl))
     return datatypeDecl;
   else
-    return datatypeDecl_box(
-        new DatatypeDecl(*datatypeDecl_unbox(datatypeDecl)));
+  {
+    lean_obj_res copy =
+        datatypeDecl_box(new DatatypeDecl(*datatypeDecl_unbox(datatypeDecl)));
+    lean_dec(datatypeDecl);
+    return copy;
+  }
 }
 
 LEAN_EXPORT lean_obj_res datatypeDecl_addConstructor(lean_obj_arg dtDeclArg,
@@ -3216,7 +3247,11 @@ lean_obj_arg grammar_pseudo_clone(lean_obj_arg grammar)
   if (lean_is_exclusive(grammar))
     return grammar;
   else
-    return grammar_box(new Grammar(*grammar_unbox(grammar)));
+  {
+    lean_obj_res copy = grammar_box(new Grammar(*grammar_unbox(grammar)));
+    lean_dec(grammar);
+    return copy;
+  }
 }
 
 LEAN_EXPORT lean_obj_res grammar_addRule(lean_obj_arg grammarArg,
@@ -3909,8 +3944,7 @@ LEAN_EXPORT lean_obj_res solver_getModel(lean_obj_arg solver,
   std::vector<Sort> sortVec;
   for (size_t i = 0, n = lean_array_size(sorts); i < n; ++i)
   {
-    sortVec.push_back(
-        *sort_unbox(lean_array_fget(sorts, lean_usize_to_nat(i))));
+    sortVec.push_back(*sort_unbox(lean_array_get_core(sorts, i)));
   }
   std::vector<Term> constVec;
   for (size_t i = 0, n = lean_array_size(consts); i < n; ++i)
@@ -3998,15 +4032,19 @@ LEAN_EXPORT lean_obj_res solver_declareOracleFun(lean_obj_arg solver,
                                                  lean_obj_arg sort,
                                                  lean_obj_arg fn)
 {
+  // `fn` is borrowed, and the callback below calls it after this returns: the
+  // callback holds a reference to it, released when cvc5 destroys the callback.
+  lean_inc(fn);
+  std::shared_ptr<lean_object> fnRef(fn, [](lean_object* o) { lean_dec(o); });
   CVC5_LEAN_API_TRY_CATCH_ENV_BEGIN;
   std::vector<Sort> sortVec;
   for (size_t i = 0, n = lean_array_size(sorts); i < n; ++i)
   {
-    sortVec.push_back(
-        *sort_unbox(lean_array_fget(sorts, lean_usize_to_nat(i))));
+    sortVec.push_back(*sort_unbox(lean_array_get_core(sorts, i)));
   }
   std::function<Term(const std::vector<Term>&)> fun =
-      [fn](const std::vector<Term>& termVec) {
+      [fnRef](const std::vector<Term>& termVec) {
+        lean_object* fn = fnRef.get();
         lean_object* terms = lean_mk_empty_array();
         for (const Term& elem : termVec)
         {

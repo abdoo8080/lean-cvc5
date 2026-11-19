@@ -732,7 +732,7 @@ instance : Hashable DatatypeConstructorDecl := ⟨DatatypeConstructorDecl.hash�
 - `sort` The codomain sort of the datatype selector declaration to add.
 -/
 extern_def addSelector :
-  (dtCons : DatatypeConstructorDecl) → (name : String) → (sort : cvc5.Sort) →
+  (dtCons : owned DatatypeConstructorDecl) → (name : String) → (sort : cvc5.Sort) →
   Env DatatypeConstructorDecl
 
 /-- Add datatype selector declaration whose codomain type is the datatype itself.
@@ -740,7 +740,7 @@ extern_def addSelector :
 - `name` The name of the datatype selector declaration to add.
 -/
 extern_def addSelectorSelf :
-  (dtCons : DatatypeConstructorDecl) → (name : String) → Env DatatypeConstructorDecl
+  (dtCons : owned DatatypeConstructorDecl) → (name : String) → Env DatatypeConstructorDecl
 
 /-- Add datatype selector declaration whose codomain sort is an unresolved datatype with the given
   name.
@@ -750,7 +750,7 @@ extern_def addSelectorSelf :
   resolved datatype with the given name
 -/
 extern_def addSelectorUnresolved :
-  (dtCons : DatatypeConstructorDecl) → (name : String) → (unresDatatypeName : String) →
+  (dtCons : owned DatatypeConstructorDecl) → (name : String) → (unresDatatypeName : String) →
   Env DatatypeConstructorDecl
 
 end DatatypeConstructorDecl
@@ -780,7 +780,7 @@ instance : Hashable DatatypeDecl := ⟨DatatypeDecl.hash⟩
 - `ctor` The datatype constructor declaration to add.
 -/
 extern_def addConstructor :
-  DatatypeDecl → (ctor : DatatypeConstructorDecl) → Env DatatypeDecl
+  owned DatatypeDecl → (ctor : DatatypeConstructorDecl) → Env DatatypeDecl
 
 /-- Get the number of constructors for this datatype declaration. -/
 extern_def getNumConstructors : DatatypeDecl → Nat
@@ -2508,27 +2508,27 @@ instance : Hashable Grammar := ⟨Grammar.hash⟩
 - `ntSymbol` The non-terminal to which the rule is added.
 - `rule` The rule to add.
 -/
-extern_def addRule : Grammar → (ntSymbol : Term) → (rule : Term) → Env Grammar
+extern_def addRule : owned Grammar → (ntSymbol : Term) → (rule : Term) → Env Grammar
 
 /-- Add `rules` to the set of rules corresponding to `ntSymbol`.
 
 - `ntSymbol` The non-terminal to which the rules are added.
 - `rules` The rules to add.
 -/
-extern_def addRules : Grammar → (ntSymbol : Term) → (rules : Array Term) → Env Grammar
+extern_def addRules : owned Grammar → (ntSymbol : Term) → (rules : Array Term) → Env Grammar
 
 /-- Allow `ntSymbol` to be an arbitrary constant.
 
 - `ntSymbol` The non-terminal allowed to be any constant.
 -/
-extern_def addAnyConstant : Grammar → (ntSymbol : Term) → Env Grammar
+extern_def addAnyConstant : owned Grammar → (ntSymbol : Term) → Env Grammar
 
 /-- Allow `ntSymbol` to be any input variable to corresponding *synth-fun*/*synth-inv* with the same
   sort as `ntSymbol`.
 
 - `ntSymbol` The non-terminal allowed to be any input variable.
 -/
-extern_def addAnyVariable : Grammar → (ntSymbol : Term) → Env Grammar
+extern_def addAnyVariable : owned Grammar → (ntSymbol : Term) → Env Grammar
 
 end Grammar
 
