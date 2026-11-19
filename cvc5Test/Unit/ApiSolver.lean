@@ -731,9 +731,10 @@ test![TestApiBlackSolver, getAbduct] tm solver => do
   -- conjecture for abduction `y > 0`
   let conj ← tm.mkTerm Kind.GT #[y, zero]
   -- call the abduction api, while the resulting abduct is the output
-  let output ← solver.getAbduct conj
+  let output? ← solver.getAbduct conj
   -- we expect the resulting output to be a boolean formula
-  assertTrue (¬ output.isNull ∧ (← output.getSort).isBoolean)
+  let output ← assertSome output?
+  assertTrue (← output.getSort).isBoolean
 
   -- try with a grammar, a simple grammar admitting true
   let truen ← tm.mkBoolean true
@@ -744,8 +745,9 @@ test![TestApiBlackSolver, getAbduct] tm solver => do
     "invalid grammar, must have at least one rule for each non-terminal symbol"
   g ← g.addRule start truen
   -- call the abduction api, while the resulting abduct is the output
-  let output2 ← solver.getAbduct conj2 g
+  let output2? ← solver.getAbduct conj2 g
   -- abduct must be true
+  let output2 ← assertSome output2?
   assertEq truen output2
 
   let tm' ← TermManager.new
@@ -820,8 +822,9 @@ test![TestApiBlackSolver, getInterpolant] tm solver => do
     ← tm.mkTerm Kind.LT #[z, zero],
   ]
   -- call the interpolation api, while the resulting interpolant is the output
-  let output ← solver.getInterpolant conj
+  let output? ← solver.getInterpolant conj
   -- we expect the resulting output to be a boolean formula
+  let output ← assertSome output?
   assertTrue (← output.getSort).isBoolean
 
   -- try with a grammar, a simple grammar admitting true
@@ -833,8 +836,9 @@ test![TestApiBlackSolver, getInterpolant] tm solver => do
     "invalid grammar, must have at least one rule for each non-terminal symbol"
   g ← g.addRule start truen |> assertOk
   -- call the interpolation api, while the resulting interpolant is the output
-  let output2 ← solver.getInterpolant conj2 g
+  let output2? ← solver.getInterpolant conj2 g
   -- interpolant must be true
+  let output2 ← assertSome output2?
   assertEq truen output2
 
   let tm' ← TermManager.new
