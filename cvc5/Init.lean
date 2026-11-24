@@ -76,6 +76,78 @@ scoped syntax (name := defsItemStx)
   (defsItemTail)?
 : defsItem
 
+/-! ### Argument ownership
+
+The C++ functions behind `extern_def` only read their object arguments, so `extern_def` declares
+every explicit argument borrowed (`@&`): the caller keeps its reference, and the C++ side must not
+release it. (Owned, Lean would expect the C++ side to release it, and every argument would leak.)
+
+An argument the C++ side consumes (releases, or returns as its result) is marked `owned t` instead.
+
+Lean drops a borrow annotation on an argument with a default value (`(x : @& t := d)` is owned),
+and `@& optParam t d` loses the default. So the external function of a signature with default
+values is a separate `opaque` `name.ffi` without them, and `name` is an inline wrapper with them.
+-/
+
+/-- Marks an argument of an `extern_def` owned: the C++ function consumes it. Elsewhere, `owned t`
+is `t`. -/
+scoped syntax:max (name := ownedArg) "owned " term:max : term
+
+@[macro ownedArg]
+public meta def expandOwnedArg : Macro
+| `(owned $t) => pure t
+| _ => Macro.throwUnsupported
+
+/-- The type of an external function's argument: `t` itself if marked `owned` (or already `@&`),
+`@& t` otherwise. -/
+meta def borrowArgType (t : Term) : CommandElabM Term :=
+  match t with
+  | `(owned $t) => pure t
+  | `(@& $_) => pure t
+  | _ => `(@& ($t))
+
+/-- Declares borrowed the explicit arguments of the type of an external function (see
+`borrowArgType`), and drops their default values. The state records whether any was dropped. -/
+meta partial def borrowType (t : Term) : StateT Bool CommandElabM Term := do
+  match t with
+  | `($a → $b) => `($(← borrowArgType a) → $(← borrowType b))
+  | `(($xs* : $a) → $b) => `(($xs* : $(← borrowArgType a)) → $(← borrowType b))
+  | `(($xs* : $a := $_) → $b) =>
+    set true
+    `(($xs* : $(← borrowArgType a)) → $(← borrowType b))
+  | _ => pure t
+
+/-- `borrowType`, on the binders before the colon of a signature. Also returns the names they
+bind. -/
+meta def borrowBinder (b : Syntax) : StateT Bool CommandElabM (Syntax × Array Ident) := do
+  let names (xs : Array Syntax) : StateT Bool CommandElabM (Array Ident) :=
+    xs.mapM fun x =>
+      if x.isIdent then pure ⟨x⟩ else throwErrorAt x "`extern_def`: name this argument"
+  match b with
+  | `(bracketedBinder| ($xs* : $a)) =>
+    return (← `(bracketedBinder| ($xs* : $(← borrowArgType a))), ← names xs)
+  | `(bracketedBinder| ($xs* : $a := $_)) =>
+    set true
+    return (← `(bracketedBinder| ($xs* : $(← borrowArgType a))), ← names xs)
+  | `(bracketedBinder| ($xs* := $d)) =>
+    set true
+    return (← `(bracketedBinder| ($xs* : @& (type_of% $d))), ← names xs)
+  | _ => throwErrorAt b "`extern_def`: unsupported binder"
+
+/-- Adds attribute `attr` to the modifiers `mods`. -/
+meta def addAttr (mods : TSyntax ``Parser.Command.declModifiers) (attr : TSyntax ``Parser.Term.attrInstance) :
+    CommandElabM (TSyntax ``Parser.Command.declModifiers) := do
+  match mods with
+  | `(Parser.Command.declModifiersT|
+    $[$doc:docComment]? $[@[ $[ $attrs ],* ]]? $[$vis]? $[$isNc]? $[$isUnsafe]? $[$opt]?
+  ) => do
+    let attrs := attrs.getD #[] |>.push attr
+    let mods ← `(Parser.Command.declModifiersT|
+      $[$doc:docComment]? @[ $[$attrs],* ] $[$vis]? $[$isNc]? $[$isUnsafe]? $[$opt]?
+    )
+    return ⟨mods⟩
+  | _ => throwUnsupportedSyntax
+
 meta unsafe def elabDefsItem
   (pref : String) (forceMods : Option (TSyntax `defsMod))
 : CommandElab
@@ -116,23 +188,40 @@ $[ with $[
         ident.getId.toString
     pref ++ "_" ++ id |> Syntax.mkStrLit
   -- println! "extern name := `{externName}`"
-  let mods ←
-    match mods with
-    | `(Parser.Command.declModifiersT|
-      $[$doc:docComment]? $[@[ $[ $attrs ],* ]]? $[$vis]? $[$isNc]? $[$isUnsafe]? $[$opt]?
-    ) => do
-      let ext ← `(Parser.Term.attrInstance| extern $externName:str)
-      let attrs := attrs.getD #[] |>.push ext
-      `(Parser.Command.declModifiersT|
-        $[$doc:docComment]? @[ $[$attrs],* ] $[$vis]? $[$isNc]? $[$isUnsafe]? $[$opt]?
-      )
+  let ext ← `(Parser.Term.attrInstance| extern $externName:str)
+  let (binders, type) : Array Syntax × Term ←
+    match identSig with
+    | `(Parser.Command.declSig| $bs* : $type) => pure (TSyntaxArray.raw bs, type)
     | _ => throwUnsupportedSyntax
-  let mainDef ←`(
-    set_option linter.unusedVariables false in
-    $(⟨mods⟩):declModifiers
-    opaque $ident:declId $identSig
-  )
-  Command.elabCommand mainDef
+  let ((ffiBinders, argNames, ffiType), hasDefaults) ← (do
+      let bs ← binders.mapM borrowBinder
+      return (bs.map Prod.fst, bs.flatMap Prod.snd, ← borrowType type)
+    ).run false
+  let ffiSig : TSyntax ``Parser.Command.declSig :=
+    ⟨mkNode ``Parser.Command.declSig
+      #[mkNullNode ffiBinders, ← `(Parser.Term.typeSpec| : $ffiType)]⟩
+  if hasDefaults then
+    -- See "Argument ownership" above.
+    let ffiIdent := Lean.mkIdent (ident.getId ++ `ffi)
+    Command.elabCommand (← `(
+      set_option linter.unusedVariables false in
+      /-- The external function of the wrapper without `.ffi`, with no default values. -/
+      @[$ext:attrInstance]
+      opaque $ffiIdent:declId $ffiSig
+    ))
+    let mods ← addAttr mods (← `(Parser.Term.attrInstance| inline))
+    let wrapperSig : TSyntax ``Parser.Command.optDeclSig :=
+      ⟨mkNode ``Parser.Command.optDeclSig #[identSig.raw[0], mkNullNode #[identSig.raw[1]]]⟩
+    Command.elabCommand (← `(
+      $mods:declModifiers
+      def $ident:declId $wrapperSig:optDeclSig := $ffiIdent $argNames*
+    ))
+  else
+    Command.elabCommand (← `(
+      set_option linter.unusedVariables false in
+      $(← addAttr mods ext):declModifiers
+      opaque $ident:declId $ffiSig
+    ))
 
   let fullName :=
     Lean.Name.mkSimple ident.getId.toString
@@ -154,7 +243,7 @@ $[ with $[
   if let (some autoDoc?, some autoId) := (autoDoc, autoId) then
     let env ← getEnv
     let arity ←
-      if let some (.opaqueInfo i) := env.find? fullName then
+      if let some i := env.find? fullName then
         pure (forallArity i.type)
       else
         throwError s!"failed to retrieve arity of (opaque) function `{ident}`"
